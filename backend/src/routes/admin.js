@@ -72,12 +72,24 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
   };
   await supabase.from('recargas').update(updates).eq('id', id);
 
-  // IMPORTANTE: Al aprobar una recarga, el dinero se suma al SALDO DE COMISIONES
   const user = await findUserById(recarga.usuario_id);
   if (user) {
-    await updateUser(user.id, {
+    const userUpdates = {
       saldo_comisiones: (user.saldo_comisiones || 0) + recarga.monto
-    });
+    };
+
+    // Lógica de subida de nivel automática basada en el monto de la recarga
+    const niveles = await getLevels();
+    // Buscamos el nivel que corresponde exactamente al monto de la recarga (si es Compra VIP)
+    if (recarga.modo === 'Compra VIP') {
+      const nuevoNivel = niveles.find(n => n.costo === recarga.monto);
+      if (nuevoNivel) {
+        userUpdates.nivel_id = nuevoNivel.id;
+        console.log(`Subiendo usuario ${user.nombre_usuario} al nivel ${nuevoNivel.id} automáticamente por recarga de ${recarga.monto}`);
+      }
+    }
+
+    await updateUser(user.id, userUpdates);
   }
 
   res.json({ ok: true });
