@@ -106,8 +106,8 @@ export async function getRecargasByUser(userId) {
 }
 
 export async function createRecarga(recargaData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('recargas').insert([recargaData]).select().single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('recargas').insert([recargaData]).select().maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   if (!store.recargas) store.recargas = [];
   store.recargas.push(recargaData);
@@ -115,8 +115,8 @@ export async function createRecarga(recargaData) {
 }
 
 export async function updateRecarga(id, updates) {
-  const { data, fallback } = await trySupabase(() => supabase.from('recargas').update(updates).eq('id', id).select().single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('recargas').update(updates).eq('id', id).select().maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   const recarga = (store.recargas || []).find(r => r.id === id);
   if (recarga) Object.assign(recarga, updates);
@@ -131,8 +131,8 @@ export async function getRetirosByUser(userId) {
 }
 
 export async function createRetiro(retiroData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('retiros').insert([retiroData]).select().single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('retiros').insert([retiroData]).select().maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   if (!store.retiros) store.retiros = [];
   store.retiros.push(retiroData);
@@ -212,8 +212,8 @@ export async function getSorteosGanadores() {
 
 
 export async function createSorteoGanador(ganadorData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').insert([ganadorData]).select().single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').insert([ganadorData]).select().maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   if (!store.sorteosGanadores) store.sorteosGanadores = [];
   store.sorteosGanadores.push(ganadorData);

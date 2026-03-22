@@ -8,17 +8,56 @@ import { Play, TrendingUp } from 'lucide-react';
 export default function TaskRoom() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchTasks = () => {
+    setLoading(true);
+    setError(null);
+    api.tasks.list()
+      .then(setData)
+      .catch((err) => {
+        console.error('Error cargando tareas:', err);
+        setError(err.message || 'No se pudieron cargar las tareas. Intentalo de nuevo.');
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    api.tasks.list().then(setData).catch(console.error).finally(() => setLoading(false));
+    fetchTasks();
   }, []);
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <Layout>
         <Header title="sala de tareas" />
-        <div className="p-4 flex justify-center">
-          <div className="animate-pulse text-gray-400">Cargando...</div>
+        <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+          <div className="w-12 h-12 border-4 border-sav-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-400 font-medium animate-pulse uppercase tracking-widest text-[10px]">Cargando tareas...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <Layout>
+        <Header title="sala de tareas" />
+        <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-[2rem] flex items-center justify-center shadow-xl shadow-rose-500/10 border border-rose-100">
+            <TrendingUp size={40} className="rotate-180" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Ocurrió un error</h2>
+            <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-xs mx-auto">
+              {error || 'No se pudo conectar con el servidor.'}
+            </p>
+          </div>
+          <button 
+            onClick={fetchTasks}
+            className="px-8 py-4 rounded-2xl bg-sav-primary text-white font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all"
+          >
+            Reintentar
+          </button>
         </div>
       </Layout>
     );

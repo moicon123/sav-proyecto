@@ -2,81 +2,152 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import Header from '../components/Header';
 import { api } from '../lib/api';
+import { Wallet, HandCoins, Calendar, Clock, ArrowUpCircle, ArrowDownCircle, History } from 'lucide-react';
 
 export default function Ganancias() {
-  const [tab, setTab] = useState('recargas');
+  const [tab, setTab] = useState('todo');
   const [recargas, setRecargas] = useState([]);
   const [retiros, setRetiros] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.recharges.list().then(setRecargas).catch(() => []);
-    api.withdrawals.list().then(setRetiros).catch(() => []);
+    setLoading(true);
+    Promise.all([
+      api.recharges.list().catch(() => []),
+      api.withdrawals.list().catch(() => [])
+    ]).then(([rec, ret]) => {
+      setRecargas(rec);
+      setRetiros(ret);
+    }).finally(() => setLoading(false));
   }, []);
 
-  const items = tab === 'recargas' ? recargas : retiros;
-  const agruparPorAno = (lista) => {
-    const porAno = {};
+  const combinedItems = [
+    ...recargas.map(r => ({ ...r, tipo: 'recarga' })),
+    ...retiros.map(r => ({ ...r, tipo: 'retiro' }))
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  const items = tab === 'todo' ? combinedItems : (tab === 'recargas' ? recargas : retiros);
+
+  const agruparPorFecha = (lista) => {
+    const grupos = {};
     lista.forEach((i) => {
-      const ano = new Date(i.created_at).getFullYear();
-      if (!porAno[ano]) porAno[ano] = [];
-      porAno[ano].push(i);
+      const fecha = new Date(i.created_at).toLocaleDateString('es-BO', { month: 'long', year: 'numeric' });
+      if (!grupos[fecha]) grupos[fecha] = [];
+      grupos[fecha].push(i);
     });
-    return Object.entries(porAno).sort((a, b) => Number(b[0]) - Number(a[0]));
+    return Object.entries(grupos);
   };
-  const grupos = agruparPorAno(items);
+
+  const grupos = agruparPorFecha(items);
 
   const formatearEstado = (e) => {
-    const map = { pendiente: '🟡 En revisión', aprobada: '🟢 Completado', rechazada: '🔴 Rechazado', pagado: '🟢 Pagado', rechazado: '🔴 Rechazado' };
-    return map[e] || e;
+    const map = { 
+      pendiente: { label: 'En revisión', color: 'text-amber-500', bg: 'bg-amber-50' }, 
+      aprobada: { label: 'Completado', color: 'text-emerald-500', bg: 'bg-emerald-50' }, 
+      rechazada: { label: 'Rechazado', color: 'text-rose-500', bg: 'bg-rose-50' }, 
+      pagado: { label: 'Pagado', color: 'text-emerald-500', bg: 'bg-emerald-50' }, 
+      rechazado: { label: 'Rechazado', color: 'text-rose-500', bg: 'bg-rose-50' } 
+    };
+    const info = map[e] || { label: e, color: 'text-gray-500', bg: 'bg-gray-50' };
+    return (
+      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${info.bg} ${info.color}`}>
+        {info.label}
+      </span>
+    );
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <Header title="Historial de Movimientos" />
+        <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+          <div className="w-12 h-12 border-4 border-sav-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-400 font-medium animate-pulse uppercase tracking-widest text-[10px]">Cargando historial...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <Header title="Ganancias - Historial" />
-      <div className="flex border-b border-gray-200 bg-white">
-        <button
-          onClick={() => setTab('recargas')}
-          className={`flex-1 py-4 font-medium ${tab === 'recargas' ? 'text-black border-b-2 border-black' : 'text-gray-400'}`}
-        >
-          Recargas
-        </button>
-        <button
-          onClick={() => setTab('retiros')}
-          className={`flex-1 py-4 font-medium ${tab === 'retiros' ? 'text-black border-b-2 border-black' : 'text-gray-400'}`}
-        >
-          Retiros
-        </button>
+      <Header title="Movimientos" />
+      
+      {/* Tabs Premium */}
+      <div className="px-4 mt-4">
+        <div className="flex bg-gray-100 p-1.5 rounded-[1.5rem] border border-gray-200">
+          {[
+            { id: 'todo', label: 'Todo', icon: History },
+            { id: 'recargas', label: 'Recargas', icon: Wallet },
+            { id: 'retiros', label: 'Retiros', icon: HandCoins }
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${tab === t.id ? 'bg-white text-sav-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <t.icon size={14} />
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="p-4 space-y-6">
+
+      <div className="p-5 space-y-8 pb-24">
         {grupos.length === 0 ? (
-          <p className="text-center text-gray-400 py-12">No hay datos</p>
+          <div className="text-center py-20 opacity-30 grayscale">
+            <Calendar size={64} className="mx-auto mb-4" />
+            <p className="font-black uppercase tracking-[0.2em] text-xs">Sin movimientos registrados</p>
+          </div>
         ) : (
-          grupos.map(([ano, lista]) => (
-            <div key={ano}>
-              <h3 className="text-lg font-bold text-gray-800 mb-3">Año {ano}</h3>
+          grupos.map(([mes, lista]) => (
+            <div key={mes} className="space-y-4">
+              <div className="flex items-center gap-3 px-2">
+                <Clock size={14} className="text-sav-primary" />
+                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{mes}</h3>
+              </div>
+              
               <div className="space-y-3">
-                {lista.map((i) => (
-                  <div key={i.id} className="flex justify-between items-start p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                    <div>
-                      <p className="text-xs text-gray-500 font-mono">{i.id?.slice(0, 16)}</p>
-                      <p className={`font-bold text-lg ${tab === 'retiros' ? 'text-orange-500' : 'text-sav-accent'}`}>
-                        {tab === 'retiros' ? '-' : '+'}{i.monto?.toFixed(2)} BOB
-                      </p>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold">
-                        {tab === 'recargas' ? 'Hacia Saldo Comisiones' : (i.tipo_billetera === 'comisiones' ? 'Desde Saldo Comisiones' : 'Desde Saldo Tareas')}
-                      </p>
-                      <p className="text-sm text-gray-500">{formatearEstado(i.estado)}</p>
+                {lista.map((i) => {
+                  const isRecarga = i.tipo === 'recarga';
+                  return (
+                    <div key={i.id} className="bg-white rounded-[2rem] p-5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-gray-50 flex items-center gap-4 group hover:shadow-lg transition-all">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${isRecarga ? 'bg-emerald-50 text-emerald-500' : 'bg-orange-50 text-orange-500'}`}>
+                        {isRecarga ? <ArrowUpCircle size={24} /> : <ArrowDownCircle size={24} />}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="font-black text-gray-800 text-sm truncate uppercase tracking-tighter">
+                            {isRecarga ? 'Recarga de Saldo' : 'Retiro de Fondos'}
+                          </p>
+                          <p className={`font-black text-sm ${isRecarga ? 'text-emerald-500' : 'text-orange-500'}`}>
+                            {isRecarga ? '+' : '-'}{i.monto?.toFixed(2)} <span className="text-[8px] opacity-50">BOB</span>
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <div className="flex flex-col gap-1">
+                            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                              {i.created_at ? new Date(i.created_at).toLocaleDateString('es-BO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                            </p>
+                            <p className="text-[8px] text-gray-300 font-mono">ID: {i.id?.slice(0, 12)}</p>
+                          </div>
+                          {formatearEstado(i.estado)}
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-500 text-right">
-                      {i.created_at ? new Date(i.created_at).toLocaleString('es') : ''}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))
         )}
-        <p className="text-center text-gray-400 py-6 text-sm">No hay más datos</p>
+        
+        {grupos.length > 0 && (
+          <div className="pt-4 border-t border-dashed border-gray-200 text-center">
+            <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest italic">Fin del historial</p>
+          </div>
+        )}
       </div>
     </Layout>
   );

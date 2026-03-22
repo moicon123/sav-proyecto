@@ -6,13 +6,19 @@ import { authenticate } from '../middleware/auth.js';
 const router = Router();
 
 router.get('/', authenticate, async (req, res) => {
-  const user = await findUserById(req.user.id);
-  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-  
-  const levels = await getLevels();
-  const level = levels.find(l => l.id === user.nivel_id) || levels[0];
-  const allTasks = await getTasks(user.nivel_id);
-  const activity = await getTaskActivity(user.id);
+  try {
+    const user = await findUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const levels = await getLevels();
+    const level = levels.find(l => l.id === user.nivel_id) || levels[0];
+    
+    console.log(`[Tasks] Cargando tareas para usuario ${user.nombre_usuario} (Nivel: ${level.id})`);
+
+    const allTasks = await getTasks(level.id);
+    const activity = await getTaskActivity(user.id);
+
+    console.log(`[Tasks] Tareas encontradas: ${allTasks.length}, Actividad registrada: ${activity.length}`);
   
   const today = new Date().toDateString();
   const todayCompletedActivity = activity.filter(a => 
@@ -59,6 +65,10 @@ router.get('/', authenticate, async (req, res) => {
       imagen_url: t.video_url,
     })),
   });
+  } catch (err) {
+    console.error('[Tasks] Error crítico cargando sala de tareas:', err);
+    res.status(500).json({ error: 'Error interno al cargar las tareas' });
+  }
 });
 
 router.get('/:id', authenticate, async (req, res) => {
