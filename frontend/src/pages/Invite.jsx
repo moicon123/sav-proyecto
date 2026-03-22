@@ -89,11 +89,14 @@ export default function Invite() {
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Tu Código de Invitación</p>
               <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                 <div className="flex-1 text-center py-3">
-                  <span className="text-3xl font-black text-sav-primary tracking-[0.3em]">{user?.codigo_invitacion || '------'}</span>
+                  <span className="text-3xl font-black text-sav-primary tracking-[0.3em]">
+                    {user?.nivel_codigo === 'internar' ? '**********' : (user?.codigo_invitacion || '------')}
+                  </span>
                 </div>
                 <button 
                   onClick={handleCopyCode}
-                  className={`p-4 rounded-xl transition-all ${copiedCode ? 'bg-emerald-500 text-white' : 'bg-sav-primary text-white active:scale-90'}`}
+                  disabled={user?.nivel_codigo === 'internar'}
+                  className={`p-4 rounded-xl transition-all ${copiedCode ? 'bg-emerald-500 text-white' : 'bg-sav-primary text-white active:scale-90'} disabled:opacity-30`}
                 >
                   {copiedCode ? <Check size={20} /> : <Copy size={20} />}
                 </button>
@@ -105,11 +108,14 @@ export default function Invite() {
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Enlace de Registro Directo</p>
               <div className="flex items-center gap-3 p-2 bg-indigo-50/50 rounded-2xl border border-indigo-100">
                 <div className="flex-1 truncate pl-4">
-                  <span className="text-xs font-bold text-indigo-600/60">{inviteLink}</span>
+                  <span className="text-xs font-bold text-indigo-600/60">
+                    {user?.nivel_codigo === 'internar' ? 'https://sav-proyecto.vercel.app/registro?ref=**********' : inviteLink}
+                  </span>
                 </div>
                 <button 
                   onClick={handleCopyLink}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${copiedLink ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white active:scale-90'}`}
+                  disabled={user?.nivel_codigo === 'internar'}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${copiedLink ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white active:scale-90'} disabled:opacity-30`}
                 >
                   {copiedLink ? <Check size={14} /> : <Share2 size={14} />}
                   {copiedLink ? 'Copiado' : 'Copiar'}

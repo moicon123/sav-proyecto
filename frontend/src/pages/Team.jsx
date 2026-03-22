@@ -80,12 +80,18 @@ export default function Team() {
             
             <div className="flex items-center gap-3">
               <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-3 flex items-center justify-between">
-                <span className="text-sm font-black text-sav-accent tracking-widest">{user?.codigo_invitacion || '---'}</span>
-                <button onClick={handleCopy} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+                <span className="text-sm font-black text-sav-accent tracking-widest">
+                  {user?.nivel_codigo === 'internar' ? '**********' : (user?.codigo_invitacion || '---')}
+                </span>
+                <button 
+                  onClick={handleCopy} 
+                  disabled={user?.nivel_codigo === 'internar'}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-colors disabled:opacity-30"
+                >
                   {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} className="text-white/40" />}
                 </button>
               </div>
-              <Link to="/usuario" className="p-4 rounded-2xl bg-sav-accent text-sav-primary active:scale-90 transition-all shadow-lg shadow-sav-accent/20">
+              <Link to="/invitar" className="p-4 rounded-2xl bg-sav-accent text-sav-primary active:scale-90 transition-all shadow-lg shadow-sav-accent/20">
                 <ChevronRight size={24} strokeWidth={3} />
               </Link>
             </div>
