@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { Eye, EyeOff, Lock } from 'lucide-react';
@@ -16,11 +16,6 @@ export default function Register() {
     codigo_invitacion: refCode || '',
   });
 
-  useEffect(() => {
-    if (refCode) {
-      setData(prev => ({ ...prev, codigo_invitacion: refCode }));
-    }
-  }, [refCode]);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const { register } = useAuth();

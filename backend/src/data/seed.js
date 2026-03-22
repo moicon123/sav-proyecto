@@ -122,14 +122,14 @@ export async function initStore() {
   };
 
   const tasks = [
-    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 1', recompensa: 1.80, video_url: 'https://placehold.co/400x300?text=Video+1', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'CHANEL', opciones: ['CHANEL', 'HERMES', 'DIOR', 'LV'] },
-    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 2', recompensa: 1.80, video_url: 'https://placehold.co/400x300?text=Video+2', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'HERMES', opciones: ['CHANEL', 'HERMES'] },
-    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 3', recompensa: 1.80, video_url: 'https://placehold.co/400x300?text=Video+3', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'DIOR', opciones: ['CHANEL', 'DIOR'] },
-    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 4', recompensa: 1.80, video_url: 'https://placehold.co/400x300?text=Video+4', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'LV', opciones: ['LV', 'GUCCI'] },
-    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 1', recompensa: 1.80, video_url: 'https://placehold.co/400x300?text=Video+S1+1', pregunta: 'Selecciona la marca', respuesta_correcta: 'COCA-COLA', opciones: ['COCA-COLA', 'PEPSI'] },
-    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 2', recompensa: 1.80, video_url: 'https://placehold.co/400x300?text=Video+S1+2', pregunta: 'Selecciona la marca', respuesta_correcta: 'PEPSI', opciones: ['COCA-COLA', 'PEPSI'] },
-    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 3', recompensa: 1.80, video_url: 'https://placehold.co/400x300?text=Video+S1+3', pregunta: 'Selecciona la marca', respuesta_correcta: 'FANTA', opciones: ['FANTA', 'SPRITE'] },
-    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 4', recompensa: 1.80, video_url: 'https://placehold.co/400x300?text=Video+S1+4', pregunta: 'Selecciona la marca', respuesta_correcta: 'SPRITE', opciones: ['FANTA', 'SPRITE'] },
+    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 1', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'CHANEL', opciones: ['CHANEL', 'HERMES', 'DIOR', 'LV'] },
+    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 2', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'HERMES', opciones: ['CHANEL', 'HERMES'] },
+    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 3', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'DIOR', opciones: ['CHANEL', 'DIOR'] },
+    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 4', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'LV', opciones: ['LV', 'GUCCI'] },
+    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 1', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: 'Selecciona la marca', respuesta_correcta: 'COCA-COLA', opciones: ['COCA-COLA', 'PEPSI'] },
+    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 2', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: 'Selecciona la marca', respuesta_correcta: 'PEPSI', opciones: ['COCA-COLA', 'PEPSI'] },
+    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 3', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: 'Selecciona la marca', respuesta_correcta: 'FANTA', opciones: ['FANTA', 'SPRITE'] },
+    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 4', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: 'Selecciona la marca', respuesta_correcta: 'SPRITE', opciones: ['FANTA', 'SPRITE'] },
   ];
 
   const banners = [

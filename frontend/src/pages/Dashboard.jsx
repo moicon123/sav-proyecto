@@ -95,7 +95,7 @@ export default function Dashboard() {
             alt=""
             className="w-full h-full object-cover animate-fade-in"
             onError={(e) => {
-              e.target.src = 'https://placehold.co/800x400?text=SAV+Plataforma';
+              e.target.src = '/imag/carrusel1.jpeg';
               console.warn('Error cargando banner:', banners[slide]?.imagen_url);
             }}
           />

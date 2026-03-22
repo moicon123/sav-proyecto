@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import Header from '../components/Header';
 import { api } from '../lib/api';
@@ -12,7 +12,6 @@ export default function Raffle() {
   const [rotation, setRotation] = useState(0);
   const [ganador, setGanador] = useState(null);
   const [showWinModal, setShowWinModal] = useState(false);
-  const wheelRef = useRef(null);
 
   useEffect(() => {
     api.sorteo.premios().then(setPremios).catch(() => []);

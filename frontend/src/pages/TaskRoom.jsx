@@ -74,7 +74,7 @@ export default function TaskRoom() {
               >
                 <div className="w-24 h-24 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden relative">
                   <img
-                    src={t.video_url || t.imagen_url || 'https://placehold.co/96x96?text=Video'}
+                    src={t.video_url || t.imagen_url || '/imag/logo.jpeg'}
                     alt=""
                     className="w-full h-full object-cover"
                   />

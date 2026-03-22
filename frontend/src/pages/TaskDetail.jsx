@@ -48,6 +48,8 @@ export default function TaskDetail() {
 
   const renderVideo = () => {
     const url = task.video_url || '';
+    const isVideo = url.match(/\.(mp4|webm|ogg|mov)$/) || url.includes('youtube.com') || url.includes('youtu.be');
+    
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
       return (
@@ -59,13 +61,35 @@ export default function TaskDetail() {
         ></iframe>
       );
     }
+
+    if (isVideo) {
+      return (
+        <video
+          className="w-full aspect-video object-cover"
+          src={url}
+          controls
+          autoPlay
+          onEnded={() => setCanAnswer(true)}
+        />
+      );
+    }
+
+    // Fallback para imágenes
     return (
-      <video
+      <img
         className="w-full aspect-video object-cover"
-        src={url}
-        controls
-        autoPlay
-        onEnded={() => setCanAnswer(true)}
+        src={url || '/imag/logo.jpeg'}
+        alt=""
+        onLoad={() => {
+          // Si es una imagen, habilitamos el botón después de unos segundos de "verla"
+          if (!canAnswer) {
+            setTimeout(() => setCanAnswer(true), 3000);
+          }
+        }}
+        onError={(e) => {
+          e.target.src = '/imag/logo.jpeg';
+          setCanAnswer(true);
+        }}
       />
     );
   };
