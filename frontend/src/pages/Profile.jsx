@@ -9,7 +9,8 @@ import {
   Gift, 
   ShieldCheck, 
   CreditCard, 
-  ChevronRight 
+  ChevronRight, 
+  UploadCloud 
 } from 'lucide-react';
 
 export default function Profile() {
@@ -17,6 +18,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const menuItems = [
+    { to: '/recargar', icon: UploadCloud, label: 'Subir Comprobante de Pago', color: 'bg-indigo-600', isHot: true },
     { to: '/equipo', icon: Users, label: 'Informe del equipo', color: 'bg-blue-500' },
     { to: '/registro-facturacion', icon: FileText, label: 'Registro de facturación', color: 'bg-emerald-500' },
     { to: '/registro-tareas', icon: ClipboardList, label: 'Registro de tareas', color: 'bg-purple-500' },
@@ -27,64 +29,80 @@ export default function Profile() {
 
   return (
     <Layout>
-      <div className="bg-sav-primary text-white pt-8 pb-12 px-6 rounded-b-[3rem] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+      <div className="bg-sav-primary text-white pt-8 pb-14 px-6 rounded-b-[3.5rem] shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-sav-accent/10 rounded-full -mr-24 -mt-24 blur-3xl animate-pulse" />
         
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sav-accent to-yellow-600 p-1 shadow-lg">
-            <div className="w-full h-full rounded-xl bg-sav-primary flex items-center justify-center">
-              <User className="text-sav-accent" size={40} />
+        <div className="flex items-center gap-5 relative z-10">
+          <div className="w-22 h-22 rounded-3xl bg-gradient-to-br from-sav-accent to-yellow-600 p-1 shadow-[0_10px_30px_rgba(212,175,55,0.3)]">
+            <div className="w-full h-full rounded-[1.4rem] bg-sav-primary flex items-center justify-center">
+              <User className="text-sav-accent" size={44} />
             </div>
           </div>
           <div>
-            <h2 className="text-2xl font-black tracking-tight">{user?.nombre_usuario}</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="px-3 py-0.5 rounded-full bg-sav-accent text-sav-primary text-[10px] font-black uppercase tracking-wider shadow-sm">
+            <h2 className="text-2xl font-black tracking-tight mb-1">{user?.nombre_usuario}</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3 py-0.5 rounded-full bg-sav-accent text-sav-primary text-[10px] font-black uppercase tracking-widest shadow-sm">
                 {user?.nivel_id === 'l1' ? 'Pasante' : user?.nivel_id?.toUpperCase()}
               </span>
-              <span className="text-white/60 text-xs font-medium">ID: {user?.id?.slice(0, 8)}</span>
+              <span className="text-white/50 text-[10px] font-bold uppercase tracking-widest">ID: {user?.id?.slice(0, 8)}</span>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-8 relative z-10">
-          <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-3xl">
-            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Saldo de Tareas</p>
-            <p className="text-xl font-black">{(user?.saldo_principal || 0).toFixed(2)} <span className="text-xs font-normal opacity-60">BOB</span></p>
+        <div className="grid grid-cols-2 gap-4 mt-10 relative z-10">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-[2rem] shadow-inner">
+            <p className="text-white/50 text-[9px] font-black uppercase tracking-[0.2em] mb-2">Saldo Tareas</p>
+            <p className="text-2xl font-black">{(user?.saldo_principal || 0).toFixed(2)} <span className="text-xs font-medium opacity-40">BOB</span></p>
           </div>
-          <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-3xl">
-            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Saldo de Comisiones</p>
-            <p className="text-xl font-black">{(user?.saldo_comisiones || 0).toFixed(2)} <span className="text-xs font-normal opacity-60">BOB</span></p>
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-[2rem] shadow-inner">
+            <p className="text-white/50 text-[9px] font-black uppercase tracking-[0.2em] mb-2">Comisiones</p>
+            <p className="text-2xl font-black">{(user?.saldo_comisiones || 0).toFixed(2)} <span className="text-xs font-medium opacity-40">BOB</span></p>
           </div>
         </div>
       </div>
 
-      <div className="px-6 -mt-6 relative z-20 space-y-4">
-        <div className="bg-white rounded-[2.5rem] shadow-[0_15px_50px_-12px_rgba(0,0,0,0.1)] border border-gray-50 overflow-hidden">
+      <div className="px-6 -mt-8 relative z-20 space-y-6 pb-10">
+        <Link 
+          to="/recargar"
+          className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-[2.5rem] text-white shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] active:scale-[0.97] transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
+              <UploadCloud size={28} className="animate-bounce" />
+            </div>
+            <div>
+              <p className="font-black text-lg leading-tight uppercase tracking-tighter">Subir Comprobante</p>
+              <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest">Reportar pago realizado</p>
+            </div>
+          </div>
+          <ChevronRight size={24} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+        </Link>
+
+        <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-gray-50 overflow-hidden">
           <div className="divide-y divide-gray-50">
-            {menuItems.map((item) => (
+            {menuItems.filter(i => !i.isHot).map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="flex items-center justify-between p-5 hover:bg-gray-50 active:bg-gray-100 transition-all group"
+                className="flex items-center justify-between p-6 hover:bg-gray-50 active:bg-gray-100 transition-all group"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center text-white shadow-sm group-active:scale-90 transition-transform`}>
-                    <item.icon size={20} />
+                <div className="flex items-center gap-5">
+                  <div className={`w-12 h-12 rounded-2xl ${item.color} flex items-center justify-center text-white shadow-[0_8px_20px_-5px_rgba(0,0,0,0.2)] group-active:scale-90 transition-transform`}>
+                    <item.icon size={24} strokeWidth={1.5} />
                   </div>
-                  <span className="text-sm font-bold text-gray-700">{item.label}</span>
+                  <span className="text-sm font-black text-gray-700 uppercase tracking-tighter">{item.label}</span>
                 </div>
-                <ChevronRight size={18} className="text-gray-300 group-hover:text-sav-primary transition-colors" />
+                <ChevronRight size={20} className="text-gray-300 group-hover:text-sav-primary transition-colors" />
               </Link>
             ))}
           </div>
         </div>
 
         <button
-          onClick={() => { logout(); navigate('/login'); }}
-          className="w-full py-5 rounded-[2rem] bg-rose-50 text-rose-600 font-black text-sm uppercase tracking-[0.2em] shadow-sm active:scale-[0.98] transition-all border border-rose-100"
+          onClick={() => { if(confirm('¿Cerrar sesión?')) { logout(); navigate('/login'); } }}
+          className="w-full py-6 rounded-[2.5rem] bg-rose-50 text-rose-600 font-black text-xs uppercase tracking-[0.3em] shadow-sm active:scale-[0.98] transition-all border border-rose-100 mb-4"
         >
-          Cerrar Sesión
+          Cerrar Sesión Segura
         </button>
       </div>
     </Layout>

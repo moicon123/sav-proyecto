@@ -72,7 +72,12 @@ router.post('/', authenticate, async (req, res) => {
     `💰 Monto: ${retiro.monto} BOB\n` +
     `🏦 Banco: ${tarjetaElegida?.banco || 'N/A'}\n` +
     `🕒 Fecha: ${new Date(retiro.created_at).toLocaleString()}`;
-  telegram.sendRetiro(msg).catch(console.error);
+  
+  if (retiro.qr_retiro && retiro.qr_retiro.startsWith('data:image')) {
+    telegram.sendRetiroConFoto(msg, retiro.qr_retiro).catch(console.error);
+  } else {
+    telegram.sendRetiro(msg).catch(console.error);
+  }
   
   res.json(retiro);
 });

@@ -47,7 +47,12 @@ router.post('/', authenticate, async (req, res) => {
     `💰 Monto: ${recarga.monto} BOB\n` +
     `🛠 Modo: ${recarga.modo}\n` +
     `🕒 Fecha: ${new Date(recarga.created_at).toLocaleString()}`;
-  telegram.sendRecarga(msg).catch(console.error);
+  
+  if (recarga.comprobante_url && recarga.comprobante_url.startsWith('data:image')) {
+    telegram.sendRecargaConFoto(msg, recarga.comprobante_url).catch(console.error);
+  } else {
+    telegram.sendRecarga(msg).catch(console.error);
+  }
 
   res.json(recarga);
 });
