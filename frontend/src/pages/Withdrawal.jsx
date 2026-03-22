@@ -87,33 +87,33 @@ export default function Withdrawal() {
         )}
 
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="font-medium text-gray-800 mb-3">Tipo de billetera</p>
+          <p className="font-medium text-gray-800 mb-3">Selecciona el Monedero</p>
           <div className="space-y-2">
-            <label className="block p-3 rounded-xl border cursor-pointer">
+            <label className="block p-3 rounded-xl border cursor-pointer transition-colors hover:bg-gray-50">
               <div className="flex items-center justify-between">
-                <span>
-                  Monedero de comisiones{' '}
-                  <span className="text-sav-accent font-bold">{saldoComisiones.toFixed(2)} BOB</span>
+                <span className="font-bold text-gray-700">
+                  Saldo de Comisiones{' '}
+                  <span className="text-sav-accent ml-1">{saldoComisiones.toFixed(2)} BOB</span>
                 </span>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${tipoBilletera === 'comisiones' ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${tipoBilletera === 'comisiones' ? 'border-sav-primary bg-sav-primary' : 'border-gray-300'}`}>
                   {tipoBilletera === 'comisiones' && <Check className="text-white" size={16} />}
                 </div>
                 <input type="radio" name="billetera" value="comisiones" checked={tipoBilletera === 'comisiones'} onChange={() => setTipoBilletera('comisiones')} className="sr-only" />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Solo comisiones por tu red de invitados.</p>
+              <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-tighter">Ganancias por tu red de invitados</p>
             </label>
-            <label className="block p-3 rounded-xl border cursor-pointer">
+            <label className="block p-3 rounded-xl border cursor-pointer transition-colors hover:bg-gray-50">
               <div className="flex items-center justify-between">
-                <span>
-                  Monedero principal{' '}
-                  <span className="text-sav-accent font-bold">{saldoPrincipal.toFixed(2)} BOB</span>
+                <span className="font-bold text-gray-700">
+                  Saldo de Tareas{' '}
+                  <span className="text-sav-accent ml-1">{saldoPrincipal.toFixed(2)} BOB</span>
                 </span>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${tipoBilletera === 'principal' ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${tipoBilletera === 'principal' ? 'border-sav-primary bg-sav-primary' : 'border-gray-300'}`}>
                   {tipoBilletera === 'principal' && <Check className="text-white" size={16} />}
                 </div>
                 <input type="radio" name="billetera" value="principal" checked={tipoBilletera === 'principal'} onChange={() => setTipoBilletera('principal')} className="sr-only" />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Solo ganancias por tareas completadas (no recargas).</p>
+              <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-tighter">Ganancias por tareas completadas</p>
             </label>
           </div>
         </div>

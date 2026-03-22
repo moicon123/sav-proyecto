@@ -97,9 +97,11 @@ router.post('/:id/responder', authenticate, async (req, res) => {
   const correcta = (respuesta || '').toUpperCase().trim() === (task.respuesta_correcta || '').toUpperCase().trim();
   const recompensa = correcta ? task.recompensa : 0;
   if (recompensa) {
-    await updateUser(user.id, { 
-      saldo_principal: (user.saldo_principal || 0) + recompensa 
-    });
+    // Actualizar saldo de tareas del usuario
+    const updates = {
+      saldo_principal: (user.saldo_principal || 0) + recompensa,
+    };
+    await updateUser(user.id, updates);
   }
 
   await createTaskActivity({

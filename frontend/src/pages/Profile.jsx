@@ -49,11 +49,11 @@ export default function Profile() {
 
         <div className="grid grid-cols-2 gap-4 mt-8 relative z-10">
           <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-3xl">
-            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Saldo Total</p>
+            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Saldo de Tareas</p>
             <p className="text-xl font-black">{(user?.saldo_principal || 0).toFixed(2)} <span className="text-xs font-normal opacity-60">BOB</span></p>
           </div>
           <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-3xl">
-            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Comisiones</p>
+            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Saldo de Comisiones</p>
             <p className="text-xl font-black">{(user?.saldo_comisiones || 0).toFixed(2)} <span className="text-xs font-normal opacity-60">BOB</span></p>
           </div>
         </div>

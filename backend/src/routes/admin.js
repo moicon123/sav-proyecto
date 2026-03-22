@@ -60,12 +60,26 @@ router.get('/recargas', async (req, res) => {
 
 router.post('/recargas/:id/aprobar', async (req, res) => {
   const { id } = req.params;
+  
+  const { data: recarga } = await supabase.from('recargas').select('*').eq('id', id).single();
+  if (!recarga) return res.status(404).json({ error: 'Recarga no encontrada' });
+  if (recarga.estado === 'aprobada') return res.status(400).json({ error: 'Ya aprobada' });
+
   const updates = {
     estado: 'aprobada',
     procesado_por: req.user.id,
     procesado_at: new Date().toISOString()
   };
   await supabase.from('recargas').update(updates).eq('id', id);
+
+  // IMPORTANTE: Al aprobar una recarga, el dinero se suma al SALDO DE COMISIONES
+  const user = await findUserById(recarga.usuario_id);
+  if (user) {
+    await updateUser(user.id, {
+      saldo_comisiones: (user.saldo_comisiones || 0) + recarga.monto
+    });
+  }
+
   res.json({ ok: true });
 });
 

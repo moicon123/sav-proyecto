@@ -62,6 +62,9 @@ export default function Ganancias() {
                       <p className={`font-bold text-lg ${tab === 'retiros' ? 'text-orange-500' : 'text-sav-accent'}`}>
                         {tab === 'retiros' ? '-' : '+'}{i.monto?.toFixed(2)} BOB
                       </p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold">
+                        {tab === 'recargas' ? 'Hacia Saldo Comisiones' : (i.tipo_billetera === 'comisiones' ? 'Desde Saldo Comisiones' : 'Desde Saldo Tareas')}
+                      </p>
                       <p className="text-sm text-gray-500">{formatearEstado(i.estado)}</p>
                     </div>
                     <p className="text-xs text-gray-500 text-right">
