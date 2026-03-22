@@ -74,6 +74,7 @@ function sanitizeUser(u, levels) {
     codigo_invitacion: u.codigo_invitacion,
     nivel: level?.nombre || 'pasante',
     nivel_id: u.nivel_id,
+    nivel_codigo: level?.codigo || 'internar',
     saldo_principal: u.saldo_principal || 0,
     saldo_comisiones: u.saldo_comisiones || 0,
     rol: u.rol,

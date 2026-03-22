@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getUsers, getRecargas, getRetiros, getLevels, findUserById, updateUser, getPublicContent, getMetodosQr, getBanners, getAllTasks } from '../lib/queries.js';
+import { getUsers, getRecargas, getRetiros, getLevels, findUserById, updateUser, getPublicContent, getMetodosQr, getBanners, getAllTasks, getRecargaById, updateRecarga, getRetiroById, updateRetiro } from '../lib/queries.js';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
 import { supabase } from '../lib/db.js';
 
@@ -18,6 +18,7 @@ function sanitizeUser(u, levels) {
     codigo_invitacion: u.codigo_invitacion,
     nivel: level?.nombre,
     nivel_id: u.nivel_id,
+    nivel_codigo: level?.codigo,
     saldo_principal: u.saldo_principal,
     saldo_comisiones: u.saldo_comisiones,
     rol: u.rol,
@@ -86,16 +87,23 @@ router.get('/recargas', async (req, res) => {
 router.post('/recargas/:id/aprobar', async (req, res) => {
   const { id } = req.params;
   
-  const { data: recarga } = await supabase.from('recargas').select('*').eq('id', id).single();
-  if (!recarga) return res.status(404).json({ error: 'Recarga no encontrada' });
-  if (recarga.estado === 'aprobada') return res.status(400).json({ error: 'Ya aprobada' });
+  const recarga = await getRecargaById(id);
+  if (!recarga) {
+    return res.status(404).json({ error: 'Recarga no encontrada en el sistema (Verifica si está en la DB o memoria local)' });
+  }
+  
+  if (recarga.estado === 'aprobada') return res.status(400).json({ error: 'Esta recarga ya fue aprobada previamente' });
 
   const updates = {
     estado: 'aprobada',
     procesado_por: req.user.id,
     procesado_at: new Date().toISOString()
   };
-  await supabase.from('recargas').update(updates).eq('id', id);
+  
+  const updatedRecarga = await updateRecarga(id, updates);
+  if (!updatedRecarga) {
+    return res.status(500).json({ error: 'Error al actualizar el estado de la recarga' });
+  }
 
   const user = await findUserById(recarga.usuario_id);
   if (user) {
@@ -103,14 +111,11 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
       saldo_comisiones: (user.saldo_comisiones || 0) + recarga.monto
     };
 
-    // Lógica de subida de nivel automática basada en el monto de la recarga
-    const niveles = await getLevels();
-    // Buscamos el nivel que corresponde exactamente al monto de la recarga (si es Compra VIP)
     if (recarga.modo === 'Compra VIP') {
-      const nuevoNivel = niveles.find(n => n.costo === recarga.monto);
+      const niveles = await getLevels();
+      const nuevoNivel = niveles.find(n => (n.deposito || n.costo) === recarga.monto);
       if (nuevoNivel) {
         userUpdates.nivel_id = nuevoNivel.id;
-        console.log(`Subiendo usuario ${user.nombre_usuario} al nivel ${nuevoNivel.id} automáticamente por recarga de ${recarga.monto}`);
       }
     }
 
@@ -128,7 +133,7 @@ router.post('/recargas/:id/rechazar', async (req, res) => {
     procesado_at: new Date().toISOString(),
     admin_notas: req.body.motivo || ''
   };
-  await supabase.from('recargas').update(updates).eq('id', id);
+  await updateRecarga(id, updates);
   res.json({ ok: true });
 });
 
@@ -144,7 +149,7 @@ router.post('/retiros/:id/aprobar', async (req, res) => {
     procesado_por: req.user.id,
     procesado_at: new Date().toISOString()
   };
-  await supabase.from('retiros').update(updates).eq('id', id);
+  await updateRetiro(id, updates);
   res.json({ ok: true });
 });
 
@@ -152,8 +157,8 @@ router.post('/retiros/:id/rechazar', async (req, res) => {
   const { id } = req.params;
   const { motivo } = req.body;
   
-  const { data: retiro } = await supabase.from('retiros').select('*').eq('id', id).single();
-  if (!retiro) return res.status(404).json({ error: 'No encontrado' });
+  const retiro = await getRetiroById(id);
+  if (!retiro) return res.status(404).json({ error: 'Retiro no encontrado en el sistema' });
 
   const updates = {
     estado: 'rechazado',
@@ -162,7 +167,7 @@ router.post('/retiros/:id/rechazar', async (req, res) => {
     admin_notas: motivo || ''
   };
   
-  await supabase.from('retiros').update(updates).eq('id', id);
+  await updateRetiro(id, updates);
   
   const user = await findUserById(retiro.usuario_id);
   if (user) {

@@ -10,7 +10,8 @@ import {
   ShieldCheck, 
   CreditCard, 
   ChevronRight, 
-  UploadCloud 
+  UploadCloud,
+  TrendingUp
 } from 'lucide-react';
 
 export default function Profile() {
@@ -18,7 +19,8 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const menuItems = [
-    { to: '/recargar', icon: UploadCloud, label: 'Subir Comprobante de Pago', color: 'bg-indigo-600', isHot: true },
+    { to: '/vip', icon: TrendingUp, label: 'Subir de Nivel VIP', color: 'bg-sav-accent', isHot: true },
+    { to: '/recargar', icon: UploadCloud, label: 'Subir Comprobante de Pago', color: 'bg-indigo-600' },
     { to: '/equipo', icon: Users, label: 'Informe del equipo', color: 'bg-blue-500' },
     { to: '/registro-facturacion', icon: FileText, label: 'Registro de facturación', color: 'bg-emerald-500' },
     { to: '/registro-tareas', icon: ClipboardList, label: 'Registro de tareas', color: 'bg-purple-500' },
@@ -42,7 +44,7 @@ export default function Profile() {
             <h2 className="text-2xl font-black tracking-tight mb-1">{user?.nombre_usuario}</h2>
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-0.5 rounded-full bg-sav-accent text-sav-primary text-[10px] font-black uppercase tracking-widest shadow-sm">
-                {user?.nivel_id === 'l1' ? 'Pasante' : user?.nivel_id?.toUpperCase()}
+                {user?.nivel_codigo === 'internar' ? 'Pasante' : user?.nivel_codigo || user?.nivel}
               </span>
               <span className="text-white/50 text-[10px] font-bold uppercase tracking-widest">ID: {user?.id?.slice(0, 8)}</span>
             </div>

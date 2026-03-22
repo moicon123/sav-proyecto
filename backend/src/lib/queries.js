@@ -76,6 +76,13 @@ export async function getRecargas() {
   return store.recargas || [];
 }
 
+export async function getRecargaById(id) {
+  const { data, fallback } = await trySupabase(() => supabase.from('recargas').select('*').eq('id', id).single());
+  if (!fallback) return data;
+  const store = await getStore();
+  return (store.recargas || []).find(r => r.id === id);
+}
+
 export async function getRetiros() {
   const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*, usuario:usuarios!usuario_id(nombre_usuario)').order('created_at', { ascending: false }));
   if (!fallback) return data;
@@ -107,6 +114,15 @@ export async function createRecarga(recargaData) {
   return recargaData;
 }
 
+export async function updateRecarga(id, updates) {
+  const { data, fallback } = await trySupabase(() => supabase.from('recargas').update(updates).eq('id', id).select().single());
+  if (!fallback) return data;
+  const store = await getStore();
+  const recarga = (store.recargas || []).find(r => r.id === id);
+  if (recarga) Object.assign(recarga, updates);
+  return recarga;
+}
+
 export async function getRetirosByUser(userId) {
   const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('usuario_id', userId).order('created_at', { ascending: false }));
   if (!fallback) return data;
@@ -121,6 +137,22 @@ export async function createRetiro(retiroData) {
   if (!store.retiros) store.retiros = [];
   store.retiros.push(retiroData);
   return retiroData;
+}
+
+export async function getRetiroById(id) {
+  const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('id', id).single());
+  if (!fallback) return data;
+  const store = await getStore();
+  return (store.retiros || []).find(r => r.id === id);
+}
+
+export async function updateRetiro(id, updates) {
+  const { data, fallback } = await trySupabase(() => supabase.from('retiros').update(updates).eq('id', id).select().single());
+  if (!fallback) return data;
+  const store = await getStore();
+  const retiro = (store.retiros || []).find(r => r.id === id);
+  if (retiro) Object.assign(retiro, updates);
+  return retiro;
 }
 
 export async function getTarjetasByUser(userId) {

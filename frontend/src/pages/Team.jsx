@@ -32,12 +32,12 @@ export default function Team() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    if (user?.nivel_id !== 'l1') {
+    if (user?.nivel_codigo !== 'internar') {
       api.users.team().then(setData).catch(() => setData(null));
     }
   }, [user]);
 
-  if (user?.nivel_id === 'l1') {
+  if (user?.nivel_codigo === 'internar') {
     return (
       <Layout>
         <Header title="Informe del equipo" />

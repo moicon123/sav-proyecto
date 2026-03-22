@@ -1,7 +1,7 @@
 {
-  "name": "SAV",
+  "name": "SAV Plataforma",
   "short_name": "SAV",
-  "description": "Plataforma SAV",
+  "description": "Plataforma de tareas por niveles SAV",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -10,12 +10,14 @@
     {
       "src": "/imag/logo.jpeg",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
       "src": "/imag/logo.jpeg",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "maskable"
     }
   ]
 }

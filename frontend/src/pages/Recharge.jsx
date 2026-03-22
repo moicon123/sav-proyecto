@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Header from '../components/Header';
 import { api } from '../lib/api';
@@ -9,9 +9,12 @@ import { Upload, CheckCircle2 } from 'lucide-react';
 
 export default function Recharge() {
   const { user } = useAuth();
+  const location = useLocation();
   const fileRef = useRef(null);
   const [metodos, setMetodos] = useState([]);
+  const [niveles, setNiveles] = useState([]);
   const [monto, setMonto] = useState('');
+  const [modo, setModo] = useState('Recarga Saldo');
   const [comprobante, setComprobante] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,8 +23,22 @@ export default function Recharge() {
 
   useEffect(() => {
     api.recharges.metodos().then(setMetodos).catch(() => setMetodos([]));
+    api.levels.list().then(setNiveles).catch(() => []);
     api.publicContent().then(setPc).catch(() => {});
-  }, []);
+
+    // Si viene de VIP, pre-llenar monto y modo
+    if (location.state?.monto) {
+      setMonto(location.state.monto.toString());
+    }
+    if (location.state?.modo) {
+      setModo(location.state.modo);
+    }
+  }, [location.state]);
+
+  const selectLevel = (nivel) => {
+    setMonto((nivel.deposito || nivel.costo).toString());
+    setModo('Compra VIP');
+  };
 
   const handleFile = (e) => {
     const file = e.target.files?.[0];
@@ -43,7 +60,7 @@ export default function Recharge() {
       await api.recharges.create({
         monto: parseFloat(monto) || 0,
         comprobante_url: comprobante,
-        modo: 'Compra VIP',
+        modo: modo,
       });
       setSuccess(true);
       setMonto('');
@@ -106,11 +123,64 @@ export default function Recharge() {
             <input
               type="number"
               value={monto}
-              onChange={(e) => setMonto(e.target.value)}
+              onChange={(e) => {
+                setMonto(e.target.value);
+                setModo('Recarga Saldo');
+              }}
               className="w-full px-4 py-4 rounded-2xl border-2 border-gray-100 focus:border-sav-accent focus:outline-none transition-colors text-lg font-bold"
               placeholder="Ej: 200"
               required
             />
+            
+            <div className="mt-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">O selecciona un nivel:</p>
+              <div className="grid grid-cols-3 gap-2">
+                {niveles.length > 0 ? (
+                  niveles
+                    .filter(n => ['S1', 'S2', 'S3'].includes(n.codigo))
+                    .map((nivel) => {
+                      const valor = nivel.deposito || nivel.costo;
+                      const isSelected = monto === valor.toString();
+                      return (
+                        <button
+                          key={nivel.id}
+                          type="button"
+                          onClick={() => selectLevel(nivel)}
+                          className={`py-3 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                            isSelected 
+                              ? 'border-sav-accent bg-sav-accent/10 text-sav-primary' 
+                              : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-sav-accent/30'
+                          }`}
+                        >
+                          <span className="text-xs font-black uppercase tracking-tighter">{nivel.nombre}</span>
+                          <span className="text-[10px] font-bold">{valor} BS</span>
+                        </button>
+                      );
+                    })
+                ) : (
+                  // Fallback si no cargan los niveles
+                  [
+                    { id: 's1', nombre: 'S1', valor: 200 },
+                    { id: 's2', nombre: 'S2', valor: 720 },
+                    { id: 's3', nombre: 'S3', valor: 2830 },
+                  ].map((n) => (
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => { setMonto(n.valor.toString()); setModo('Compra VIP'); }}
+                      className={`py-3 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                        monto === n.valor.toString()
+                          ? 'border-sav-accent bg-sav-accent/10 text-sav-primary' 
+                          : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-sav-accent/30'
+                      }`}
+                    >
+                      <span className="text-xs font-black uppercase tracking-tighter">{n.nombre}</span>
+                      <span className="text-[10px] font-bold">{n.valor} BS</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-50">

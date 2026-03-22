@@ -113,7 +113,7 @@ export default function Dashboard() {
 
       <div className="p-5 grid grid-cols-3 gap-3 -mt-8 relative z-10">
         {gridItems.map(({ to, icon: Icon, label }) => {
-          if (to === '/usuario' && user?.nivel_id === 'l1') return null;
+          if (to === '/usuario' && user?.nivel_codigo === 'internar') return null;
           return (
             <Link
               key={label}
