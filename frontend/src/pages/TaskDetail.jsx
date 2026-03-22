@@ -46,16 +46,36 @@ export default function TaskDetail() {
   const opciones = task.opciones || [task.respuesta_correcta];
   const showResult = result !== null;
 
+  const renderVideo = () => {
+    const url = task.video_url || '';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
+      return (
+        <iframe
+          className="w-full aspect-video"
+          src={`https://www.youtube.com/embed/${id}?autoplay=1`}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        ></iframe>
+      );
+    }
+    return (
+      <video
+        className="w-full aspect-video object-cover"
+        src={url}
+        controls
+        autoPlay
+        onEnded={() => setCanAnswer(true)}
+      />
+    );
+  };
+
   return (
     <Layout>
       <Header title="Detalles de la tarea" />
       <div className="p-4">
-        <div className="rounded-2xl overflow-hidden bg-gray-100 mb-4">
-          <img
-            src={task.video_url || task.imagen_url || 'https://placehold.co/400x250'}
-            alt=""
-            className="w-full aspect-video object-cover"
-          />
+        <div className="rounded-2xl overflow-hidden bg-gray-100 mb-4 shadow-lg border border-gray-200">
+          {renderVideo()}
         </div>
         <p className="text-gray-500 text-sm mb-2">[Introducción a Anuncios]</p>
         <p className="bg-gray-100 rounded-xl p-3 text-gray-700 mb-4">

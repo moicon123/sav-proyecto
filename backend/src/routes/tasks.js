@@ -15,11 +15,13 @@ router.get('/', authenticate, async (req, res) => {
   const activity = await getTaskActivity(user.id);
   
   const today = new Date().toDateString();
-  const todayCompletedActivity = activity.filter(a => new Date(a.created_at).toDateString() === today);
+  const todayCompletedActivity = activity.filter(a => 
+    new Date(a.created_at).toDateString() === today && a.respuesta_correcta === true
+  );
   
   // Logic for Pasante (l1): 3 days limit
   if (level.id === 'l1') {
-    const uniqueDays = new Set(activity.map(a => new Date(a.created_at).toDateString()));
+    const uniqueDays = new Set(activity.filter(a => a.respuesta_correcta === true).map(a => new Date(a.created_at).toDateString()));
     // If they have already worked 3 days and today is not one of them, or if they worked 3 days including today and finished
     if (uniqueDays.size >= 3 && !uniqueDays.has(today)) {
       return res.json({
@@ -35,7 +37,7 @@ router.get('/', authenticate, async (req, res) => {
 
   const completedTaskIdsToday = new Set(todayCompletedActivity.map(a => a.tarea_id));
   
-  // Filter out tasks already completed today so they "disappear"
+  // Filter out tasks already completed successfully today so they "disappear"
   const availableTasks = allTasks.filter(t => !completedTaskIdsToday.has(t.id));
   
   const remaining = Math.max(0, level.num_tareas_diarias - todayCompletedActivity.length);
@@ -89,10 +91,10 @@ router.post('/:id/responder', authenticate, async (req, res) => {
     }
   }
   
-  const yaCompletada = activity.some(
-    a => a.tarea_id === task.id && new Date(a.created_at).toDateString() === today
+  const yaCompletadaExitosamente = activity.some(
+    a => a.tarea_id === task.id && new Date(a.created_at).toDateString() === today && a.respuesta_correcta === true
   );
-  if (yaCompletada) return res.status(400).json({ error: 'Ya completaste esta tarea hoy' });
+  if (yaCompletadaExitosamente) return res.status(400).json({ error: 'Ya completaste esta tarea con éxito hoy' });
 
   const correcta = (respuesta || '').toUpperCase().trim() === (task.respuesta_correcta || '').toUpperCase().trim();
   const recompensa = correcta ? task.recompensa : 0;
