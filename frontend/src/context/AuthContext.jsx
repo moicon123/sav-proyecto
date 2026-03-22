@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 
 const AuthContext = createContext(null);
@@ -10,7 +10,22 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(true);
 
-  const loadUser = async () => {
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  }, []);
+
+  const getDeviceId = useCallback(() => {
+    let id = localStorage.getItem('deviceId');
+    if (!id) {
+      id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('deviceId', id);
+    }
+    return id;
+  }, []);
+
+  const loadUser = useCallback(async () => {
     const token = localStorage.getItem('token');
     const deviceId = getDeviceId();
     
@@ -45,11 +60,11 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getDeviceId, logout]);
 
   useEffect(() => {
     loadUser();
-  }, []);
+  }, [loadUser]);
 
   const login = async (telefono, password) => {
     const deviceId = getDeviceId();
@@ -69,21 +84,6 @@ export function AuthProvider({ children }) {
     return u;
   };
 
-  function getDeviceId() {
-    let id = localStorage.getItem('deviceId');
-    if (!id) {
-      id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('deviceId', id);
-    }
-    return id;
-  }
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-  };
-
   const refreshUser = () => loadUser();
 
   return (
@@ -93,4 +93,5 @@ export function AuthProvider({ children }) {
   );
 }
 
+/* eslint-disable-next-line react-refresh/only-export-components */
 export const useAuth = () => useContext(AuthContext);

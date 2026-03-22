@@ -81,7 +81,8 @@ export default function AdminLayout() {
         </div>
 
         <nav className="flex-1 space-y-2 overflow-y-auto no-scrollbar py-4 md:py-0">
-          {menu.map(({ to, icon: Icon, label }) => {
+          {menu.map((item) => {
+            const { to, icon: MenuIcon, label } = item;
             const isActive = location.pathname === to;
             return (
               <Link
@@ -97,7 +98,7 @@ export default function AdminLayout() {
                 `}
               >
                 <div className="flex items-center gap-3">
-                  <Icon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
+                  <MenuIcon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
                   <span className="text-sm uppercase tracking-tighter font-bold">{label}</span>
                 </div>
                 {isActive && <ChevronRight size={16} />}

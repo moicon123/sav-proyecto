@@ -140,7 +140,14 @@ export default function AdminRecargas() {
             {r.comprobante_url && (
               <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src={r.comprobante_url} alt="Comprobante" className="w-12 h-12 rounded-lg object-cover bg-white border border-gray-100" />
+                  <img 
+                    src={r.comprobante_url} 
+                    alt="Comprobante" 
+                    className="w-12 h-12 rounded-lg object-cover bg-white border border-gray-100" 
+                    onError={(e) => {
+                      e.target.src = 'https://placehold.co/100x100?text=Error';
+                    }}
+                  />
                   <span className="text-[10px] font-black text-gray-500 uppercase">Comprobante de Pago</span>
                 </div>
                 <a href={r.comprobante_url} target="_blank" rel="noreferrer" className="p-2 rounded-xl bg-blue-50 text-blue-600">

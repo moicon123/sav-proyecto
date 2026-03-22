@@ -29,7 +29,7 @@ export default function Dashboard() {
     api.banners().then(setBanners).catch(() => setBanners([]));
     api.publicContent()
       .then((data) => {
-        setGuideText(data.home_guide || guideText);
+        setGuideText(g => data.home_guide || g);
         setPopup(data);
         if (data.popup_enabled) setShowPopup(true);
       })
@@ -92,6 +92,10 @@ export default function Dashboard() {
             src={imgUrl(banners[slide]?.imagen_url)}
             alt=""
             className="w-full h-full object-cover animate-fade-in"
+            onError={(e) => {
+              e.target.src = 'https://placehold.co/800x400?text=SAV+Plataforma';
+              console.warn('Error cargando banner:', banners[slide]?.imagen_url);
+            }}
           />
         ) : (
           <div className="h-full flex items-center justify-center">
@@ -112,7 +116,8 @@ export default function Dashboard() {
       </div>
 
       <div className="p-5 grid grid-cols-3 gap-3 -mt-8 relative z-10">
-        {gridItems.map(({ to, icon: Icon, label }) => {
+        {gridItems.map((item) => {
+          const { to, icon: GridIcon, label } = item;
           if (to === '/usuario' && user?.nivel_codigo === 'internar') return null;
           return (
             <Link
@@ -121,7 +126,7 @@ export default function Dashboard() {
               className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] border border-gray-50 active:scale-95 transition-all group"
             >
               <div className="w-14 h-14 rounded-2xl bg-sav-primary/5 flex items-center justify-center group-hover:bg-sav-primary/10 transition-colors">
-                <Icon className="text-sav-primary" size={28} strokeWidth={1.5} />
+                <GridIcon className="text-sav-primary" size={28} strokeWidth={1.5} />
               </div>
               <span className="text-[10px] font-bold text-gray-800 text-center leading-tight uppercase tracking-tighter">
                 {label}

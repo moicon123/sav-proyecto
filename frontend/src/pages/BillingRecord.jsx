@@ -13,7 +13,9 @@ export default function BillingRecord() {
     api.recharges.list().then(setRecargas).catch(() => []);
   }, []);
 
-  const items = tab === 'ingresos' ? [] : [...retiros.map(r => ({ ...r, tipo: 'retiro', monto: -r.monto }))];
+  const items = tab === 'ingresos' 
+    ? [...recargas.map(r => ({ ...r, tipo: 'recarga', monto: r.monto }))]
+    : [...retiros.map(r => ({ ...r, tipo: 'retiro', monto: -r.monto }))];
 
   return (
     <Layout>

@@ -17,7 +17,8 @@ export default function Layout({ children }) {
       <div className="w-full max-w-md bg-white min-h-screen shadow-2xl relative page-transition">
         {children}
         <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/95 backdrop-blur-md border-t border-gray-100 flex justify-around py-3 safe-area-pb z-50 rounded-t-3xl shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-          {navItems.map(({ to, icon: Icon, label }) => {
+          {navItems.map((item) => {
+            const { to, icon: NavIcon, label } = item;
             const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
             return (
               <NavLink
@@ -28,7 +29,7 @@ export default function Layout({ children }) {
                 }`}
               >
                 <div className={`p-1 rounded-xl ${isActive ? 'bg-sav-accent/20' : ''}`}>
-                  <Icon size={24} strokeWidth={isActive ? 2.5 : 1.5} />
+                  <NavIcon size={24} strokeWidth={isActive ? 2.5 : 1.5} />
                 </div>
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'opacity-100' : 'opacity-60'}`}>
                   {label}

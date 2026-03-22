@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/api.js';
 import { User, Shield, ArrowUpCircle, Search, Key, Lock, X } from 'lucide-react';
 
@@ -9,11 +9,7 @@ export default function AdminUsuarios() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [passwords, setPasswords] = useState({ login: '', fondo: '' });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [u, n] = await Promise.all([api.admin.usuarios(), api.levels.list()]);
       setUsers(u);
@@ -21,7 +17,14 @@ export default function AdminUsuarios() {
     } catch (err) {
       console.error(err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      await fetchData();
+    };
+    init();
+  }, [fetchData]);
 
   const handleChangeNivel = async (userId, nuevoNivelId) => {
     if (!confirm(`¿Estás seguro de cambiar el nivel del usuario a ${nuevoNivelId}?`)) return;

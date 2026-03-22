@@ -195,7 +195,14 @@ export default function Recharge() {
                     </div>
                     {(m.imagen_base64 || m.imagen_qr_url) && (
                       <div className="bg-gray-50 p-4 rounded-2xl flex justify-center">
-                        <img src={m.imagen_base64 || m.imagen_qr_url} alt="QR" className="w-48 h-48 object-contain shadow-sm rounded-lg" />
+                        <img 
+                          src={m.imagen_base64 || m.imagen_qr_url} 
+                          alt="QR" 
+                          className="w-48 h-48 object-contain shadow-sm rounded-lg" 
+                          onError={(e) => {
+                            e.target.src = 'https://placehold.co/200x200?text=QR+No+Disponible';
+                          }}
+                        />
                       </div>
                     )}
                   </div>

@@ -48,7 +48,7 @@ export default function NoticiasConferencia() {
                   className="flex gap-3 text-sm text-gray-800 border-b border-gray-100 last:border-0 pb-3 last:pb-0"
                 >
                   <span className="text-sav-accent font-bold">•</span>
-                  <span className="flex-1 whitespace-pre-wrap">{line.replace(/^[•\-\*]\s*/, '')}</span>
+                  <span className="flex-1 whitespace-pre-wrap">{line.replace(/^[•\-*]\s*/, '')}</span>
                 </li>
               ))}
             </ul>

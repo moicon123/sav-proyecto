@@ -20,7 +20,6 @@ export default function Profile() {
 
   const menuItems = [
     { to: '/vip', icon: TrendingUp, label: 'Subir de Nivel VIP', color: 'bg-sav-accent', isHot: true },
-    { to: '/recargar', icon: UploadCloud, label: 'Subir Comprobante de Pago', color: 'bg-indigo-600' },
     { to: '/equipo', icon: Users, label: 'Informe del equipo', color: 'bg-blue-500' },
     { to: '/registro-facturacion', icon: FileText, label: 'Registro de facturación', color: 'bg-emerald-500' },
     { to: '/registro-tareas', icon: ClipboardList, label: 'Registro de tareas', color: 'bg-purple-500' },
