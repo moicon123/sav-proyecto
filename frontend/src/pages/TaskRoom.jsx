@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import Header from '../components/Header.jsx';
 import { api } from '../lib/api.js';
-import { Play } from 'lucide-react';
+import { Play, TrendingUp } from 'lucide-react';
 
 export default function TaskRoom() {
   const [data, setData] = useState(null);
@@ -43,8 +43,23 @@ export default function TaskRoom() {
             />
           </div>
           {data.mensaje && (
-            <div className="mt-4 p-3 bg-amber-50 text-amber-700 text-sm rounded-xl border border-amber-100">
-              {data.mensaje}
+            <div className="mt-6 p-6 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-[2rem] shadow-lg shadow-orange-500/20 relative overflow-hidden group">
+              <div className="absolute -right-5 -top-5 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10 flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner shrink-0">
+                  <TrendingUp className="text-white" size={24} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Aviso Importante</p>
+                  <p className="text-sm font-black leading-relaxed">{data.mensaje}</p>
+                </div>
+              </div>
+              <Link 
+                to="/vip"
+                className="mt-4 w-full py-3 bg-white text-orange-600 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                Subir de Nivel Ahora
+              </Link>
             </div>
           )}
         </div>

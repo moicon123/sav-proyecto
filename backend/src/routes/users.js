@@ -115,6 +115,11 @@ router.get('/stats', authenticate, async (req, res) => {
   const semana = filterByDate(activity, startOfWeek);
   const mes = filterByDate(activity, startOfMonth);
 
+  // Verificar límite de pasante
+  const uniqueDays = new Set(activity.filter(a => a.recompensa_otorgada > 0).map(a => new Date(a.created_at).toDateString()));
+  const isPasante = user.nivel_id === 'l1';
+  const limitReached = isPasante && uniqueDays.size >= 3 && !uniqueDays.has(new Date().toDateString());
+
   res.json({
     ingresos_ayer: sumMonto(ayer),
     ingresos_hoy: sumMonto(hoy),
@@ -124,6 +129,7 @@ router.get('/stats', authenticate, async (req, res) => {
     comision_subordinados: user.saldo_comisiones || 0,
     recompensa_invitacion: user.recompensa_invitacion || 0,
     total_completadas: activity.length,
+    pasante_limit_reached: limitReached,
   });
 });
   });

@@ -20,6 +20,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [banners, setBanners] = useState([]);
   const [slide, setSlide] = useState(0);
+  const [stats, setStats] = useState(null);
   const [guideText, setGuideText] = useState('GUIA PARA PRINCIPIANTES. LIDERANDO EL FUTURO. ALCANZA TUS SUENOS.');
   const [popup, setPopup] = useState({ popup_enabled: false, popup_title: '', popup_message: '' });
   const [showPopup, setShowPopup] = useState(false);
@@ -27,6 +28,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     api.banners().then(setBanners).catch(() => setBanners([]));
+    api.users.stats().then(setStats).catch(() => {});
     api.publicContent()
       .then((data) => {
         setGuideText(g => data.home_guide || g);
@@ -147,6 +149,28 @@ export default function Dashboard() {
         <div className="absolute -right-10 -top-10 w-32 h-32 bg-sav-accent/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
         <p className="text-base font-medium leading-relaxed italic opacity-90">{guideText}</p>
       </div>
+
+      {/* Alerta de Límite de Pasante */}
+      {stats?.pasante_limit_reached && (
+        <div className="mx-5 mb-8 p-6 bg-gradient-to-r from-rose-500 to-rose-600 rounded-[2rem] text-white shadow-lg shadow-rose-500/30 animate-pulse relative overflow-hidden">
+          <div className="absolute right-0 top-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-xl" />
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
+              <TrendingUp className="text-white" size={24} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-rose-100">Prueba Finalizada</p>
+              <p className="text-sm font-black leading-tight">Tus 3 días de pasantía han terminado. Sube de nivel para seguir ganando.</p>
+            </div>
+          </div>
+          <Link 
+            to="/vip"
+            className="mt-4 w-full py-3 bg-white text-rose-600 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
+          >
+            Subir a VIP Ahora
+          </Link>
+        </div>
+      )}
 
       <div className="px-5 pb-8">
         <Link

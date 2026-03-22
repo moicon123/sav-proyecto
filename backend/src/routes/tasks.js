@@ -30,7 +30,7 @@ router.get('/', authenticate, async (req, res) => {
         tareas_restantes: 0,
         tareas_completadas: todayCompletedActivity.length,
         tareas: [],
-        mensaje: 'Has completado tus 3 días de prueba como pasante. Por favor sube de nivel para continuar.'
+        mensaje: '¡Atención! Tus 3 días de prueba como pasante han terminado. Sube de nivel ahora para seguir ganando recompensas diarias.'
       });
     }
   }
@@ -85,9 +85,9 @@ router.post('/:id/responder', authenticate, async (req, res) => {
 
   // Logic for Pasante (l1): 3 days limit
   if (level.id === 'l1') {
-    const uniqueDays = new Set(activity.map(a => new Date(a.created_at).toDateString()));
+    const uniqueDays = new Set(activity.filter(a => a.respuesta_correcta === true).map(a => new Date(a.created_at).toDateString()));
     if (uniqueDays.size >= 3 && !uniqueDays.has(today)) {
-      return res.status(400).json({ error: 'Has completado tus 3 días de prueba como pasante. Por favor sube de nivel para continuar.' });
+      return res.status(400).json({ error: 'Tus 3 días de prueba como pasante han terminado. Sube de nivel ahora para continuar ganando.' });
     }
   }
   
