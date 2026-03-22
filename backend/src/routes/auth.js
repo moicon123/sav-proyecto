@@ -2,14 +2,14 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { findUserByTelefono, findUserByCodigo, createUser, getLevels } from '../lib/queries.js';
+import { findUserByTelefono, findUserByCodigo, createUser, getLevels, updateUser } from '../lib/queries.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'sav-demo-secret';
 
 router.post('/register', async (req, res) => {
   try {
-    const { telefono, nombre_usuario, password, codigo_invitacion } = req.body;
+    const { telefono, nombre_usuario, password, codigo_invitacion, deviceId } = req.body;
     if (!telefono || !nombre_usuario || !password || !codigo_invitacion) {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
     }
@@ -33,6 +33,7 @@ router.post('/register', async (req, res) => {
       rol: 'usuario',
       bloqueado: false,
       oportunidades_sorteo: 1,
+      last_device_id: deviceId || null,
     };
     await createUser(user);
     const token = jwt.sign({ id: user.id, rol: user.rol }, JWT_SECRET, { expiresIn: '7d' });
@@ -44,12 +45,17 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { telefono, password } = req.body;
+    const { telefono, password, deviceId } = req.body;
     const user = await findUserByTelefono(telefono);
     if (!user) return res.status(401).json({ error: 'Credenciales incorrectas' });
     if (user.bloqueado) return res.status(401).json({ error: 'Cuenta bloqueada' });
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Credenciales incorrectas' });
+
+    if (deviceId) {
+      await updateUser(user.id, { last_device_id: deviceId });
+    }
+
     const levels = await getLevels();
     const token = jwt.sign({ id: user.id, rol: user.rol }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ user: sanitizeUser(user, levels), token });

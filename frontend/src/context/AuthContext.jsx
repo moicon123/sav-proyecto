@@ -12,6 +12,8 @@ export function AuthProvider({ children }) {
 
   const loadUser = async () => {
     const token = localStorage.getItem('token');
+    const deviceId = getDeviceId();
+    
     if (!token) {
       setUser(null);
       localStorage.removeItem('user');
@@ -20,6 +22,14 @@ export function AuthProvider({ children }) {
     }
     try {
       const u = await api.users.me();
+      
+      // Verificación de dispositivo único
+      if (u.last_device_id && u.last_device_id !== deviceId) {
+        alert('Se ha iniciado sesión en otro dispositivo. Tu sesión se cerrará en este equipo.');
+        logout();
+        return;
+      }
+
       setUser(u);
       localStorage.setItem('user', JSON.stringify(u));
     } catch (err) {
@@ -42,7 +52,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (telefono, password) => {
-    const { user: u, token } = await api.auth.login(telefono, password);
+    const deviceId = getDeviceId();
+    const { user: u, token } = await api.auth.login(telefono, password, deviceId);
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(u));
     setUser(u);
@@ -50,12 +61,22 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (data) => {
-    const { user: u, token } = await api.auth.register(data);
+    const deviceId = getDeviceId();
+    const { user: u, token } = await api.auth.register({ ...data, deviceId });
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(u));
     setUser(u);
     return u;
   };
+
+  function getDeviceId() {
+    let id = localStorage.getItem('deviceId');
+    if (!id) {
+      id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('deviceId', id);
+    }
+    return id;
+  }
 
   const logout = () => {
     localStorage.removeItem('token');
