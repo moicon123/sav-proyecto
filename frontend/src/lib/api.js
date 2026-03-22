@@ -13,7 +13,12 @@ async function request(url, options = {}) {
   const normalizedUrl = url.startsWith('/') ? url : `/${url}`;
   const res = await fetch(API + normalizedUrl, { ...options, headers });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Error de red');
+  
+  if (!res.ok) {
+    const error = new Error(data.error || 'Error de red');
+    error.status = res.status;
+    throw error;
+  }
   return data;
 }
 

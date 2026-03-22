@@ -4,22 +4,34 @@ import { api } from '../lib/api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [loading, setLoading] = useState(true);
 
   const loadUser = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       setUser(null);
+      localStorage.removeItem('user');
       setLoading(false);
       return;
     }
     try {
       const u = await api.users.me();
       setUser(u);
-    } catch {
-      localStorage.removeItem('token');
-      setUser(null);
+      localStorage.setItem('user', JSON.stringify(u));
+    } catch (err) {
+      // SOLO cerramos sesión si el servidor nos dice explícitamente que el token no vale (401)
+      // Si el servidor está caído o hay error de red (502, 503, etc), MANTENEMOS la sesión guardada
+      if (err.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+      } else {
+        console.warn('Error de red al cargar usuario, manteniendo sesión previa:', err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -32,6 +44,7 @@ export function AuthProvider({ children }) {
   const login = async (telefono, password) => {
     const { user: u, token } = await api.auth.login(telefono, password);
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(u));
     setUser(u);
     return u;
   };
@@ -39,12 +52,14 @@ export function AuthProvider({ children }) {
   const register = async (data) => {
     const { user: u, token } = await api.auth.register(data);
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(u));
     setUser(u);
     return u;
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
