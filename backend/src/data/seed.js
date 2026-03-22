@@ -133,7 +133,7 @@ export async function initStore() {
   ];
 
   const banners = [
-    { id: uuidv4(), imagen_url: '/imag/carusel1.jpeg', titulo: 'Banner 1', orden: 0, activo: true },
+    { id: uuidv4(), imagen_url: '/imag/carrusel1.jpeg', titulo: 'Banner 1', orden: 0, activo: true },
     { id: uuidv4(), imagen_url: '/imag/carrusel2.jpeg', titulo: 'Banner 2', orden: 1, activo: true },
     { id: uuidv4(), imagen_url: '/imag/carrusel3.jpeg', titulo: 'Banner 3', orden: 2, activo: true },
     { id: uuidv4(), imagen_url: '/imag/carrusel4.jpeg', titulo: 'Banner 4', orden: 3, activo: true },
