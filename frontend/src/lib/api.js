@@ -1,4 +1,5 @@
-const API = import.meta.env.VITE_API_URL || '/api';
+const VITE_API_URL = import.meta.env.VITE_API_URL || '/api';
+const API = VITE_API_URL.endsWith('/') ? VITE_API_URL.slice(0, -1) : VITE_API_URL;
 
 function getToken() {
   return localStorage.getItem('token');
@@ -8,7 +9,9 @@ async function request(url, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(API + url, { ...options, headers });
+  
+  const normalizedUrl = url.startsWith('/') ? url : `/${url}`;
+  const res = await fetch(API + normalizedUrl, { ...options, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Error de red');
   return data;

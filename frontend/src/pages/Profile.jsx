@@ -1,125 +1,90 @@
-import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
-import { api } from '../lib/api';
-import { Copy, Settings, Bookmark } from 'lucide-react';
-import Logo from '../components/Logo';
+import { 
+  User, 
+  Users, 
+  FileText, 
+  ClipboardList, 
+  Gift, 
+  ShieldCheck, 
+  CreditCard, 
+  ChevronRight 
+} from 'lucide-react';
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState(null);
 
-  useEffect(() => {
-    api.users.stats().then(setStats).catch(() => setStats({}));
-  }, []);
-
-  const copyCode = () => {
-    if (user?.codigo_invitacion) {
-      navigator.clipboard.writeText(user.codigo_invitacion);
-    }
-  };
-
-  const s = stats || {};
-  const activos = (s.activos_totales ?? user?.saldo_principal ?? 0) + (user?.saldo_comisiones ?? 0);
+  const menuItems = [
+    { to: '/equipo', icon: Users, label: 'Informe del equipo', color: 'bg-blue-500' },
+    { to: '/registro-facturacion', icon: FileText, label: 'Registro de facturación', color: 'bg-emerald-500' },
+    { to: '/registro-tareas', icon: ClipboardList, label: 'Registro de tareas', color: 'bg-purple-500' },
+    { to: '/sorteo', icon: Gift, label: 'Sorteo de suerte', color: 'bg-rose-500' },
+    { to: '/seguridad', icon: ShieldCheck, label: 'Seguridad de la cuenta', color: 'bg-amber-500' },
+    { to: '/vincular-tarjeta', icon: CreditCard, label: 'Vincular tarjeta bancaria', color: 'bg-cyan-500' },
+  ];
 
   return (
     <Layout>
-      <Header title="Usuario" />
-      <div className="bg-sav-primary/90 text-white p-6 rounded-b-3xl">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <Logo variant="header" className="h-12" />
+      <div className="bg-sav-primary text-white pt-8 pb-12 px-6 rounded-b-[3rem] shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+        
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sav-accent to-yellow-600 p-1 shadow-lg">
+            <div className="w-full h-full rounded-xl bg-sav-primary flex items-center justify-center">
+              <User className="text-sav-accent" size={40} />
+            </div>
           </div>
           <div>
-            <p className="text-white/80 text-sm">{user?.telefono?.slice(-6).padStart(10, '*')}</p>
-            {user?.nivel_id !== 'l1' && (
-              <p className="flex items-center gap-2 text-sm">
-                Código de invitación
-                <button onClick={copyCode} className="flex items-center gap-1 font-mono bg-white/20 px-2 py-1 rounded">
-                  {user?.codigo_invitacion}
-                  <Copy size={14} />
-                </button>
-              </p>
-            )}
+            <h2 className="text-2xl font-black tracking-tight">{user?.nombre_usuario}</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="px-3 py-0.5 rounded-full bg-sav-accent text-sav-primary text-[10px] font-black uppercase tracking-wider shadow-sm">
+                {user?.nivel_id === 'l1' ? 'Pasante' : user?.nivel_id?.toUpperCase()}
+              </span>
+              <span className="text-white/60 text-xs font-medium">ID: {user?.id?.slice(0, 8)}</span>
+            </div>
           </div>
         </div>
-        <div className="mt-6 p-4 rounded-2xl bg-white/10">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-white/90">Activos totales (BOB)</span>
-            <span className="text-2xl font-bold">{activos.toFixed(2)}</span>
+
+        <div className="grid grid-cols-2 gap-4 mt-8 relative z-10">
+          <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-3xl">
+            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Saldo Total</p>
+            <p className="text-xl font-black">{(user?.saldo_principal || 0).toFixed(2)} <span className="text-xs font-normal opacity-60">BOB</span></p>
           </div>
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-white/80">Nivel actual</span>
-            <span className="font-medium capitalize">{user?.nivel || 'pasante'}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-3 mt-4">
-            <Link to="/recargar" className="py-2.5 rounded-xl bg-sav-success text-sav-primary font-medium text-center">
-              Recargar
-            </Link>
-            <Link to="/retiro" className="py-2.5 rounded-xl bg-sav-success text-sav-primary font-medium text-center">
-              Retirada
-            </Link>
+          <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-3xl">
+            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Comisiones</p>
+            <p className="text-xl font-black">{(user?.saldo_comisiones || 0).toFixed(2)} <span className="text-xs font-normal opacity-60">BOB</span></p>
           </div>
         </div>
       </div>
 
-      <div className="p-4 -mt-2">
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            ['Ingresos de ayer', s.ingresos_ayer],
-            ['Ingresos de hoy', s.ingresos_hoy],
-            ['Ingresos de esta semana', s.ingresos_semana],
-            ['Ingresos de este mes', s.ingresos_mes],
-            ['Ingresos totales', s.ingresos_totales],
-            ['Comisión subordinados', s.comision_subordinados],
-            ['Recompensa invitación', s.recompensa_invitacion],
-          ].map(([label, val]) => (
-            <div key={label} className="p-4 rounded-2xl bg-sav-success/50 border border-sav-success/50">
-              <p className="font-bold text-gray-800">{(val ?? 0).toFixed(2)}</p>
-              <p className="text-xs text-gray-600">{label}</p>
-            </div>
-          ))}
+      <div className="px-6 -mt-6 relative z-20 space-y-4">
+        <div className="bg-white rounded-[2.5rem] shadow-[0_15px_50px_-12px_rgba(0,0,0,0.1)] border border-gray-50 overflow-hidden">
+          <div className="divide-y divide-gray-50">
+            {menuItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center justify-between p-5 hover:bg-gray-50 active:bg-gray-100 transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center text-white shadow-sm group-active:scale-90 transition-transform`}>
+                    <item.icon size={20} />
+                  </div>
+                  <span className="text-sm font-bold text-gray-700">{item.label}</span>
+                </div>
+                <ChevronRight size={18} className="text-gray-300 group-hover:text-sav-primary transition-colors" />
+              </Link>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-6 p-4 rounded-2xl bg-sav-success/30 border border-sav-success/50">
-          <p className="font-medium text-orange-600">Recibe un bono aleatorio con un código</p>
-          <p className="text-sm text-gray-600">Introduce el código para recibir un bono aleatorio</p>
-        </div>
-
-        <div className="mt-6 bg-white rounded-2xl shadow-sm overflow-hidden">
-          <Link
-            to="/seguridad"
-            className="flex items-center justify-between p-4 border-b border-gray-100"
-          >
-            <div className="flex items-center gap-3">
-              <Settings className="text-gray-600" size={22} />
-              <span className="font-medium">Seguridad de la Cuenta</span>
-            </div>
-            <span className="text-gray-400">›</span>
-          </Link>
-          <Link
-            to="/registro-tareas"
-            className="flex items-center justify-between p-4"
-          >
-            <div className="flex items-center gap-3">
-              <Bookmark className="text-gray-600" size={22} />
-              <span className="font-medium">Registro de tareas</span>
-            </div>
-            <span className="text-gray-400">›</span>
-          </Link>
-        </div>
         <button
-          type="button"
-          onClick={() => {
-            logout();
-            navigate('/login');
-          }}
-          className="mt-6 block w-full text-center text-xs text-gray-500 hover:text-gray-700"
+          onClick={() => { logout(); navigate('/login'); }}
+          className="w-full py-5 rounded-[2rem] bg-rose-50 text-rose-600 font-black text-sm uppercase tracking-[0.2em] shadow-sm active:scale-[0.98] transition-all border border-rose-100"
         >
-          cerrar sesion
+          Cerrar Sesión
         </button>
       </div>
     </Layout>

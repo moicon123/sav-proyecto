@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-[#F9F9F5] text-gray-800 antialiased;
+@layer base {
+  body {
+    @apply bg-[#F9F9F5] text-gray-800 antialiased select-none touch-manipulation overflow-x-hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+  
+  .btn-primary {
+    @apply active:scale-95 transition-transform duration-100;
+  }
+}
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animaciones suaves para transiciones móviles */
+.page-transition {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }

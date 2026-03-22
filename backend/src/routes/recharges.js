@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getMetodosQr, getRecargasByUser, createRecarga, getPublicContent } from '../lib/queries.js';
+import { getMetodosQr, getRecargasByUser, createRecarga, getPublicContent, findUserById } from '../lib/queries.js';
 import { authenticate } from '../middleware/auth.js';
 import { mergePublicContent } from '../data/publicContentDefaults.js';
 import { isScheduleOpen } from '../lib/schedule.js';
+import { telegram } from '../lib/telegram.js';
 
 const router = Router();
 
@@ -27,6 +28,7 @@ router.post('/', authenticate, async (req, res) => {
       error: `Intento de recargar fuera del horario: ${sched.message}`,
     });
   }
+  const user = await findUserById(req.user.id);
   const recarga = {
     id: uuidv4(),
     usuario_id: req.user.id,
@@ -38,6 +40,15 @@ router.post('/', authenticate, async (req, res) => {
     created_at: new Date().toISOString(),
   };
   await createRecarga(recarga);
+
+  // Notificar por Telegram (Bot de Recargas)
+  const msg = `🔔 *Nueva Recarga Pendiente*\n` +
+    `👤 Usuario: ${user?.nombre_usuario || req.user.id}\n` +
+    `💰 Monto: ${recarga.monto} BOB\n` +
+    `🛠 Modo: ${recarga.modo}\n` +
+    `🕒 Fecha: ${new Date(recarga.created_at).toLocaleString()}`;
+  telegram.sendRecarga(msg).catch(console.error);
+
   res.json(recarga);
 });
 

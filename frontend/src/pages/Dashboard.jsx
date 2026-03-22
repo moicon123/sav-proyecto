@@ -69,56 +69,63 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <header className="bg-sav-primary text-white px-4 py-3 flex items-center justify-between">
+      <header className="bg-sav-primary text-white px-5 py-4 flex items-center justify-between sticky top-0 z-30 shadow-lg">
         <Logo variant="header" />
-        <div className="flex items-center gap-2">
-          <span className="text-xs">BO</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+            <span className="text-sm">🇧🇴</span>
+            <span className="text-xs font-bold">BOB</span>
+          </div>
           <button
             type="button"
             onClick={onInstallApp}
-            className="px-3 py-1.5 rounded-lg bg-white/20 text-sm"
+            className="w-10 h-10 rounded-full bg-sav-accent/20 flex items-center justify-center border border-sav-accent/30 active:scale-90 transition-transform"
           >
-            ↓ App
+            <span className="text-lg">↓</span>
           </button>
         </div>
       </header>
 
-      <div className="relative h-52 bg-sav-primary overflow-hidden">
+      <div className="relative h-60 bg-sav-primary overflow-hidden shadow-inner">
         {banners.length > 0 ? (
           <img
             src={imgUrl(banners[slide]?.imagen_url)}
             alt=""
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover animate-fade-in"
           />
         ) : (
-          <div className="h-full bg-sav-primary" />
+          <div className="h-full flex items-center justify-center">
+            <Logo variant="hero" className="opacity-20 grayscale" />
+          </div>
         )}
         {banners.length > 1 && (
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
             {banners.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setSlide(i)}
-                className={`w-2 h-2 rounded-full transition ${i === slide ? 'bg-white' : 'bg-white/50'}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? 'w-8 bg-sav-accent' : 'w-2 bg-white/40'}`}
               />
             ))}
           </div>
         )}
       </div>
 
-      <div className="p-4 grid grid-cols-3 gap-4">
+      <div className="p-5 grid grid-cols-3 gap-3 -mt-8 relative z-10">
         {gridItems.map(({ to, icon: Icon, label }) => {
           if (to === '/usuario' && user?.nivel_id === 'l1') return null;
           return (
             <Link
               key={label}
               to={to}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 hover:border-sav-accent/30 transition"
+              className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] border border-gray-50 active:scale-95 transition-all group"
             >
-              <div className="w-12 h-12 rounded-xl bg-sav-primary/10 flex items-center justify-center">
-                <Icon className="text-sav-primary" size={24} />
+              <div className="w-14 h-14 rounded-2xl bg-sav-primary/5 flex items-center justify-center group-hover:bg-sav-primary/10 transition-colors">
+                <Icon className="text-sav-primary" size={28} strokeWidth={1.5} />
               </div>
-              <span className="text-xs font-medium text-gray-700 text-center">{label}</span>
+              <span className="text-[10px] font-bold text-gray-800 text-center leading-tight uppercase tracking-tighter">
+                {label}
+              </span>
             </Link>
           );
         })}
@@ -126,21 +133,24 @@ export default function Dashboard() {
 
       <Link
         to="/sorteo"
-        className="fixed right-4 top-56 z-20 w-14 h-14 rounded-full bg-sav-accent flex items-center justify-center shadow-lg"
+        className="fixed right-6 bottom-32 z-40 w-16 h-16 rounded-full bg-sav-accent flex items-center justify-center shadow-[0_8px_30px_rgb(212,175,55,0.4)] border-4 border-white active:scale-90 transition-transform"
       >
-        <Gift className="text-sav-primary" size={28} />
+        <Gift className="text-sav-primary animate-bounce" size={32} />
       </Link>
 
-      <div className="mx-4 mb-6 p-6 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 text-white">
-        <p className="text-lg font-bold whitespace-pre-line">{guideText}</p>
+      <div className="mx-5 mb-6 p-6 rounded-3xl bg-gradient-to-br from-sav-primary to-slate-800 text-white shadow-xl relative overflow-hidden group">
+        <div className="absolute -right-10 -top-10 w-32 h-32 bg-sav-accent/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+        <p className="text-base font-medium leading-relaxed italic opacity-90">{guideText}</p>
       </div>
 
-      <Link
-        to="/vip"
-        className="mx-4 mb-6 block p-4 rounded-xl bg-sav-primary text-white font-medium text-center"
-      >
-        Posición de Miembro →
-      </Link>
+      <div className="px-5 pb-8">
+        <Link
+          to="/vip"
+          className="w-full py-4 rounded-2xl bg-sav-accent text-sav-primary font-black text-center shadow-[0_10px_20px_-5px_rgba(212,175,55,0.4)] active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
+        >
+          Mejorar Posición de Miembro →
+        </Link>
+      </div>
 
       {showPopup && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
