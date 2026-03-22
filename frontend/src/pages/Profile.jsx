@@ -79,7 +79,8 @@ export default function Profile() {
             ) : (
               <div className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 opacity-60">
                 <Lock size={12} className="text-white/40" />
-                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Invitación Bloqueada</span>
+                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Invitar:</span>
+                <span className="text-sm font-black text-white/40 tracking-widest">**********</span>
               </div>
             )}
           </div>
