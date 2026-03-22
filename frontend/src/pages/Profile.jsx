@@ -13,17 +13,27 @@ import {
   CreditCard, 
   ChevronRight, 
   UploadCloud,
-  TrendingUp
+  TrendingUp,
+  Copy,
+  Check
 } from 'lucide-react';
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     api.users.stats().then(setStats).catch(() => {});
   }, []);
+
+  const handleCopy = () => {
+    if (!user?.codigo_invitacion) return;
+    navigator.clipboard.writeText(user.codigo_invitacion);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const menuItems = [
     { to: '/vip', icon: TrendingUp, label: 'Subir de Nivel VIP', color: 'bg-sav-accent', isHot: true },
@@ -54,6 +64,16 @@ export default function Profile() {
               </span>
               <span className="text-white/50 text-[10px] font-bold uppercase tracking-widest">ID: {user?.id?.slice(0, 8)}</span>
             </div>
+            
+            {/* Código de Invitación */}
+            <button 
+              onClick={handleCopy}
+              className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 active:scale-95 transition-all"
+            >
+              <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Invitar:</span>
+              <span className="text-sm font-black text-sav-accent tracking-tighter">{user?.codigo_invitacion || '---'}</span>
+              {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} className="text-white/50" />}
+            </button>
           </div>
         </div>
 
