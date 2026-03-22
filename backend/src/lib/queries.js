@@ -171,7 +171,13 @@ export async function getPublicContent() {
 
 export async function getBanners() {
   const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (!fallback) return data;
+  if (!fallback) {
+    // Hotfix: Corregir URL si tiene el error tipográfico carusel1.jpeg
+    return data.map(b => ({
+      ...b,
+      imagen_url: b.imagen_url === '/imag/carusel1.jpeg' ? '/imag/carrusel1.jpeg' : b.imagen_url
+    }));
+  }
   const store = await getStore();
   return (store.banners || []).filter(b => b.activo !== false).sort((a, b) => (a.orden || 0) - (b.orden || 0));
 }

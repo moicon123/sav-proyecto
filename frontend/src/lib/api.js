@@ -5,21 +5,32 @@ function getToken() {
   return localStorage.getItem('token');
 }
 
-async function request(url, options = {}) {
+async function request(url, options = {}, retries = 2) {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   
   const normalizedUrl = url.startsWith('/') ? url : `/${url}`;
-  const res = await fetch(API + normalizedUrl, { ...options, headers });
-  const data = await res.json().catch(() => ({}));
   
-  if (!res.ok) {
-    const error = new Error(data.error || 'Error de red');
-    error.status = res.status;
-    throw error;
+  try {
+    const res = await fetch(API + normalizedUrl, { ...options, headers });
+    const data = await res.json().catch(() => ({}));
+    
+    if (!res.ok) {
+      const error = new Error(data.error || 'Error de red');
+      error.status = res.status;
+      throw error;
+    }
+    return data;
+  } catch (err) {
+    if (retries > 0 && (options.method === 'GET' || !options.method)) {
+      console.warn(`Error en ${url}, reintentando... (${retries} restantes)`);
+      // Esperar un poco antes de reintentar
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return request(url, options, retries - 1);
+    }
+    throw err;
   }
-  return data;
 }
 
 export const api = {
