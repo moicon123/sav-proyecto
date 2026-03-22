@@ -13,7 +13,7 @@ const gridItems = [
   { to: '/retiro', icon: HandCoins, label: 'Retirada' },
   { to: '/recargar', icon: Wallet, label: 'Recargar' },
   { to: '/equipo', icon: Users, label: 'Equipo' },
-  { to: '/usuario', icon: UserCircle, label: 'Invitación' },
+  { to: '/invitar', icon: UserCircle, label: 'Invitación' },
 ];
 
 export default function Dashboard() {

@@ -12,6 +12,7 @@ import VIP from './pages/VIP.jsx';
 import Ganancias from './pages/Ganancias.jsx';
 import NoticiasConferencia from './pages/NoticiasConferencia.jsx';
 import Team from './pages/Team.jsx';
+import Invite from './pages/Invite.jsx';
 import Security from './pages/Security.jsx';
 import VincularTarjeta from './pages/VincularTarjeta.jsx';
 import CambiarContrasena from './pages/CambiarContrasena.jsx';
@@ -58,6 +59,7 @@ function AppRoutes() {
       <Route path="/tareas/:id" element={<PrivateRoute><TaskDetail /></PrivateRoute>} />
       <Route path="/usuario" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/equipo" element={<PrivateRoute><Team /></PrivateRoute>} />
+      <Route path="/invitar" element={<PrivateRoute><Invite /></PrivateRoute>} />
       <Route path="/vip" element={<PrivateRoute><VIP /></PrivateRoute>} />
       <Route path="/ganancias" element={<PrivateRoute><Ganancias /></PrivateRoute>} />
       <Route path="/noticias-conferencia" element={<PrivateRoute><NoticiasConferencia /></PrivateRoute>} />
