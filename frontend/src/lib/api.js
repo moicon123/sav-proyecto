@@ -69,6 +69,8 @@ export const api = {
   admin: {
     dashboard: () => request('/admin/dashboard'),
     usuarios: () => request('/admin/usuarios'),
+    updateUsuario: (id, updates) => request(`/admin/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(updates) }),
+    changePassword: (id, data) => request(`/admin/usuarios/${id}/password`, { method: 'POST', body: JSON.stringify(data) }),
     recargas: () => request('/admin/recargas'),
     retiros: () => request('/admin/retiros'),
     banners: () => request('/admin/banners'),

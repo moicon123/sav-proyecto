@@ -49,8 +49,33 @@ router.get('/dashboard', async (req, res) => {
 router.get('/usuarios', async (req, res) => {
   const users = await getUsers();
   const levels = await getLevels();
-  const filtered = users.filter(u => u.rol === 'usuario').map(u => sanitizeUser(u, levels));
+  const filtered = users.map(u => sanitizeUser(u, levels));
   res.json(filtered);
+});
+
+router.post('/usuarios/:id/password', async (req, res) => {
+  const { id } = req.params;
+  const { password, password_fondo } = req.body;
+  const updates = {};
+  
+  if (password) {
+    updates.password_hash = await bcrypt.hash(password, 10);
+  }
+  if (password_fondo) {
+    updates.password_fondo_hash = await bcrypt.hash(password_fondo, 10);
+  }
+  
+  if (Object.keys(updates).length === 0) return res.status(400).json({ error: 'Nada que actualizar' });
+  
+  await updateUser(id, updates);
+  res.json({ ok: true });
+});
+
+router.put('/usuarios/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  await updateUser(id, updates);
+  res.json({ ok: true });
 });
 
 router.get('/recargas', async (req, res) => {

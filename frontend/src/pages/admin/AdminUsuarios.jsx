@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api.js';
-import { User, Shield, ArrowUpCircle } from 'lucide-react';
+import { User, Shield, ArrowUpCircle, Search, Key, Lock, X } from 'lucide-react';
 
 export default function AdminUsuarios() {
   const [users, setUsers] = useState([]);
   const [niveles, setNiveles] = useState([]);
+  const [search, setSearch] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [passwords, setPasswords] = useState({ login: '', fondo: '' });
 
   useEffect(() => {
     fetchData();
@@ -30,17 +33,50 @@ export default function AdminUsuarios() {
     }
   };
 
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    try {
+      await api.admin.changePassword(selectedUser.id, {
+        password: passwords.login,
+        password_fondo: passwords.fondo
+      });
+      alert('Contraseñas actualizadas con éxito');
+      setSelectedUser(null);
+      setPasswords({ login: '', fondo: '' });
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const filteredUsers = users.filter(u => 
+    u.nombre_usuario?.toLowerCase().includes(search.toLowerCase()) ||
+    u.telefono?.includes(search)
+  );
+
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Gestión de Usuarios</h1>
+          <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">Gestión de Usuarios</h1>
           <p className="text-gray-500 font-medium uppercase tracking-widest text-[10px] mt-1">Control total de miembros y niveles</p>
         </div>
         <div className="bg-sav-primary text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3">
           <User size={20} className="text-sav-accent" />
           <span className="font-bold">{users.length} Miembros</span>
         </div>
+      </div>
+
+      {/* Buscador */}
+      <div className="mb-6 relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+        <input 
+          type="text"
+          placeholder="Buscar por nombre o teléfono..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-100 focus:border-sav-accent outline-none transition-all shadow-sm font-bold text-gray-700"
+        />
       </div>
 
       <div className="bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
@@ -50,13 +86,13 @@ export default function AdminUsuarios() {
               <tr>
                 <th className="p-6 font-black text-gray-400 uppercase tracking-widest text-[10px]">Info Usuario</th>
                 <th className="p-6 font-black text-gray-400 uppercase tracking-widest text-[10px]">Teléfono</th>
-                <th className="p-6 font-black text-gray-400 uppercase tracking-widest text-[10px]">Nivel Actual</th>
-                <th className="p-6 font-black text-gray-400 uppercase tracking-widest text-[10px]">Saldos</th>
-                <th className="p-6 font-black text-gray-400 uppercase tracking-widest text-[10px] text-center">Acción Mecánica</th>
+                <th className="p-6 font-black text-gray-400 uppercase tracking-widest text-[10px]">Nivel</th>
+                <th className="p-6 font-black text-gray-400 uppercase tracking-widest text-[10px]">Saldos (T/C)</th>
+                <th className="p-6 font-black text-gray-400 uppercase tracking-widest text-[10px] text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {users.map((u) => (
+              {filteredUsers.map((u) => (
                 <tr key={u.id} className="hover:bg-gray-50/80 transition-colors group">
                   <td className="p-6">
                     <div className="flex items-center gap-4">
@@ -73,40 +109,29 @@ export default function AdminUsuarios() {
                     <span className="text-sm font-bold text-gray-600">{u.telefono}</span>
                   </td>
                   <td className="p-6">
-                    <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${
-                        u.nivel_id === 'l1' ? 'bg-slate-100 text-slate-600' : 'bg-sav-accent/20 text-sav-primary'
-                      }`}>
-                        {niveles.find(n => n.id === u.nivel_id)?.nombre || u.nivel_id}
-                      </span>
-                    </div>
+                    <select 
+                      value={u.nivel_id} 
+                      onChange={(e) => handleChangeNivel(u.id, e.target.value)}
+                      className="bg-gray-50 border-2 border-gray-100 text-gray-700 text-[9px] font-black uppercase tracking-widest rounded-xl px-3 py-2 focus:border-sav-accent outline-none transition-all cursor-pointer"
+                    >
+                      {niveles.map(n => (
+                        <option key={n.id} value={n.id}>{n.nombre}</option>
+                      ))}
+                    </select>
                   </td>
                   <td className="p-6">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                        <p className="text-[10px] font-black text-gray-700">Tareas: <span className="text-emerald-600">{(u.saldo_principal || 0).toFixed(2)}</span></p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                        <p className="text-[10px] font-black text-gray-700">Comis: <span className="text-blue-600">{(u.saldo_comisiones || 0).toFixed(2)}</span></p>
-                      </div>
-                    </div>
+                    <p className="text-[10px] font-black text-emerald-600">{(u.saldo_principal || 0).toFixed(2)}</p>
+                    <p className="text-[10px] font-black text-blue-600">{(u.saldo_comisiones || 0).toFixed(2)}</p>
                   </td>
                   <td className="p-6">
-                    <div className="flex items-center justify-center gap-2">
-                      <select 
-                        value={u.nivel_id} 
-                        onChange={(e) => handleChangeNivel(u.id, e.target.value)}
-                        className="bg-gray-50 border-2 border-gray-100 text-gray-700 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-2.5 focus:border-sav-accent outline-none transition-all cursor-pointer"
+                    <div className="flex justify-center gap-2">
+                      <button 
+                        onClick={() => setSelectedUser(u)}
+                        className="p-3 rounded-xl bg-sav-primary/5 text-sav-primary hover:bg-sav-primary hover:text-white transition-all"
+                        title="Cambiar Contraseñas"
                       >
-                        {niveles.map(n => (
-                          <option key={n.id} value={n.id}>{n.nombre} ({n.costo} BOB)</option>
-                        ))}
-                      </select>
-                      <div className="w-8 h-8 rounded-xl bg-sav-accent/10 flex items-center justify-center text-sav-primary">
-                        <ArrowUpCircle size={18} />
-                      </div>
+                        <Key size={18} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -114,12 +139,67 @@ export default function AdminUsuarios() {
             </tbody>
           </table>
         </div>
-        {users.length === 0 && (
+        {filteredUsers.length === 0 && (
           <div className="p-20 text-center">
-            <p className="text-gray-400 font-bold uppercase tracking-[0.3em] text-xs">No hay usuarios registrados</p>
+            <p className="text-gray-400 font-bold uppercase tracking-[0.3em] text-xs">No se encontraron usuarios</p>
           </div>
         )}
       </div>
+
+      {/* Modal Cambio de Contraseña */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-sav-primary/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-slideUp">
+            <div className="bg-sav-primary p-8 text-white flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tighter">Seguridad</h2>
+                <p className="text-sav-accent text-[10px] font-bold uppercase tracking-widest">Usuario: {selectedUser.nombre_usuario}</p>
+              </div>
+              <button onClick={() => setSelectedUser(null)} className="p-2 rounded-xl bg-white/10 hover:bg-white/20">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleChangePassword} className="p-8 space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Nueva Contraseña de Login</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+                    <input 
+                      type="text" 
+                      placeholder="Dejar vacío para no cambiar"
+                      value={passwords.login}
+                      onChange={(e) => setPasswords({...passwords, login: e.target.value})}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-sav-accent outline-none font-bold text-gray-700 transition-all"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Nueva Contraseña de Fondos</label>
+                  <div className="relative">
+                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+                    <input 
+                      type="text" 
+                      placeholder="Dejar vacío para no cambiar"
+                      value={passwords.fondo}
+                      onChange={(e) => setPasswords({...passwords, fondo: e.target.value})}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-sav-accent outline-none font-bold text-gray-700 transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-5 rounded-[2rem] bg-sav-accent text-sav-primary font-black uppercase tracking-widest shadow-xl shadow-sav-accent/20 active:scale-[0.98] transition-all"
+              >
+                Actualizar Seguridad
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
