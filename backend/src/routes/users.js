@@ -89,15 +89,43 @@ router.get('/stats', authenticate, async (req, res) => {
   if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
   const activity = await getTaskActivity(user.id);
   
+  // Calcular ingresos reales basados en la actividad de tareas
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+  
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+  
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const filterByDate = (list, start, end = null) => {
+    return list.filter(item => {
+      const d = new Date(item.created_at);
+      if (end) return d >= start && d < end;
+      return d >= start;
+    });
+  };
+
+  const sumMonto = (list) => list.reduce((s, i) => s + (i.recompensa || 0), 0);
+
+  const hoy = filterByDate(activity, startOfToday);
+  const ayer = filterByDate(activity, startOfYesterday, startOfToday);
+  const semana = filterByDate(activity, startOfWeek);
+  const mes = filterByDate(activity, startOfMonth);
+
   res.json({
-    ingresos_ayer: 7.20,
-    ingresos_hoy: 7.20,
-    ingresos_semana: user.saldo_principal || 14.40,
-    ingresos_mes: user.saldo_principal || 14.40,
-    ingresos_totales: user.saldo_principal || 14.40,
+    ingresos_ayer: sumMonto(ayer),
+    ingresos_hoy: sumMonto(hoy),
+    ingresos_semana: sumMonto(semana),
+    ingresos_mes: sumMonto(mes),
+    ingresos_totales: sumMonto(activity),
     comision_subordinados: user.saldo_comisiones || 0,
-    recompensa_invitacion: 0,
+    recompensa_invitacion: user.recompensa_invitacion || 0,
     total_completadas: activity.length,
+  });
+});
   });
 });
 

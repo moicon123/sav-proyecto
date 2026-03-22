@@ -20,6 +20,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [banners, setBanners] = useState([]);
   const [slide, setSlide] = useState(0);
+  const [stats, setStats] = useState(null);
   const [guideText, setGuideText] = useState('GUIA PARA PRINCIPIANTES. LIDERANDO EL FUTURO. ALCANZA TUS SUENOS.');
   const [popup, setPopup] = useState({ popup_enabled: false, popup_title: '', popup_message: '' });
   const [showPopup, setShowPopup] = useState(false);
@@ -27,6 +28,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     api.banners().then(setBanners).catch(() => setBanners([]));
+    api.users.stats().then(setStats).catch(() => {});
     api.publicContent()
       .then((data) => {
         setGuideText(g => data.home_guide || g);
@@ -146,6 +148,49 @@ export default function Dashboard() {
       <div className="mx-5 mb-6 p-6 rounded-3xl bg-gradient-to-br from-sav-primary to-slate-800 text-white shadow-xl relative overflow-hidden group">
         <div className="absolute -right-10 -top-10 w-32 h-32 bg-sav-accent/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
         <p className="text-base font-medium leading-relaxed italic opacity-90">{guideText}</p>
+      </div>
+
+      {/* Sección de Estadísticas de Ingresos */}
+      <div className="px-5 mb-8">
+        <div className="bg-white rounded-[2.5rem] p-6 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.08)] border border-gray-50">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-2xl bg-sav-primary/5 flex items-center justify-center text-sav-primary">
+              <TrendingUp size={20} />
+            </div>
+            <h3 className="font-black text-gray-800 uppercase tracking-tighter">Resumen de Ganancias</h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 rounded-[1.5rem] bg-gray-50 border border-gray-100">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Ingresos de Hoy</p>
+              <p className="text-xl font-black text-sav-primary">{(stats?.ingresos_hoy || 0).toFixed(2)} <span className="text-[10px] text-gray-400">BOB</span></p>
+            </div>
+            <div className="p-4 rounded-[1.5rem] bg-gray-50 border border-gray-100">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Ingresos de Ayer</p>
+              <p className="text-xl font-black text-gray-700">{(stats?.ingresos_ayer || 0).toFixed(2)} <span className="text-[10px] text-gray-400">BOB</span></p>
+            </div>
+            <div className="p-4 rounded-[1.5rem] bg-gray-50 border border-gray-100">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Esta Semana</p>
+              <p className="text-xl font-black text-gray-700">{(stats?.ingresos_semana || 0).toFixed(2)} <span className="text-[10px] text-gray-400">BOB</span></p>
+            </div>
+            <div className="p-4 rounded-[1.5rem] bg-gray-50 border border-gray-100">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Este Mes</p>
+              <p className="text-xl font-black text-gray-700">{(stats?.ingresos_mes || 0).toFixed(2)} <span className="text-[10px] text-gray-400">BOB</span></p>
+            </div>
+            <div className="p-4 rounded-[1.5rem] bg-sav-primary text-white col-span-2 shadow-lg shadow-sav-primary/20">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-[9px] font-black text-sav-accent uppercase tracking-widest mb-1">Ingresos Totales</p>
+                  <p className="text-2xl font-black">{(stats?.ingresos_totales || 0).toFixed(2)} <span className="text-xs font-medium opacity-50">BOB</span></p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[9px] font-black text-sav-accent uppercase tracking-widest mb-1">Invitaciones</p>
+                  <p className="text-lg font-black">{(stats?.recompensa_invitacion || 0).toFixed(2)} <span className="text-[10px] opacity-50">BOB</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="px-5 pb-8">

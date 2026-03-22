@@ -177,8 +177,12 @@ export default function Withdrawal() {
         </div>
 
         <div className="flex justify-between text-sm text-gray-600">
-          <span>Tarifa de manejo</span>
-          <span className="text-sav-accent font-bold">0 BOB</span>
+          <span>Tarifa de manejo (10%)</span>
+          <span className="text-rose-500 font-bold">{(monto * 0.1).toFixed(2)} BOB</span>
+        </div>
+        <div className="flex justify-between text-sm text-gray-800 font-black border-t pt-2">
+          <span>Recibirás aproximadamente</span>
+          <span className="text-sav-primary font-black">{(monto * 0.9).toFixed(2)} BOB</span>
         </div>
         {horarioRet?.enabled ? (
           <p className="text-sm text-gray-600">{horarioTxt}</p>

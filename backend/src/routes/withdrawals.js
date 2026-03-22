@@ -38,6 +38,10 @@ router.post('/', authenticate, async (req, res) => {
   if (!qr_retiro) return res.status(400).json({ error: 'Debes subir tu QR para el retiro' });
   const m = parseFloat(monto);
   if (!MONTOS.includes(m)) return res.status(400).json({ error: 'Monto no permitido' });
+  
+  const comision = m * 0.10;
+  const montoARecibir = m - comision;
+  
   const saldo = tipo_billetera === 'comisiones' ? (user.saldo_comisiones || 0) : (user.saldo_principal || 0);
   if (saldo < m) return res.status(400).json({ error: 'Saldo insuficiente' });
   
@@ -54,6 +58,8 @@ router.post('/', authenticate, async (req, res) => {
     usuario_id: user.id,
     tarjeta_id: tarjetaElegida?.id || null,
     monto: m,
+    comision: comision,
+    monto_a_recibir: montoARecibir,
     tipo_billetera: tipo_billetera || 'principal',
     qr_retiro: qr_retiro,
     estado: 'pendiente',
