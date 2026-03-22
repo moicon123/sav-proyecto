@@ -15,7 +15,7 @@ export default function AdminUsuarios() {
 
   const fetchData = async () => {
     try {
-      const [u, n] = await Promise.all([api.admin.usuarios(), api.levels()]);
+      const [u, n] = await Promise.all([api.admin.usuarios(), api.levels.list()]);
       setUsers(u);
       setNiveles(n);
     } catch (err) {

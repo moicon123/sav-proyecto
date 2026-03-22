@@ -12,7 +12,7 @@ export default function VIP() {
   const [niveles, setNiveles] = useState([]);
 
   useEffect(() => {
-    api.levels().then(setNiveles).catch(() => []);
+    api.levels.list().then(setNiveles).catch(() => []);
   }, []);
 
   const handleUpgrade = (nivel) => {
