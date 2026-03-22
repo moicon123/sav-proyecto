@@ -1,17 +1,26 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 
 export default function Register() {
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get('ref');
+
   const [data, setData] = useState({
     telefono: '+591',
     nombre_usuario: '',
     password: '',
     repeat_password: '',
-    codigo_invitacion: '',
+    codigo_invitacion: refCode || '',
   });
+
+  useEffect(() => {
+    if (refCode) {
+      setData(prev => ({ ...prev, codigo_invitacion: refCode }));
+    }
+  }, [refCode]);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const { register } = useAuth();
@@ -100,14 +109,23 @@ export default function Register() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Código de invitación</label>
-            <input
-              type="text"
-              value={data.codigo_invitacion}
-              onChange={(e) => handleChange('codigo_invitacion', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50"
-              placeholder="Código obligatorio"
-              required
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={data.codigo_invitacion}
+                onChange={(e) => handleChange('codigo_invitacion', e.target.value)}
+                className={`w-full px-4 py-3 rounded-xl border border-gray-200 ${refCode ? 'bg-gray-100 text-gray-500 font-bold cursor-not-allowed' : 'bg-gray-50'}`}
+                placeholder="Código obligatorio"
+                required
+                readOnly={!!refCode}
+              />
+              {refCode && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sav-primary flex items-center gap-1">
+                  <Lock size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-tighter">Enlace Activo</span>
+                </div>
+              )}
+            </div>
           </div>
           <button
             type="submit"
