@@ -5,7 +5,7 @@ import { findUserById, getRetirosByUser, createRetiro, getTarjetasByUser, getPub
 import { authenticate } from '../middleware/auth.js';
 import { mergePublicContent } from '../data/publicContentDefaults.js';
 import { isScheduleOpen } from '../lib/schedule.js';
-import { sendTelegramMessage } from '../lib/telegram.js';
+import { telegram } from '../lib/telegram.js';
 
 const router = Router();
 
@@ -66,13 +66,13 @@ router.post('/', authenticate, async (req, res) => {
   else updates.saldo_principal = user.saldo_principal - m;
   await updateUser(user.id, updates);
 
-  // Notificar por Telegram
+  // Notificar por Telegram (Bot de Retiros)
   const msg = `💸 *Nuevo Retiro Pendiente*\n` +
     `👤 Usuario: ${user.nombre_usuario}\n` +
     `💰 Monto: ${retiro.monto} BOB\n` +
     `🏦 Banco: ${tarjetaElegida?.banco || 'N/A'}\n` +
     `🕒 Fecha: ${new Date(retiro.created_at).toLocaleString()}`;
-  sendTelegramMessage(msg).catch(console.error);
+  telegram.sendRetiro(msg).catch(console.error);
   
   res.json(retiro);
 });
