@@ -2,7 +2,7 @@ import { supabase, hasDb } from './db.js';
 import { getStore } from '../data/store.js';
 import { levels as seedLevels } from '../data/seed.js';
 
-async function trySupabase(operation) {
+export async function trySupabase(operation) {
   try {
     if (hasDb()) {
       const { data, error } = await operation();
@@ -26,28 +26,28 @@ export async function getUsers() {
 }
 
 export async function findUserByTelefono(telefono) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('telefono', telefono).single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('telefono', telefono).maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   return store.users.find(u => u.telefono === telefono);
 }
 
 export async function findUserById(id) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('id', id).single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('id', id).maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   return store.users.find(u => u.id === id);
 }
 
 export async function findUserByCodigo(codigo) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('codigo_invitacion', codigo).single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('codigo_invitacion', codigo).maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   return store.users.find(u => u.codigo_invitacion === codigo);
 }
 
 export async function createUser(userData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').insert([userData]).select().single());
+  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').insert([userData]).select().maybeSingle());
   if (!fallback) return data;
   const store = await getStore();
   store.users.push(userData);
@@ -55,7 +55,7 @@ export async function createUser(userData) {
 }
 
 export async function updateUser(id, updates) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').update(updates).eq('id', id).select().single());
+  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').update(updates).eq('id', id).select().maybeSingle());
   if (!fallback) return data;
   const store = await getStore();
   const user = store.users.find(u => u.id === id);
@@ -77,8 +77,8 @@ export async function getRecargas() {
 }
 
 export async function getRecargaById(id) {
-  const { data, fallback } = await trySupabase(() => supabase.from('recargas').select('*').eq('id', id).single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('recargas').select('*').eq('id', id).maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   return (store.recargas || []).find(r => r.id === id);
 }

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getUsers, getRecargas, getRetiros, getLevels, findUserById, updateUser, getPublicContent, getMetodosQr, getBanners, getAllTasks, getRecargaById, updateRecarga, getRetiroById, updateRetiro } from '../lib/queries.js';
+import { getUsers, getRecargas, getRetiros, getLevels, findUserById, updateUser, getPublicContent, getMetodosQr, getBanners, getAllTasks, getRecargaById, updateRecarga, getRetiroById, updateRetiro, trySupabase } from '../lib/queries.js';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
 import { supabase } from '../lib/db.js';
 
@@ -217,7 +217,7 @@ router.post('/tareas', async (req, res) => {
     created_at: new Date().toISOString()
   };
   
-  const { data, fallback } = await trySupabase(() => supabase.from('tareas').insert([tarea]).select().single());
+  const { data, fallback } = await trySupabase(() => supabase.from('tareas').insert([tarea]).select().maybeSingle());
   if (!fallback) return res.json(data);
   
   const store = await getStore();
@@ -237,7 +237,7 @@ router.put('/tareas/:id', async (req, res) => {
   if (recompensa !== undefined) updates.recompensa = parseFloat(recompensa) || 0;
   if (activa !== undefined) updates.activa = activa;
 
-  const { data, fallback } = await trySupabase(() => supabase.from('tareas').update(updates).eq('id', req.params.id).select().single());
+  const { data, fallback } = await trySupabase(() => supabase.from('tareas').update(updates).eq('id', req.params.id).select().maybeSingle());
   if (!fallback) return res.json(data);
   
   const store = await getStore();
@@ -275,7 +275,7 @@ router.post('/metodos-qr', async (req, res) => {
     created_at: new Date().toISOString()
   };
 
-  const { data, fallback } = await trySupabase(() => supabase.from('metodos_qr').insert([metodo]).select().single());
+  const { data, fallback } = await trySupabase(() => supabase.from('metodos_qr').insert([metodo]).select().maybeSingle());
   if (!fallback) return res.json(data);
 
   if (!store.metodosQr) store.metodosQr = [];
@@ -309,7 +309,7 @@ router.post('/banners', async (req, res) => {
     created_at: new Date().toISOString()
   };
 
-  const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').insert([banner]).select().single());
+  const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').insert([banner]).select().maybeSingle());
   if (!fallback) return res.json(data);
 
   const store = await getStore();

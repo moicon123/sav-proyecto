@@ -104,14 +104,14 @@ export async function initStore() {
     oportunidades_sorteo: 0,
   };
 
-  const newUser = {
+  const testUser = {
     id: uuidv4(),
-    telefono: '+59174344916',
-    nombre_usuario: 'usuario_74344916',
-    nombre_real: 'Usuario Nuevo',
-    password_hash: hash,
+    telefono: '+59171234567',
+    nombre_usuario: 'usuario_test',
+    nombre_real: 'Usuario de Prueba',
+    password_hash: await bcrypt.hash('password123', 10),
     password_fondo_hash: hashFondo,
-    codigo_invitacion: genCode(),
+    codigo_invitacion: 'TEST712',
     invitado_por: admin.id,
     nivel_id: levels[0].id, // pasante
     saldo_principal: 0,
@@ -152,7 +152,7 @@ export async function initStore() {
   ];
 
   return {
-    users: [admin, user1, userA1, userA2, userB1, newUser],
+    users: [admin, user1, userA1, userA2, userB1, testUser],
     levels,
     tasks,
     metodosQr,

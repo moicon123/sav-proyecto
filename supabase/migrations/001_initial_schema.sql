@@ -216,3 +216,17 @@ CREATE INDEX idx_recargas_usuario ON recargas(usuario_id);
 CREATE INDEX idx_retiros_usuario ON retiros(usuario_id);
 CREATE INDEX idx_transacciones_usuario ON transacciones(usuario_id);
 CREATE INDEX idx_notificaciones_usuario ON notificaciones(usuario_id);
+
+-- CONFIGURACIÓN DE PERMISOS (EJECUTAR ESTO SI HAY ERRORES DE "permission denied for schema public")
+-- Otorgar uso del esquema público a los roles anon y authenticated
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
+-- Otorgar todos los privilegios sobre las tablas existentes
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated, service_role;
+
+-- Configurar permisos por defecto para futuras tablas
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;

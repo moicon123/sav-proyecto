@@ -132,8 +132,6 @@ router.get('/stats', authenticate, async (req, res) => {
     pasante_limit_reached: limitReached,
   });
 });
-  });
-});
 
 router.get('/tarjetas', authenticate, async (req, res) => {
   const tarjetas = await getTarjetasByUser(req.user.id);
