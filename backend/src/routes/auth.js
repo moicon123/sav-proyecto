@@ -17,6 +17,11 @@ router.post('/register', async (req, res) => {
     if (exists) return res.status(400).json({ error: 'Teléfono ya registrado' });
     const inviter = await findUserByCodigo(codigo_invitacion);
     if (!inviter) return res.status(400).json({ error: 'Código de invitación inválido' });
+    
+    // Verificar que el invitador no sea un pasante (l1)
+    if (inviter.nivel_id === 'l1') {
+      return res.status(400).json({ error: 'Este código de invitación pertenece a un usuario en prueba (pasante) y no es válido para nuevos registros. Por favor solicita un código de un usuario VIP.' });
+    }
     const codigo = Math.random().toString(36).slice(2, 10).toUpperCase();
     const levels = await getLevels();
     const user = {

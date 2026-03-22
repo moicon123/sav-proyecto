@@ -15,7 +15,8 @@ import {
   UploadCloud,
   TrendingUp,
   Copy,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
 
 export default function Profile() {
@@ -65,15 +66,22 @@ export default function Profile() {
               <span className="text-white/50 text-[10px] font-bold uppercase tracking-widest">ID: {user?.id?.slice(0, 8)}</span>
             </div>
             
-            {/* Código de Invitación */}
-            <button 
-              onClick={handleCopy}
-              className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 active:scale-95 transition-all"
-            >
-              <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Invitar:</span>
-              <span className="text-sm font-black text-sav-accent tracking-tighter">{user?.codigo_invitacion || '---'}</span>
-              {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} className="text-white/50" />}
-            </button>
+            {/* Código de Invitación - Solo para niveles superiores a pasante */}
+            {user?.nivel_codigo !== 'internar' ? (
+              <button 
+                onClick={handleCopy}
+                className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 active:scale-95 transition-all"
+              >
+                <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Invitar:</span>
+                <span className="text-sm font-black text-sav-accent tracking-tighter">{user?.codigo_invitacion || '---'}</span>
+                {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} className="text-white/50" />}
+              </button>
+            ) : (
+              <div className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 opacity-60">
+                <Lock size={12} className="text-white/40" />
+                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Invitación Bloqueada</span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import Layout from '../components/Layout';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
-import { Share2, Copy, Check, Users, Gift, Star, ShieldCheck, Zap } from 'lucide-react';
+import { Share2, Copy, Check, Users, Gift, Star, ShieldCheck, Zap, Lock, Info, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Invite() {
   const { user } = useAuth();
@@ -12,17 +13,52 @@ export default function Invite() {
   const inviteLink = `${window.location.origin}/registro?ref=${user?.codigo_invitacion || ''}`;
 
   const handleCopyCode = () => {
-    if (!user?.codigo_invitacion) return;
+    if (!user?.codigo_invitacion || user?.nivel_codigo === 'internar') return;
     navigator.clipboard.writeText(user.codigo_invitacion);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
   const handleCopyLink = () => {
+    if (user?.nivel_codigo === 'internar') return;
     navigator.clipboard.writeText(inviteLink);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
+
+  if (user?.nivel_codigo === 'internar') {
+    return (
+      <Layout>
+        <Header title="Invitar Amigos" />
+        <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center min-h-[70vh]">
+          <div className="w-24 h-24 bg-indigo-50 text-indigo-500 rounded-[2.5rem] flex items-center justify-center shadow-xl shadow-indigo-500/10 border border-indigo-100 animate-pulse">
+            <Lock size={48} strokeWidth={1.5} />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Invitación No Disponible</h2>
+            <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-xs mx-auto">
+              Como <span className="text-indigo-600 font-bold uppercase tracking-widest">Pasante</span>, el sistema de referidos está desactivado para tu cuenta.
+            </p>
+          </div>
+          <div className="bg-indigo-50 p-6 rounded-[2.5rem] border border-indigo-100 text-left w-full">
+            <p className="text-xs text-indigo-800 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+              <Info size={14} /> Beneficio VIP:
+            </p>
+            <p className="text-xs text-indigo-700 leading-relaxed font-medium">
+              Sube a nivel <span className="font-bold">S1</span> para activar tu código de invitación y empezar a ganar el <span className="font-bold">15% de comisión</span> por cada amigo que invites.
+            </p>
+          </div>
+          <Link 
+            to="/vip"
+            className="w-full py-5 rounded-[2.5rem] bg-indigo-600 text-white font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+          >
+            <TrendingUp size={16} />
+            Activar Invitación Ahora
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
