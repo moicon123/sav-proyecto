@@ -20,7 +20,7 @@ export async function trySupabase(operation) {
 
 export async function getUsers() {
   const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*'));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return store.users;
 }
@@ -56,7 +56,7 @@ export async function createUser(userData) {
 
 export async function updateUser(id, updates) {
   const { data, fallback } = await trySupabase(() => supabase.from('usuarios').update(updates).eq('id', id).select().maybeSingle());
-  if (!fallback) return data;
+  if (!fallback && data) return data;
   const store = await getStore();
   const user = store.users.find(u => u.id === id);
   if (user) Object.assign(user, updates);
@@ -65,13 +65,13 @@ export async function updateUser(id, updates) {
 
 export async function getLevels() {
   const { data, fallback } = await trySupabase(() => supabase.from('niveles').select('*').order('orden', { ascending: true }));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   return seedLevels;
 }
 
 export async function getRecargas() {
   const { data, fallback } = await trySupabase(() => supabase.from('recargas').select('*, usuario:usuarios!usuario_id(nombre_usuario)').order('created_at', { ascending: false }));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return store.recargas || [];
 }
@@ -85,7 +85,7 @@ export async function getRecargaById(id) {
 
 export async function getRetiros() {
   const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*, usuario:usuarios!usuario_id(nombre_usuario)').order('created_at', { ascending: false }));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return store.retiros || [];
 }
@@ -93,14 +93,14 @@ export async function getRetiros() {
 
 export async function getMetodosQr() {
   const { data, fallback } = await trySupabase(() => supabase.from('metodos_qr').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return (store.metodosQr || []).filter(m => m.activo).sort((a, b) => (a.orden || 0) - (b.orden || 0));
 }
 
 export async function getRecargasByUser(userId) {
   const { data, fallback } = await trySupabase(() => supabase.from('recargas').select('*').eq('usuario_id', userId).order('created_at', { ascending: false }));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return (store.recargas || []).filter(r => r.usuario_id === userId);
 }
@@ -125,7 +125,7 @@ export async function updateRecarga(id, updates) {
 
 export async function getRetirosByUser(userId) {
   const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('usuario_id', userId).order('created_at', { ascending: false }));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return (store.retiros || []).filter(r => r.usuario_id === userId);
 }
@@ -140,15 +140,15 @@ export async function createRetiro(retiroData) {
 }
 
 export async function getRetiroById(id) {
-  const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('id', id).single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('id', id).maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   return (store.retiros || []).find(r => r.id === id);
 }
 
 export async function updateRetiro(id, updates) {
-  const { data, fallback } = await trySupabase(() => supabase.from('retiros').update(updates).eq('id', id).select().single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('retiros').update(updates).eq('id', id).select().maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   const retiro = (store.retiros || []).find(r => r.id === id);
   if (retiro) Object.assign(retiro, updates);
@@ -157,21 +157,21 @@ export async function updateRetiro(id, updates) {
 
 export async function getTarjetasByUser(userId) {
   const { data, fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').select('*').eq('usuario_id', userId));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return (store.tarjetas || []).filter(t => t.usuario_id === userId);
 }
 
 export async function getPublicContent() {
   const { data, fallback } = await trySupabase(() => supabase.from('configuraciones').select('*'));
-  if (!fallback) return data.reduce((acc, curr) => ({ ...acc, [curr.clave]: curr.valor }), {});
+  if (!fallback && data && data.length > 0) return data.reduce((acc, curr) => ({ ...acc, [curr.clave]: curr.valor }), {});
   const store = await getStore();
   return store.publicContent || {};
 }
 
 export async function getBanners() {
   const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (!fallback) {
+  if (!fallback && data && data.length > 0) {
     // Hotfix: Corregir URL si tiene el error tipográfico carusel1.jpeg
     return data.map(b => ({
       ...b,
@@ -184,28 +184,28 @@ export async function getBanners() {
 
 export async function getAllTasks() {
   const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').order('created_at', { ascending: false }));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return store.tasks || [];
 }
 
 export async function getTasks(nivelId) {
   const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('nivel_id', nivelId).eq('activa', true));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return (store.tasks || []).filter(t => t.nivel_id === nivelId);
 }
 
 export async function getPremiosRuleta() {
   const { data, fallback } = await trySupabase(() => supabase.from('premios_ruleta').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return (store.premiosRuleta || []).filter(p => p.activo !== false).sort((a, b) => (a.orden || 0) - (b.orden || 0));
 }
 
 export async function getSorteosGanadores() {
   const { data, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').select('*, usuario:usuarios!usuario_id(telefono)').order('created_at', { ascending: false }).limit(50));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return (store.sorteosGanadores || []).slice(-50).reverse();
 }
@@ -221,22 +221,22 @@ export async function createSorteoGanador(ganadorData) {
 }
 
 export async function getTaskById(id) {
-  const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   return (store.tasks || []).find(t => t.id === id);
 }
 
 export async function getTaskActivity(userId) {
   const { data, fallback } = await trySupabase(() => supabase.from('actividad_tareas').select('*').eq('usuario_id', userId));
-  if (!fallback) return data;
+  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
   return (store.actividadTareas || []).filter(a => a.usuario_id === userId);
 }
 
 export async function createTaskActivity(activity) {
-  const { data, fallback } = await trySupabase(() => supabase.from('actividad_tareas').insert([activity]).select().single());
-  if (!fallback) return data;
+  const { data, fallback } = await trySupabase(() => supabase.from('actividad_tareas').insert([activity]).select().maybeSingle());
+  if (!fallback && data) return data;
   const store = await getStore();
   if (!store.actividadTareas) store.actividadTareas = [];
   store.actividadTareas.push(activity);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout.jsx';
 import Header from '../components/Header.jsx';
 import { api } from '../lib/api.js';
@@ -8,6 +9,7 @@ import { X } from 'lucide-react';
 export default function TaskDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
   const [task, setTask] = useState(null);
   const [selected, setSelected] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -16,7 +18,17 @@ export default function TaskDetail() {
   const [canAnswer, setCanAnswer] = useState(false);
 
   useEffect(() => {
-    api.tasks.get(id).then(setTask).catch(() => navigate('/tareas'));
+    api.tasks.get(id)
+      .then(t => {
+        setTask(t);
+        // Si es un video de YouTube, habilitamos el botón después de 10 segundos
+        const url = t.video_url || '';
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          setTimeout(() => setCanAnswer(true), 10000);
+        }
+      })
+      .catch(() => navigate('/tareas'))
+      .finally(() => setLoading(false));
   }, [id, navigate]);
 
   useEffect(() => {
@@ -34,6 +46,9 @@ export default function TaskDetail() {
     try {
       const r = await api.tasks.responder(id, selected);
       setResult(r);
+      if (r.correcta) {
+        refreshUser();
+      }
     } catch (e) {
       setResult({ correcta: false, error: e.message });
     } finally {
