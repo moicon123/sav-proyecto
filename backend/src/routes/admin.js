@@ -300,31 +300,47 @@ router.post('/metodos-qr', async (req, res) => {
     nombre_titular: nombre_titular || 'Nuevo método',
     imagen_qr_url: imagen_base64 || '',
     activo: true,
-    orden: (await getMetodosQr()).length,
+    orden: (await getMetodosQr()).length + 1,
     created_at: new Date().toISOString()
   };
 
-  // Solo enviar a Supabase lo esencial para evitar errores de columnas faltantes
-  const { data, fallback } = await trySupabase(() => 
+  const { data, error, fallback } = await trySupabase(() => 
     supabase.from('metodos_qr').insert([metodo]).select().maybeSingle()
   );
   
-  if (!fallback) return res.json(data);
+  if (!fallback) {
+    if (!data) return res.status(500).json({ error: 'Error al insertar en la base de datos real' });
+    return res.json(data);
+  }
+
+  if (error) console.error('[Admin] Fallback a local por error en Supabase:', error.message);
 
   if (!store.metodosQr) store.metodosQr = [];
-  store.metodosQr.push({ ...metodo, imagen_base64 }); // Guardamos base64 en memoria local
-  res.json(metodo);
+  const localMetodo = { ...metodo, imagen_base64 };
+  store.metodosQr.push(localMetodo);
+  res.json(localMetodo);
 });
 
 router.delete('/metodos-qr/:id', async (req, res) => {
   const { id } = req.params;
-  const { fallback } = await trySupabase(() => supabase.from('metodos_qr').delete().eq('id', id));
+  const { error, fallback } = await trySupabase(() => supabase.from('metodos_qr').delete().eq('id', id));
+  
   if (!fallback) return res.json({ ok: true });
+  
+  if (error) {
+    console.error('[Admin] Error al eliminar método QR en Supabase:', error);
+    // Solo si el error es de conexión o algo que amerite fallback seguimos, 
+    // pero si es un error de la DB (como ID no encontrado), informamos.
+  }
 
   const store = await getStore();
   const idx = (store.metodosQr || []).findIndex(x => x.id === id);
-  if (idx !== -1) store.metodosQr.splice(idx, 1);
-  res.json({ ok: true });
+  if (idx !== -1) {
+    store.metodosQr.splice(idx, 1);
+    return res.json({ ok: true });
+  }
+  
+  res.status(error ? 500 : 404).json({ error: error?.message || 'Método no encontrado' });
 });
 
 router.get('/banners', async (req, res) => {
