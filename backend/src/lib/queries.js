@@ -189,13 +189,22 @@ export async function getPublicContent() {
 
 export async function getBanners() {
   const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').select('*').eq('activo', true).order('orden', { ascending: true }));
+  
+  // Si Supabase responde correctamente (fallback: false)
   if (!fallback) {
-    // Hotfix: Corregir URL si tiene el error tipográfico carusel1.jpeg
-    return (data || []).map(b => ({
-      ...b,
-      imagen_url: b.imagen_url === '/imag/carusel1.jpeg' ? '/imag/carrusel1.jpeg' : b.imagen_url
-    }));
+    // Si hay datos en la DB, los devolvemos corregidos
+    if (data && data.length > 0) {
+      return data.map(b => ({
+        ...b,
+        imagen_url: b.imagen_url === '/imag/carusel1.jpeg' ? '/imag/carrusel1.jpeg' : b.imagen_url
+      }));
+    }
+    // Si la DB está vacía, devolvemos los banners por defecto del seed
+    const store = await getStore();
+    return store.banners || [];
   }
+
+  // Si Supabase falló (fallback: true), usamos el store local
   const store = await getStore();
   return (store.banners || []).filter(b => b.activo !== false).sort((a, b) => (a.orden || 0) - (b.orden || 0));
 }
