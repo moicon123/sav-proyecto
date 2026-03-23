@@ -46,95 +46,94 @@ export default function Login() {
       <div className="absolute bottom-[-10%] -right-[10%] w-[100%] sm:w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[100px] sm:blur-[120px] pointer-events-none" />
 
       <div className="w-full max-w-sm relative z-10 py-8">
-        <div className="text-center mb-8 sm:mb-12 animate-fade-in">
-          <div className="inline-flex items-center justify-center p-4 sm:p-6 rounded-[2rem] sm:rounded-[2.5rem] bg-white mb-6 sm:mb-8 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] border border-gray-100 relative overflow-hidden group">
+        <div className="text-center mb-6 sm:mb-10 animate-fade-in">
+          <div className="inline-flex items-center justify-center p-3 sm:p-4 rounded-[1.5rem] sm:rounded-[2rem] bg-white mb-4 sm:mb-6 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] border border-gray-100 relative overflow-hidden group">
             <div className="absolute inset-0 bg-[#1a1f36]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             <div className="relative z-10">
-              <img src="/imag/logo.jpeg" alt="SAV" className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-xl sm:rounded-2xl shadow-inner transition-transform group-hover:scale-110 duration-500" />
+              <img src="/imag/logo.jpeg" alt="SAV" className="w-12 h-12 sm:w-16 sm:h-16 object-contain rounded-lg sm:rounded-xl shadow-inner transition-transform group-hover:scale-110 duration-500" />
             </div>
-            <div className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-8 h-8 sm:w-10 sm:h-10 bg-[#1a1f36] rounded-full flex items-center justify-center text-white border-2 sm:border-4 border-white shadow-lg">
-              <Zap size={14} fill="currentColor" className="animate-pulse sm:w-4 sm:h-4" />
+            <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-6 h-6 sm:w-8 sm:h-8 bg-[#1a1f36] rounded-full flex items-center justify-center text-white border-2 border-white shadow-lg">
+              <Zap size={10} fill="currentColor" className="animate-pulse sm:w-3 sm:h-3" />
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#1a1f36] uppercase tracking-tighter drop-shadow-sm">
+          <h1 className="text-xl sm:text-2xl font-black text-[#1a1f36] uppercase tracking-tighter drop-shadow-sm">
             BIENVENIDO A <span className="text-[#1a1f36] underline decoration-4 decoration-[#1a1f36]/10 underline-offset-8">SAV</span>
           </h1>
-          <p className="text-[9px] sm:text-[11px] text-gray-400 font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] mt-3 sm:mt-4 opacity-60 px-4 leading-relaxed">Sistema de Activos Virtuales</p>
+          <p className="text-[8px] sm:text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] mt-2 sm:mt-3 opacity-60 px-4 leading-relaxed">Sistema de Activos Virtuales</p>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-2xl rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)] border border-white/50 animate-slideUp">
-          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+        <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.12)] border border-white/50 animate-slideUp">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             {error && (
-              <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-rose-50 text-rose-500 text-[10px] sm:text-[11px] font-black uppercase tracking-widest border border-rose-100 animate-shake text-center">
+              <div className="p-3 sm:p-4 rounded-xl bg-rose-50 text-rose-500 text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-rose-100 animate-shake text-center">
                 {error}
               </div>
             )}
             
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="block text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Teléfono Móvil</label>
-              <div className="flex gap-2 sm:gap-3">
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="block text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Teléfono Móvil</label>
+              <div className="flex gap-2">
                 <div className="relative group flex-shrink-0">
                   <select
                     value={pais}
                     onChange={(e) => setPais(e.target.value)}
-                    className="appearance-none w-20 sm:w-24 px-4 sm:px-5 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-gray-50/50 border-2 border-gray-50 focus:border-[#1a1f36]/30 text-[#1a1f36] font-black text-xs sm:text-sm transition-all outline-none cursor-pointer"
+                    className="appearance-none w-18 sm:w-20 px-3 sm:px-4 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 focus:border-[#1a1f36]/20 text-[#1a1f36] font-black text-[10px] sm:text-xs transition-all outline-none cursor-pointer"
                   >
                     {PAISES.map((p) => (
                       <option key={p.codigo} value={p.codigo} className="bg-white">{p.codigo}</option>
                     ))}
                   </select>
-                  <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[9px] sm:text-[10px] group-hover:text-[#1a1f36] transition-colors">▼</div>
+                  <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px] sm:text-[9px]">▼</div>
                 </div>
                 <input
                   type="tel"
                   inputMode="numeric"
                   value={numero}
                   onChange={(e) => setNumero(e.target.value.replace(/\D/g, ''))}
-                  className="flex-1 px-5 sm:px-6 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-gray-50/50 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/30 transition-all outline-none placeholder:text-gray-300 shadow-inner"
+                  className="flex-1 px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none placeholder:text-gray-300 shadow-inner"
                   placeholder="70000000"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="block text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Contraseña</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="block text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Contraseña</label>
               <div className="relative group">
                 <input
                   type={showPass ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-5 sm:px-6 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-gray-50/50 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/30 transition-all outline-none pr-14 sm:pr-16 placeholder:text-gray-300 shadow-inner"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none pr-12 sm:pr-14 placeholder:text-gray-300 shadow-inner"
                   placeholder="••••••••"
                   required
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowPass(!showPass)} 
-                  className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a1f36] transition-colors"
+                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a1f36] transition-colors"
                 >
-                  {showPass ? <EyeOff size={20} sm:size={22} strokeWidth={2.5} /> : <Eye size={20} sm:size={22} strokeWidth={2.5} />}
+                  {showPass ? <EyeOff size={18} sm:size={20} strokeWidth={2.5} /> : <Eye size={18} sm:size={20} strokeWidth={2.5} />}
                 </button>
               </div>
             </div>
 
             <button 
               type="submit" 
-              className="w-full py-5 sm:py-6 mt-4 sm:mt-6 rounded-[1.5rem] sm:rounded-[2rem] bg-gradient-to-br from-[#1a1f36] to-[#2a2f46] text-white font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] sm:text-xs shadow-[0_15px_35px_-10px_rgba(26,31,54,0.4)] active:scale-[0.98] hover:shadow-[0_20px_45px_-12px_rgba(26,31,54,0.5)] transition-all relative overflow-hidden group"
+              className="w-full py-4 sm:py-5 mt-2 sm:mt-4 rounded-[1.2rem] sm:rounded-[1.5rem] bg-[#1a1f36] text-white font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs shadow-lg shadow-[#1a1f36]/20 active:scale-[0.98] transition-all relative overflow-hidden group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-[1500ms]" />
-              <span className="relative z-10">Iniciar Sesión Segura</span>
+              Iniciar Sesión
             </button>
           </form>
         </div>
 
-        <div className="mt-8 sm:mt-12 text-center animate-fade-in delay-500">
-          <p className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] sm:tracking-[0.3em]">
+        <div className="mt-8 sm:mt-10 text-center animate-fade-in delay-500">
+          <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
             ¿Aún no eres miembro?
           </p>
           <Link 
             to="/registro" 
-            className="inline-block mt-3 sm:mt-4 px-8 sm:px-10 py-3.5 sm:py-4 rounded-[1.2rem] sm:rounded-[1.5rem] bg-white text-[#1a1f36] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[9px] sm:text-[10px] shadow-[0_10px_25px_rgba(0,0,0,0.05)] border border-gray-100 hover:border-[#1a1f36]/30 active:scale-95 transition-all"
+            className="inline-block mt-2 sm:mt-3 px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-[1rem] sm:rounded-[1.2rem] bg-white text-[#1a1f36] font-black uppercase tracking-[0.1em] text-[8px] sm:text-[9px] shadow-sm border border-gray-100 hover:border-[#1a1f36]/20 active:scale-95 transition-all"
           >
             Crear Nueva Cuenta
           </Link>
