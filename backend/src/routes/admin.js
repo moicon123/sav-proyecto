@@ -294,21 +294,25 @@ router.get('/metodos-qr', async (req, res) => {
 router.post('/metodos-qr', async (req, res) => {
   const { nombre_titular, imagen_base64 } = req.body;
   const store = await getStore();
+  
   const metodo = {
     id: uuidv4(),
     nombre_titular: nombre_titular || 'Nuevo método',
     imagen_qr_url: imagen_base64 || '',
-    imagen_base64: imagen_base64 || null,
     activo: true,
     orden: (await getMetodosQr()).length,
     created_at: new Date().toISOString()
   };
 
-  const { data, fallback } = await trySupabase(() => supabase.from('metodos_qr').insert([metodo]).select().maybeSingle());
+  // Solo enviar a Supabase lo esencial para evitar errores de columnas faltantes
+  const { data, fallback } = await trySupabase(() => 
+    supabase.from('metodos_qr').insert([metodo]).select().maybeSingle()
+  );
+  
   if (!fallback) return res.json(data);
 
   if (!store.metodosQr) store.metodosQr = [];
-  store.metodosQr.push(metodo);
+  store.metodosQr.push({ ...metodo, imagen_base64 }); // Guardamos base64 en memoria local
   res.json(metodo);
 });
 
@@ -333,18 +337,20 @@ router.post('/banners', async (req, res) => {
   const banner = {
     id: uuidv4(),
     imagen_url: imagen_base64 || imagen_url || '',
-    imagen_base64: imagen_base64 || null,
     orden: parseInt(orden) || 0,
     activo: true,
     created_at: new Date().toISOString()
   };
 
-  const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').insert([banner]).select().maybeSingle());
+  const { data, fallback } = await trySupabase(() => 
+    supabase.from('banners_carrusel').insert([banner]).select().maybeSingle()
+  );
+  
   if (!fallback) return res.json(data);
 
   const store = await getStore();
   if (!store.banners) store.banners = [];
-  store.banners.push(banner);
+  store.banners.push({ ...banner, imagen_base64 }); // Guardamos base64 en memoria local
   res.json(banner);
 });
 
