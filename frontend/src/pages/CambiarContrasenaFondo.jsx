@@ -90,7 +90,7 @@ export default function CambiarContrasenaFondo() {
             />
           </div>
         </div>
-        <button type="submit" disabled={loading} className="w-full py-4 rounded-full bg-sav-accent text-white font-bold disabled:opacity-50">
+        <button type="submit" disabled={loading} className="w-full py-4 rounded-full bg-[#1a1f36] text-white font-black uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all disabled:opacity-50">
           {loading ? 'Guardando...' : 'Guardar'}
         </button>
       </form>

@@ -14,7 +14,18 @@ export default function TaskRoom() {
     setLoading(true);
     setError(null);
     api.tasks.list()
-      .then(setData)
+      .then(res => {
+        // Barajar las tareas aleatoriamente (Fisher-Yates shuffle)
+        if (res && res.tareas) {
+          const shuffledTasks = [...res.tareas];
+          for (let i = shuffledTasks.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledTasks[i], shuffledTasks[j]] = [shuffledTasks[j], shuffledTasks[i]];
+          }
+          res.tareas = shuffledTasks;
+        }
+        setData(res);
+      })
       .catch((err) => {
         console.error('Error cargando tareas:', err);
         setError(err.message || 'No se pudieron cargar las tareas. Intentalo de nuevo.');
@@ -30,8 +41,8 @@ export default function TaskRoom() {
     return (
       <Layout>
         <Header title="sala de tareas" />
-        <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-          <div className="w-12 h-12 border-4 border-sav-primary border-t-transparent rounded-full animate-spin" />
+        <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4 bg-white">
+          <div className="w-12 h-12 border-4 border-[#1a1f36] border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-400 font-medium animate-pulse uppercase tracking-widest text-[10px]">Cargando tareas...</p>
         </div>
       </Layout>
@@ -42,19 +53,19 @@ export default function TaskRoom() {
     return (
       <Layout>
         <Header title="sala de tareas" />
-        <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-[2rem] flex items-center justify-center shadow-xl shadow-rose-500/10 border border-rose-100">
+        <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center min-h-[60vh] bg-white">
+          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-[2rem] flex items-center justify-center shadow-xl border border-rose-100">
             <TrendingUp size={40} className="rotate-180" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Ocurrió un error</h2>
-            <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-xs mx-auto">
+            <h2 className="text-xl font-black text-[#1a1f36] uppercase tracking-tighter">Ocurrió un error</h2>
+            <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-xs mx-auto">
               {error || 'No se pudo conectar con el servidor.'}
             </p>
           </div>
           <button 
             onClick={fetchTasks}
-            className="px-8 py-4 rounded-2xl bg-sav-primary text-white font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all"
+            className="px-8 py-4 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all"
           >
             Reintentar
           </button>
@@ -69,33 +80,40 @@ export default function TaskRoom() {
   return (
     <Layout>
       <Header title="sala de tareas" />
-      <div className="p-4 space-y-4">
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800 capitalize">{data.nivel}</h2>
-          <p className="text-gray-500 text-sm mt-1">
-            restantes {data.tareas_restantes} · completadas {data.tareas_completadas}
-          </p>
-          <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="p-4 space-y-4 bg-white min-h-screen">
+        <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-gray-100">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-black text-[#1a1f36] uppercase tracking-tight">{data.nivel}</h2>
+            <div className="px-3 py-1 bg-[#00C853]/10 text-[#00C853] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#00C853]/10">
+              Estado: Activo
+            </div>
+          </div>
+          
+          <div className="flex justify-between text-[10px] font-black text-gray-400 mb-2 px-1 uppercase tracking-widest">
+            <span>completadas {data.tareas_completadas}</span>
+            <span>restantes {data.tareas_restantes}</span>
+          </div>
+          
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden border border-gray-100">
             <div
-              className="h-full bg-teal-500 rounded-full transition-all"
+              className="h-full bg-gradient-to-r from-[#1a1f36] to-[#2a2f46] rounded-full transition-all duration-700 shadow-sm"
               style={{ width: `${progress}%` }}
             />
           </div>
+
           {data.mensaje && (
-            <div className="mt-6 p-6 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-[2rem] shadow-lg shadow-orange-500/20 relative overflow-hidden group">
-              <div className="absolute -right-5 -top-5 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-              <div className="relative z-10 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner shrink-0">
-                  <TrendingUp className="text-white" size={24} />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Aviso Importante</p>
-                  <p className="text-sm font-black leading-relaxed">{data.mensaje}</p>
+            <div className="mt-6 p-5 bg-gray-50 text-[#1a1f36] rounded-2xl shadow-inner border border-gray-100 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-[#1a1f36]/5 rounded-full -mr-10 -mt-10 blur-2xl" />
+              <div className="flex items-start gap-3 relative z-10">
+                <TrendingUp className="text-[#1a1f36] shrink-0" size={20} />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Aviso del sistema</p>
+                  <p className="text-sm font-medium leading-relaxed text-gray-600">{data.mensaje}</p>
                 </div>
               </div>
               <Link 
                 to="/vip"
-                className="mt-4 w-full py-3 bg-white text-orange-600 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="mt-5 w-full py-4 bg-[#1a1f36] text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 Subir de Nivel Ahora
               </Link>
@@ -103,37 +121,50 @@ export default function TaskRoom() {
           )}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 pb-24">
           {data.tareas.length > 0 ? (
             data.tareas.map((t) => (
               <Link
                 key={t.id}
                 to={`/tareas/${t.id}`}
-                className="flex gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"
+                className="flex gap-4 p-3 bg-white rounded-[1.5rem] border border-gray-100 shadow-lg active:scale-[0.98] transition-all group"
               >
-                <div className="w-24 h-24 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden relative">
+                <div className="w-24 h-24 rounded-2xl bg-gray-50 flex-shrink-0 overflow-hidden relative border border-gray-100">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                    <img src="/imag/logo.jpeg" alt="" className="w-12 h-12 object-contain grayscale" />
+                  </div>
                   <img
                     src={t.video_url || t.imagen_url || '/imag/logo.jpeg'}
                     alt=""
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10"
+                    onError={(e) => { e.target.src = '/imag/logo.jpeg'; }}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <Play className="text-white" size={32} fill="white" />
+                  {/* Overlay con Logo y Play */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#1a1f36]/20 group-hover:bg-[#1a1f36]/40 transition-colors z-20">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-2xl scale-90 group-hover:scale-100 transition-transform">
+                      <Play className="text-white ml-1" size={24} fill="white" />
+                    </div>
+                  </div>
+                  {/* Logo de la plataforma en la esquina del thumbnail */}
+                  <div className="absolute bottom-1 right-1 w-7 h-7 rounded-lg overflow-hidden border border-white/20 shadow-lg bg-white/80 backdrop-blur-sm z-30">
+                    <img src="/imag/logo.jpeg" alt="SAV" className="w-full h-full object-cover opacity-80" />
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <span className="inline-block px-2 py-0.5 rounded-md bg-teal-500 text-white text-xs font-medium">
-                    {t.nivel}
-                  </span>
-                  <p className="text-gray-500 text-xs mt-1">Precio de recompensa</p>
-                  <p className="text-sav-accent font-bold">+{t.recompensa} BOB</p>
+                <div className="flex-1 py-1 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <span className="inline-block px-3 py-1 rounded-full bg-[#1a1f36]/5 text-[#1a1f36] text-[9px] font-black uppercase tracking-widest border border-[#1a1f36]/10">
+                      {t.nivel}
+                    </span>
+                    <p className="text-gray-400 text-[9px] font-black uppercase tracking-[0.2em]">Recompensa</p>
+                    <p className="text-[#1a1f36] font-black text-xl tracking-tight">+{t.recompensa} <span className="text-xs text-gray-400">BOB</span></p>
+                  </div>
                 </div>
               </Link>
             ))
           ) : (
             !data.mensaje && (
-              <div className="text-center p-8 bg-white rounded-2xl border border-dashed border-gray-200">
-                <p className="text-gray-400">No hay tareas disponibles por hoy.</p>
+              <div className="text-center p-12 bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
+                <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">No hay tareas disponibles por hoy.</p>
               </div>
             )
           )}

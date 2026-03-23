@@ -8,28 +8,35 @@ const router = Router();
 router.get('/', authenticate, async (req, res) => {
   try {
     const user = await findUserById(req.user.id);
-    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (!user) {
+      console.warn(`[Tasks] Usuario con ID ${req.user.id} no encontrado en la base de datos.`);
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
 
     const levels = await getLevels();
-    const level = levels.find(l => l.id === user.nivel_id) || levels[0];
+    const level = levels.find(l => String(l.id) === String(user.nivel_id)) || levels[0];
     
-    console.log(`[Tasks] Cargando tareas para usuario ${user.nombre_usuario} (Nivel: ${level.id})`);
+    console.log(`[Tasks] Usuario: ${user.nombre_usuario}, Nivel ID del usuario: "${user.nivel_id}", Buscando nivel: "${level.nombre}"`);
 
     const allTasks = await getTasks(level.id);
     const activity = await getTaskActivity(user.id);
-
-    console.log(`[Tasks] Tareas encontradas: ${allTasks.length}, Actividad registrada: ${activity.length}`);
+    
+    console.log(`[Tasks] Nivel: ${level.nombre}, Tareas encontradas: ${allTasks.length}, Actividad total: ${activity.length}`);
   
-  const today = new Date().toDateString();
-  const todayCompletedActivity = activity.filter(a => 
-    new Date(a.created_at).toDateString() === today && a.respuesta_correcta === true
-  );
+    const today = new Date().toDateString();
+    const todayCompletedActivity = activity.filter(a => 
+      new Date(a.created_at).toDateString() === today && a.respuesta_correcta === true
+    );
   
   // Logic for Pasante (l1): 3 days limit
-  if (level.id === 'l1') {
-    const uniqueDays = new Set(activity.filter(a => a.respuesta_correcta === true).map(a => new Date(a.created_at).toDateString()));
+  const isPasante = String(level.id) === 'l1' || String(level.codigo) === 'pasante' || String(level.codigo) === 'internar';
+  
+  if (isPasante) {
+    const successfulActivities = activity.filter(a => a.respuesta_correcta === true);
+    const uniqueDays = new Set(successfulActivities.map(a => new Date(a.created_at).toDateString()));
     // If they have already worked 3 days and today is not one of them, or if they worked 3 days including today and finished
     if (uniqueDays.size >= 3 && !uniqueDays.has(today)) {
+      console.log(`[Tasks] Límite de 3 días alcanzado para pasante: ${user.nombre_usuario}`);
       return res.json({
         nivel: level.nombre,
         nivel_id: level.id,
@@ -41,30 +48,33 @@ router.get('/', authenticate, async (req, res) => {
     }
   }
 
-  const completedTaskIdsToday = new Set(todayCompletedActivity.map(a => a.tarea_id));
-  
-  // Filter out tasks already completed successfully today so they "disappear"
-  const availableTasks = allTasks.filter(t => !completedTaskIdsToday.has(t.id));
-  
-  const remaining = Math.max(0, level.num_tareas_diarias - todayCompletedActivity.length);
-  
-  // Limit the number of available tasks shown to the remaining count for the day
-  const tasksToShow = availableTasks.slice(0, remaining);
-
-  res.json({
-    nivel: level.nombre,
-    nivel_id: level.id,
-    tareas_restantes: remaining,
-    tareas_completadas: todayCompletedActivity.length,
-    tareas: tasksToShow.map(t => ({
-      id: t.id,
-      nombre: t.nombre,
-      nivel: level.nombre,
-      recompensa: t.recompensa,
-      video_url: t.video_url,
-      imagen_url: t.video_url,
-    })),
-  });
+    const completedTaskIdsToday = new Set(todayCompletedActivity.map(a => a.tarea_id));
+    
+    // Filter out tasks already completed successfully today so they "disappear"
+    const availableTasks = allTasks.filter(t => !completedTaskIdsToday.has(t.id));
+    
+    const numTareasDiarias = level.num_tareas_diarias || 0;
+    const remaining = Math.max(0, numTareasDiarias - todayCompletedActivity.length);
+    
+    console.log(`[Tasks] Diarias: ${numTareasDiarias}, Completadas: ${todayCompletedActivity.length}, Restantes: ${remaining}, Disponibles: ${availableTasks.length}`);
+     
+     // Remove the limit to show all tasks of the level, allowing users to see what's available
+     const tasksToShow = availableTasks;
+ 
+     res.json({
+       nivel: level.nombre,
+       nivel_id: level.id,
+       tareas_restantes: remaining,
+       tareas_completadas: todayCompletedActivity.length,
+       tareas: tasksToShow.map(t => ({
+         id: t.id,
+         nombre: t.nombre,
+         nivel: level.nombre,
+         recompensa: t.recompensa,
+         video_url: t.video_url,
+         imagen_url: t.video_url,
+       })),
+     });
   } catch (err) {
     console.error('[Tasks] Error crítico cargando sala de tareas:', err);
     res.status(500).json({ error: 'Error interno al cargar las tareas' });
@@ -74,58 +84,86 @@ router.get('/', authenticate, async (req, res) => {
 router.get('/:id', authenticate, async (req, res) => {
   const task = await getTaskById(req.params.id);
   if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+  
   const levels = await getLevels();
   const level = levels.find(l => l.id === task.nivel_id);
+  
+  const activity = await getTaskActivity(req.user.id);
+  const today = new Date().toDateString();
+  const yaCompletadaExitosamente = activity.some(
+    a => String(a.tarea_id) === String(task.id) && 
+         new Date(a.created_at).toDateString() === today && 
+         a.respuesta_correcta === true
+  );
+
   res.json({
     ...task,
     nivel: level?.nombre,
+    completada_hoy: yaCompletadaExitosamente,
   });
 });
 
 router.post('/:id/responder', authenticate, async (req, res) => {
-  const { respuesta } = req.body;
-  const user = await findUserById(req.user.id);
-  const task = await getTaskById(req.params.id);
-  if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
-  
-  const levels = await getLevels();
-  const level = levels.find(l => l.id === user.nivel_id) || levels[0];
-  const activity = await getTaskActivity(user.id);
-  const today = new Date().toDateString();
+  try {
+    const { respuesta } = req.body;
+    const user = await findUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    
+    const task = await getTaskById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
 
-  // Logic for Pasante (l1): 3 days limit
-  if (level.id === 'l1') {
-    const uniqueDays = new Set(activity.filter(a => a.respuesta_correcta === true).map(a => new Date(a.created_at).toDateString()));
-    if (uniqueDays.size >= 3 && !uniqueDays.has(today)) {
-      return res.status(400).json({ error: 'Tus 3 días de prueba como pasante han terminado. Sube de nivel ahora para continuar ganando.' });
+    console.log(`[Tasks] Respuesta recibida de ${user.nombre_usuario} para tarea ${req.params.id}: "${respuesta}"`);
+
+    const levels = await getLevels();
+    const level = levels.find(l => String(l.id) === String(user.nivel_id)) || levels[0];
+    const activity = await getTaskActivity(user.id);
+    const today = new Date().toDateString();
+
+    // Logic for Pasante (l1): 3 days limit
+    if (String(level.id) === 'l1' || String(level.codigo) === 'pasante') {
+      const successfulActivities = activity.filter(a => a.respuesta_correcta === true);
+      const uniqueDays = new Set(successfulActivities.map(a => new Date(a.created_at).toDateString()));
+      if (uniqueDays.size >= 3 && !uniqueDays.has(today)) {
+        console.log(`[Tasks] Bloqueado: Pasante ${user.nombre_usuario} agotó sus 3 días.`);
+        return res.status(400).json({ error: 'Tus 3 días de prueba han terminado. Sube de nivel.' });
+      }
     }
+    
+    const yaCompletadaExitosamente = activity.some(
+      a => String(a.tarea_id) === String(task.id) && 
+           new Date(a.created_at).toDateString() === today && 
+           a.respuesta_correcta === true
+    );
+    
+    if (yaCompletadaExitosamente) {
+      return res.status(400).json({ error: 'Ya completaste esta tarea con éxito hoy' });
+    }
+
+    const respuestaLimpia = (String(respuesta || '')).toUpperCase().trim();
+    const correctaLimpia = (String(task.respuesta_correcta || '')).toUpperCase().trim();
+    const correcta = respuestaLimpia === correctaLimpia;
+    const recompensa = correcta ? task.recompensa : 0;
+    
+    if (correcta) {
+      await updateUser(user.id, {
+        saldo_principal: (Number(user.saldo_principal) || 0) + Number(recompensa),
+      });
+    }
+
+    await createTaskActivity({
+      id: uuidv4(),
+      usuario_id: user.id,
+      tarea_id: task.id,
+      respuesta_correcta: correcta,
+      recompensa_otorgada: recompensa,
+      created_at: new Date().toISOString(),
+    });
+
+    res.json({ correcta, recompensa });
+  } catch (err) {
+    console.error('[Tasks] Error crítico al procesar respuesta:', err);
+    res.status(500).json({ error: 'Error al procesar la respuesta' });
   }
-  
-  const yaCompletadaExitosamente = activity.some(
-    a => a.tarea_id === task.id && new Date(a.created_at).toDateString() === today && a.respuesta_correcta === true
-  );
-  if (yaCompletadaExitosamente) return res.status(400).json({ error: 'Ya completaste esta tarea con éxito hoy' });
-
-  const correcta = (respuesta || '').toUpperCase().trim() === (task.respuesta_correcta || '').toUpperCase().trim();
-  const recompensa = correcta ? task.recompensa : 0;
-  if (recompensa) {
-    // Actualizar saldo de tareas del usuario
-    const updates = {
-      saldo_principal: (user.saldo_principal || 0) + recompensa,
-    };
-    await updateUser(user.id, updates);
-  }
-
-  await createTaskActivity({
-    id: uuidv4(),
-    usuario_id: user.id,
-    tarea_id: task.id,
-    respuesta_correcta: correcta,
-    recompensa_otorgada: recompensa,
-    created_at: new Date().toISOString(),
-  });
-
-  res.json({ correcta, recompensa });
 });
 
 export default router;

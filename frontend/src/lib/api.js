@@ -1,11 +1,11 @@
 const VITE_API_URL = import.meta.env.VITE_API_URL || '/api';
-const API = VITE_API_URL.endsWith('/') ? VITE_API_URL.slice(0, -1) : VITE_API_URL;
+const API = VITE_API_URL;
 
 function getToken() {
   return localStorage.getItem('token');
 }
 
-async function request(url, options = {}, retries = 2) {
+async function request(url, options = {}, retries = 1) {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -13,20 +13,40 @@ async function request(url, options = {}, retries = 2) {
   const normalizedUrl = url.startsWith('/') ? url : `/${url}`;
   
   try {
-    const res = await fetch(API + normalizedUrl, { ...options, headers });
+    const finalUrl = API + normalizedUrl;
+    const res = await fetch(finalUrl, { ...options, headers });
     const data = await res.json().catch(() => ({}));
     
     if (!res.ok) {
+      console.error(`[API Error] ${res.status} ${finalUrl}`, data);
       const error = new Error(data.error || 'Error de red');
       error.status = res.status;
+
+      // Manejador global de errores de autenticación
+      if (error.status === 401 || error.status === 404) {
+        const isAuthRoute = normalizedUrl.includes('/auth/');
+        if (!isAuthRoute) {
+          console.warn('Redirigiendo al login por error de autenticación...');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          // Detener la ejecución para evitar más errores
+          return new Promise(() => {}); 
+        }
+      }
+
       throw error;
     }
     return data;
   } catch (err) {
+    // No reintentar en errores de cliente (4xx)
+    if (err.status >= 400 && err.status < 500) {
+      throw err;
+    }
+
     if (retries > 0 && (options.method === 'GET' || !options.method)) {
       console.warn(`Error en ${url}, reintentando... (${retries} restantes)`);
-      // Esperar un poco antes de reintentar
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       return request(url, options, retries - 1);
     }
     throw err;

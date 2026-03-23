@@ -71,139 +71,166 @@ export default function Withdrawal() {
     }
   };
 
-  const horarioTxt =
-    horarioRet?.enabled &&
-    `Horario permitido: ${(horarioRet.dias_semana || []).length ? 'días marcados por admin' : '—'} · ${horarioRet.hora_inicio || ''} – ${horarioRet.hora_fin || ''}`;
-
   return (
     <Layout>
-      <Header title="Retiro" rightAction={<Link to="/ganancias" className="text-sav-accent text-sm font-medium">registro</Link>} />
-      <form onSubmit={handleSubmit} className="p-4 space-y-4">
-        {error && <div className="p-3 rounded-xl bg-gray-800 text-white text-sm">{error}</div>}
-        {horarioRet?.enabled && fueraHorario && (
-          <div className="p-3 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 text-sm">
-            <strong>Intento de retiro fuera del horario.</strong> {msgHorario}
-          </div>
-        )}
+      <Header title="Retiro" rightAction={<Link to="/ganancias" className="text-[#1a1f36] text-[10px] font-black uppercase tracking-widest">registro</Link>} />
+      <div className="bg-white min-h-screen">
+        <form onSubmit={handleSubmit} className="p-4 space-y-6 pb-24">
+          {error && (
+            <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-xs font-bold text-center animate-shake">
+              {error}
+            </div>
+          )}
+          
+          {horarioRet?.enabled && fueraHorario && (
+            <div className="p-5 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-center animate-pulse shadow-sm">
+              <p className="text-[10px] font-black uppercase tracking-widest mb-1">Horario Cerrado</p>
+              <p className="text-xs font-bold leading-relaxed">{msgHorario || 'El sistema de retiros no está disponible ahora.'}</p>
+            </div>
+          )}
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="font-medium text-gray-800 mb-3">Selecciona el Monedero</p>
-          <div className="space-y-2">
-            <label className="block p-3 rounded-xl border cursor-pointer transition-colors hover:bg-gray-50">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-gray-700">
-                  Saldo de Comisiones{' '}
-                  <span className="text-sav-accent ml-1">{saldoComisiones.toFixed(2)} BOB</span>
-                </span>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${tipoBilletera === 'comisiones' ? 'border-sav-primary bg-sav-primary' : 'border-gray-300'}`}>
-                  {tipoBilletera === 'comisiones' && <Check className="text-white" size={16} />}
-                </div>
-                <input type="radio" name="billetera" value="comisiones" checked={tipoBilletera === 'comisiones'} onChange={() => setTipoBilletera('comisiones')} className="sr-only" />
-              </div>
-              <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-tighter">Ganancias por tu red de invitados</p>
-            </label>
-            <label className="block p-3 rounded-xl border cursor-pointer transition-colors hover:bg-gray-50">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-gray-700">
-                  Saldo de Tareas{' '}
-                  <span className="text-sav-accent ml-1">{saldoPrincipal.toFixed(2)} BOB</span>
-                </span>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${tipoBilletera === 'principal' ? 'border-sav-primary bg-sav-primary' : 'border-gray-300'}`}>
-                  {tipoBilletera === 'principal' && <Check className="text-white" size={16} />}
-                </div>
-                <input type="radio" name="billetera" value="principal" checked={tipoBilletera === 'principal'} onChange={() => setTipoBilletera('principal')} className="sr-only" />
-              </div>
-              <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-tighter">Ganancias por tareas completadas</p>
-            </label>
-          </div>
-        </div>
-
-        {tarjetas.length > 1 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <p className="font-medium text-gray-800 mb-2">Cuenta para el retiro</p>
-            <select
-              value={tarjetaId}
-              onChange={(e) => setTarjetaId(e.target.value)}
-              className="w-full rounded-xl border px-3 py-2"
-            >
-              {tarjetas.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.nombre_banco} ···{t.numero_masked}
-                </option>
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+            <p className="text-[10px] font-black text-gray-400 mb-4 uppercase tracking-widest ml-1">Selecciona el Monedero</p>
+            <div className="space-y-3">
+              {[
+                { id: 'comisiones', label: 'Saldo de Comisiones', value: saldoComisiones },
+                { id: 'principal', label: 'Saldo Principal', value: saldoPrincipal }
+              ].map((b) => (
+                <label 
+                  key={b.id}
+                  className={`block p-4 rounded-2xl border transition-all cursor-pointer group ${tipoBilletera === b.id ? 'border-[#1a1f36] bg-[#1a1f36]/5 shadow-md' : 'border-gray-100 bg-gray-50/30 hover:border-[#1a1f36]/30'}`}
+                >
+                  <input
+                    type="radio"
+                    name="tipoBilletera"
+                    className="hidden"
+                    value={b.id}
+                    checked={tipoBilletera === b.id}
+                    onChange={(e) => setTipoBilletera(e.target.value)}
+                  />
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <span className={`text-[10px] font-black uppercase tracking-tight ${tipoBilletera === b.id ? 'text-[#1a1f36]' : 'text-gray-400 group-hover:text-[#1a1f36]'}`}>{b.label}</span>
+                      <p className={`text-lg font-black ${tipoBilletera === b.id ? 'text-[#1a1f36]' : 'text-gray-600 group-hover:text-[#1a1f36]'}`}>
+                        {b.value.toFixed(2)} <span className="text-[10px] opacity-50">BOB</span>
+                      </p>
+                    </div>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${tipoBilletera === b.id ? 'border-[#1a1f36] bg-[#1a1f36]' : 'border-gray-200'}`}>
+                      {tipoBilletera === b.id && <Check className="text-white" size={14} strokeWidth={4} />}
+                    </div>
+                  </div>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
-        )}
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="font-medium text-gray-800 mb-2">Sube tu QR para el retiro</p>
-          <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="w-full p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-sav-accent flex flex-col items-center gap-2 text-gray-500 hover:text-sav-accent transition"
-          >
-            {qrImage ? (
-              <img src={qrImage} alt="QR" className="max-h-32 object-contain rounded" />
-            ) : (
-              <>
-                <Upload size={40} />
-                <span>Sube tu QR para el retiro</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="font-medium text-gray-800 mb-3">Monto de retiro</p>
-          <div className="grid grid-cols-3 gap-2">
-            {montos.map((m) => (
-              <label key={m} className={`flex items-center justify-center p-3 rounded-xl border cursor-pointer ${monto === m ? 'border-sav-accent bg-sav-accent/20' : ''}`}>
-                <input type="radio" name="monto" value={m} checked={monto === m} onChange={() => setMonto(m)} className="sr-only" />
-                <span className="font-bold">{m.toFixed(2)}</span>
-              </label>
-            ))}
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+            <p className="text-[10px] font-black text-gray-400 mb-4 uppercase tracking-widest ml-1">Monto a Retirar</p>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {montos.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMonto(m)}
+                  className={`py-4 rounded-2xl border transition-all text-xs font-black shadow-sm ${monto === m ? 'bg-[#1a1f36] border-[#1a1f36] text-white shadow-lg' : 'bg-gray-50 border-gray-100 text-gray-500 hover:border-[#1a1f36]/30 hover:text-[#1a1f36]'}`}
+                >
+                  {m} BOB
+                </button>
+              ))}
+            </div>
+            <div className="relative group">
+              <input
+                type="number"
+                value={monto}
+                onChange={(e) => setMonto(parseFloat(e.target.value))}
+                className="w-full bg-gray-50 px-5 py-5 rounded-2xl border border-gray-100 focus:border-[#1a1f36]/50 focus:outline-none transition-all text-xl font-black text-[#1a1f36] placeholder:text-gray-300 shadow-inner"
+                placeholder="Monto personalizado"
+                required
+              />
+              <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 font-black text-xs uppercase tracking-widest">BOB</span>
+            </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="font-medium text-gray-800 mb-2">Contraseña del fondo</p>
-          <div className="relative">
-            <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border pr-12" required />
-            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-              {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+          {tarjetas.length > 0 && (
+            <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+              <p className="text-[10px] font-black text-gray-400 mb-4 uppercase tracking-widest ml-1">Cuenta de Destino</p>
+              <div className="relative">
+                <select
+                  value={tarjetaId}
+                  onChange={(e) => setTarjetaId(e.target.value)}
+                  className="w-full bg-gray-50 px-5 py-5 rounded-2xl border border-gray-100 focus:border-[#1a1f36]/50 focus:outline-none appearance-none transition-all text-sm font-black text-[#1a1f36] shadow-inner"
+                >
+                  {tarjetas.map((t) => (
+                    <option key={t.id} value={t.id} className="bg-white">
+                      {t.nombre_banco} - {t.numero_masked}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#1a1f36] font-black text-xs">▼</div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+            <p className="text-[10px] font-black text-gray-400 mb-4 uppercase tracking-widest ml-1">Contraseña de Fondo</p>
+            <div className="relative group">
+              <input
+                type={showPass ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-gray-50 px-5 py-5 rounded-2xl border border-gray-100 focus:border-[#1a1f36]/50 focus:outline-none transition-all text-sm font-black text-[#1a1f36] placeholder:text-gray-300 shadow-inner"
+                placeholder="••••••••"
+                required
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a1f36] transition-colors"
+              >
+                {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+            <p className="text-[10px] font-black text-gray-400 mb-5 uppercase tracking-widest ml-1">QR de Cobro (Opcional)</p>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className={`w-full min-h-[10rem] rounded-[2rem] border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden group ${qrImage ? 'border-[#00C853] bg-[#00C853]/5' : 'border-gray-100 bg-gray-50/50 hover:border-[#1a1f36]/50'}`}
+            >
+              {qrImage ? (
+                <>
+                  <img src={qrImage} alt="QR" className="max-h-32 object-contain rounded-xl shadow-lg" />
+                  <span className="text-[10px] font-black text-[#00C853] uppercase tracking-widest">QR Listo</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-[#1a1f36] group-hover:scale-110 transition-transform border border-gray-100 shadow-sm">
+                    <Upload size={24} />
+                  </div>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-[#1a1f36] transition-colors">Subir código QR</span>
+                </>
+              )}
             </button>
           </div>
-        </div>
 
-        <div className="flex justify-between text-sm text-gray-600">
-          <span>Tarifa de manejo (10%)</span>
-          <span className="text-rose-500 font-bold">{(monto * 0.1).toFixed(2)} BOB</span>
-        </div>
-        <div className="flex justify-between text-sm text-gray-800 font-black border-t pt-2">
-          <span>Recibirás aproximadamente</span>
-          <span className="text-sav-primary font-black">{(monto * 0.9).toFixed(2)} BOB</span>
-        </div>
-        {horarioRet?.enabled ? (
-          <p className="text-sm text-gray-600">{horarioTxt}</p>
-        ) : (
-          <p className="text-sm text-gray-500">Horario de retiros: sin restricción (admin puede activar días y horas).</p>
-        )}
+          <button
+            type="submit"
+            disabled={loading || fueraHorario}
+            className="w-full py-5 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#1a1f36]/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale mt-4"
+          >
+            {loading ? 'Procesando Retiro...' : 'Solicitar Retiro Ahora'}
+          </button>
+        </form>
 
-        {tarjetas.length === 0 && (
-          <Link to="/vincular-tarjeta" className="block text-center text-sav-accent font-medium text-sm">
-            Agregar cuenta bancaria →
-          </Link>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading || !qrImage || tarjetas.length === 0 || (horarioRet?.enabled && fueraHorario)}
-          className="w-full py-4 rounded-full bg-sav-accent text-white font-bold text-lg disabled:opacity-50"
-        >
-          Retirar inmediatamente
-        </button>
-      </form>
+        <p className="text-[9px] text-gray-400 pb-10 text-center uppercase font-black tracking-[0.2em] leading-relaxed px-8">
+          {msgHorario || 'Sistema de retiros disponible las 24 horas.'}
+          <br />
+          <span className="opacity-40 italic mt-2 block text-gray-500">Los retiros pueden tardar hasta 24 horas en procesarse.</span>
+        </p>
+      </div>
     </Layout>
   );
 }

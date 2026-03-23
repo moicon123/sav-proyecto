@@ -2,18 +2,20 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import { api } from '../lib/api.js';
-import { ClipboardList, TrendingUp, Bell, HandCoins, Wallet, Users, Gift, UserCircle } from 'lucide-react';
+import { 
+  ClipboardList, TrendingUp, Bell, HandCoins, 
+  Wallet, Users, Gift, UserPlus, 
+  ChevronRight, Info, ShieldCheck, Zap
+} from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const gridItems = [
-  { to: '/tareas', icon: ClipboardList, label: 'Tarea' },
-  { to: '/vip', icon: TrendingUp, label: 'Fondo de Riqueza' },
-  { to: '/noticias-conferencia', icon: Bell, label: 'Noticias de Conferencia' },
-  { to: '/retiro', icon: HandCoins, label: 'Retirada' },
-  { to: '/recargar', icon: Wallet, label: 'Recargar' },
-  { to: '/equipo', icon: Users, label: 'Equipo' },
-  { to: '/invitar', icon: UserCircle, label: 'Invitación' },
+  { to: '/tareas', icon: ClipboardList, label: 'Sala de Tareas', color: 'text-blue-500', bg: 'bg-blue-50' },
+  { to: '/vip', icon: TrendingUp, label: 'Fondo Riqueza', color: 'text-amber-500', bg: 'bg-amber-50' },
+  { to: '/noticias-conferencia', icon: Bell, label: 'Noticias', color: 'text-purple-500', bg: 'bg-purple-50' },
+  { to: '/equipo', icon: Users, label: 'Mi Equipo', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+  { to: '/invitar', icon: UserPlus, label: 'Invitar', color: 'text-rose-500', bg: 'bg-rose-50' },
 ];
 
 export default function Dashboard() {
@@ -21,7 +23,7 @@ export default function Dashboard() {
   const [banners, setBanners] = useState([]);
   const [slide, setSlide] = useState(0);
   const [stats, setStats] = useState(null);
-  const [guideText, setGuideText] = useState('GUIA PARA PRINCIPIANTES. LIDERANDO EL FUTURO. ALCANZA TUS SUENOS.');
+  const [guideText, setGuideText] = useState('BIENVENIDO A SAV. TU FUTURO FINANCIERO COMIENZA AQUÍ. ALCANZA TUS METAS.');
   const [popup, setPopup] = useState({ popup_enabled: false, popup_title: '', popup_message: '' });
   const [showPopup, setShowPopup] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -66,132 +68,230 @@ export default function Dashboard() {
       setInstallPrompt(null);
       return;
     }
-    alert('Para instalar la app, abre el menu del navegador y selecciona "Instalar aplicacion" o "Agregar a pantalla de inicio".');
+    alert('Para instalar la app, abre el menú del navegador y selecciona "Instalar aplicación" o "Agregar a pantalla de inicio".');
   };
 
   return (
     <Layout>
-      <header className="bg-sav-primary text-white px-5 py-4 flex items-center justify-between sticky top-0 z-30 shadow-lg">
-        <Logo variant="header" />
+      {/* Header Premium White & Navy */}
+      <header className="bg-gradient-to-r from-[#1a1f36] to-[#2a2f46] px-5 py-4 flex items-center justify-between sticky top-0 z-30 border-b border-white/10 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.2)] border border-white/30 p-0.5 bg-white/10 backdrop-blur-md">
+            <img src="/imag/logo.jpeg" alt="SAV" className="w-full h-full object-cover rounded-lg" />
+          </div>
+          <span className="text-xl font-black tracking-tighter text-white drop-shadow-md">SAV</span>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20 shadow-inner backdrop-blur-md">
             <span className="text-sm">🇧🇴</span>
-            <span className="text-xs font-bold">BOB</span>
+            <span className="text-[11px] font-black text-white uppercase tracking-widest">BOB</span>
           </div>
           <button
             type="button"
             onClick={onInstallApp}
-            className="w-10 h-10 rounded-full bg-sav-accent/20 flex items-center justify-center border border-sav-accent/30 active:scale-90 transition-transform"
+            className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#1a1f36] active:scale-90 transition-all shadow-[0_5px_15px_rgba(255,255,255,0.3)] relative overflow-hidden group"
           >
-            <span className="text-lg">↓</span>
+            <Zap size={18} fill="currentColor" className="relative z-10" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#1a1f36]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
       </header>
 
-      <div className="relative h-60 bg-sav-primary overflow-hidden shadow-inner">
-        {banners.length > 0 ? (
-          <img
-            src={imgUrl(banners[slide]?.imagen_url)}
-            alt=""
-            className="w-full h-full object-cover animate-fade-in"
-            onError={(e) => {
-              e.target.src = '/imag/carrusel1.jpeg';
-              console.warn('Error cargando banner:', banners[slide]?.imagen_url);
-            }}
-          />
-        ) : (
-          <div className="h-full flex items-center justify-center">
-            <Logo variant="hero" className="opacity-20 grayscale" />
-          </div>
-        )}
-        {banners.length > 1 && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-            {banners.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setSlide(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? 'w-8 bg-sav-accent' : 'w-2 bg-white/40'}`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      <div className="bg-gray-50/50 min-h-screen pb-24 relative overflow-hidden">
+        {/* Elementos decorativos de fondo */}
+        <div className="absolute top-20 -left-20 w-64 h-64 bg-[#1a1f36]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-40 -right-20 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="p-5 grid grid-cols-3 gap-3 -mt-8 relative z-10">
-        {gridItems.map((item) => {
-          const { to, icon: GridIcon, label } = item;
-          if (to === '/usuario' && user?.nivel_codigo === 'internar') return null;
-          return (
-            <Link
-              key={label}
-              to={to}
-              className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] border border-gray-50 active:scale-95 transition-all group"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-sav-primary/5 flex items-center justify-center group-hover:bg-sav-primary/10 transition-colors">
-                <GridIcon className="text-sav-primary" size={28} strokeWidth={1.5} />
-              </div>
-              <span className="text-[10px] font-bold text-gray-800 text-center leading-tight uppercase tracking-tighter">
-                {label}
+        {/* Hero Section: Banner Impactante */}
+        <div className="px-4 pt-6">
+          <div className="relative h-60 bg-[#1a1f36] overflow-hidden rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(26,31,54,0.3)] group border border-white/10">
+            {/* Badge de Nivel Flotante */}
+            <div className="absolute top-5 left-5 z-20 flex items-center gap-2 bg-white/10 backdrop-blur-xl px-4 py-2 rounded-full border border-white/20 shadow-lg">
+              <div className="w-2.5 h-2.5 bg-[#00C853] rounded-full shadow-[0_0_10px_#00C853] animate-pulse" />
+              <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">
+                {user?.nivel_codigo === 'internar' ? 'PASANTE' : user?.nivel_codigo || 'USUARIO'}
               </span>
-            </Link>
-          );
-        })}
-      </div>
-
-      <Link
-        to="/sorteo"
-        className="fixed right-6 bottom-32 z-40 w-16 h-16 rounded-full bg-sav-accent flex items-center justify-center shadow-[0_8px_30px_rgb(212,175,55,0.4)] border-4 border-white active:scale-90 transition-transform"
-      >
-        <Gift className="text-sav-primary animate-bounce" size={32} />
-      </Link>
-
-      <div className="mx-5 mb-6 p-6 rounded-3xl bg-gradient-to-br from-sav-primary to-slate-800 text-white shadow-xl relative overflow-hidden group">
-        <div className="absolute -right-10 -top-10 w-32 h-32 bg-sav-accent/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-        <p className="text-base font-medium leading-relaxed italic opacity-90">{guideText}</p>
-      </div>
-
-      {/* Alerta de Límite de Pasante */}
-      {stats?.pasante_limit_reached && (
-        <div className="mx-5 mb-8 p-6 bg-gradient-to-r from-rose-500 to-rose-600 rounded-[2rem] text-white shadow-lg shadow-rose-500/30 animate-pulse relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-xl" />
-          <div className="relative z-10 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
-              <TrendingUp className="text-white" size={24} />
             </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-rose-100">Prueba Finalizada</p>
-              <p className="text-sm font-black leading-tight">Tus 3 días de pasantía han terminado. Sube de nivel para seguir ganando.</p>
+
+            {banners.length > 0 ? (
+              <img
+                src={imgUrl(banners[slide]?.imagen_url)}
+                alt=""
+                className="w-full h-full object-cover transition-transform duration-[3000ms] group-hover:scale-110 opacity-80"
+                onError={(e) => {
+                  e.target.src = '/imag/carrusel1.jpeg';
+                }}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center bg-gradient-to-br from-[#1a1f36] to-[#2a2f46]">
+                <Logo variant="hero" className="opacity-10 scale-150" />
+              </div>
+            )}
+            
+            {/* Overlay Gradient Profundo */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f36] via-[#1a1f36]/20 to-transparent pointer-events-none" />
+            
+            {/* Texto decorativo en el Banner */}
+            <div className="absolute bottom-12 left-8 right-8 z-10 text-center transform group-hover:translate-y-[-5px] transition-transform duration-700">
+              <h2 className="text-white text-2xl font-black leading-tight uppercase tracking-tighter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                Multiplica tus <span className="text-white underline decoration-4 underline-offset-8 decoration-white/30">Activos</span> <br />
+                <span className="text-sm font-bold tracking-[0.3em] opacity-80">con SAV Global</span>
+              </h2>
             </div>
+
+            {banners.length > 1 && (
+              <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2.5 z-10">
+                {banners.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSlide(i)}
+                    className={`h-1.5 rounded-full transition-all duration-700 ${i === slide ? 'w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'w-2 bg-white/30 hover:bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-          <Link 
-            to="/vip"
-            className="mt-4 w-full py-3 bg-white text-rose-600 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
+        </div>
+
+        {/* Acciones Rápidas (Destacadas con Glow) */}
+        <div className="px-4 mt-8 grid grid-cols-2 gap-4">
+          <Link
+            to="/recargar"
+            className="relative flex items-center justify-between p-6 rounded-[2rem] bg-[#1a1f36] border border-white/10 shadow-[0_15px_35px_-5px_rgba(26,31,54,0.4)] active:scale-95 transition-all group overflow-hidden"
           >
-            Subir a VIP Ahora
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="flex flex-col gap-1 relative z-10">
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Inversión</span>
+              <span className="text-sm font-black text-white tracking-widest">RECARGAR</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/10 group-hover:bg-white group-hover:text-[#1a1f36] group-hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10">
+              <Wallet size={24} strokeWidth={2.5} />
+            </div>
+          </Link>
+          <Link
+            to="/retiro"
+            className="relative flex items-center justify-between p-6 rounded-[2rem] bg-white border border-gray-100 shadow-[0_15px_35px_-5px_rgba(0,0,0,0.08)] active:scale-95 transition-all group overflow-hidden"
+          >
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#1a1f36]/5 rounded-full -ml-12 -mb-12 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="flex flex-col gap-1 relative z-10">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Retiros</span>
+              <span className="text-sm font-black text-[#1a1f36] tracking-widest">COBRAR</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-[#1a1f36]/5 flex items-center justify-center text-[#1a1f36] border border-gray-100 group-hover:bg-[#1a1f36] group-hover:text-white group-hover:shadow-[0_10px_20px_rgba(26,31,54,0.2)] transition-all duration-500 relative z-10">
+              <HandCoins size={24} strokeWidth={2.5} />
+            </div>
           </Link>
         </div>
-      )}
 
-      <div className="px-5 pb-8">
+        {/* Grid de Servicios Principal (Premium Icons) */}
+        <div className="px-4 mt-8">
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-50 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none" />
+            
+            <div className="flex items-center gap-3 mb-8 px-1">
+              <div className="w-1.5 bg-[#1a1f36] h-5 rounded-full shadow-[0_0_10px_#1a1f36]" />
+              <h3 className="text-xs font-black text-[#1a1f36] uppercase tracking-[0.25em]">Servicios Premium</h3>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-y-10 gap-x-4">
+              {gridItems.map((item) => {
+                const { to, icon: GridIcon, label } = item;
+                if (to === '/usuario' && user?.nivel_codigo === 'internar') return null;
+                return (
+                  <Link
+                    key={label}
+                    to={to}
+                    className="flex flex-col items-center gap-3 active:scale-90 transition-all group"
+                  >
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-[#1a1f36]/20 rounded-2xl blur-lg scale-0 group-hover:scale-150 transition-transform duration-500" />
+                      <div className="w-16 h-16 rounded-2xl bg-white text-[#1a1f36] flex items-center justify-center shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-gray-100 group-hover:bg-[#1a1f36] group-hover:text-white group-hover:shadow-[0_15px_30px_-5px_rgba(26,31,54,0.3)] group-hover:border-[#1a1f36] transition-all duration-300 relative z-10">
+                        <GridIcon size={28} strokeWidth={1.5} />
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-black text-gray-400 text-center leading-tight uppercase tracking-widest group-hover:text-[#1a1f36] transition-colors">
+                      {label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Floating Gift / Sorteo (Enhanced) */}
         <Link
-          to="/vip"
-          className="w-full py-4 rounded-2xl bg-sav-accent text-sav-primary font-black text-center shadow-[0_10px_20px_-5px_rgba(212,175,55,0.4)] active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
+          to="/sorteo"
+          className="fixed right-6 bottom-24 z-40 w-18 h-18 rounded-full bg-gradient-to-br from-[#1a1f36] to-[#2a2f46] flex items-center justify-center shadow-[0_15px_40px_rgba(26,31,54,0.4)] border-4 border-white active:scale-90 transition-all hover:scale-110"
         >
-          Mejorar Posición de Miembro →
+          <Gift className="text-white animate-bounce" size={36} />
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full border-2 border-white flex items-center justify-center">
+            <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+          </div>
         </Link>
+
+        {/* Noticia / Guía Estilo Marquee (Vibrant) */}
+        <div className="px-4 mt-8">
+          <div className="bg-gradient-to-r from-[#1a1f36] to-[#2a2f46] rounded-2xl p-4 shadow-2xl relative overflow-hidden flex items-center gap-4 border border-white/10">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20 shadow-inner">
+              <Bell className="text-white" size={20} />
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-[10px] font-black text-white/90 leading-snug whitespace-nowrap animate-marquee uppercase tracking-[0.2em]">
+                {guideText} • {guideText}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action: Upgrade VIP (Impactful) */}
+        <div className="px-4 mt-8">
+          <Link
+            to="/vip"
+            className="group relative w-full h-20 rounded-[1.5rem] bg-[#1a1f36] flex items-center justify-center shadow-[0_20px_40px_-10px_rgba(26,31,54,0.4)] active:scale-[0.98] transition-all overflow-hidden border border-white/10"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-[1500ms]" />
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                <ShieldCheck className="text-white" size={24} />
+              </div>
+              <span className="text-sm font-black text-white uppercase tracking-[0.3em]">Mejorar Nivel VIP <span className="ml-2 group-hover:translate-x-2 transition-transform inline-block">→</span></span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Footer Info sutil */}
+        <div className="mt-8 px-8 text-center">
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+            SAV • Sistema de Activos Virtuales
+          </p>
+          <p className="text-[8px] text-gray-400 mt-1 opacity-40">
+            © 2026 Todos los derechos reservados
+          </p>
+        </div>
       </div>
 
+      {/* Popup de Aviso Dark */}
       {showPopup && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-5">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">{popup.popup_title || 'Aviso'}</h3>
-            <p className="text-sm text-gray-700 whitespace-pre-line">{popup.popup_message || ''}</p>
+        <div className="fixed inset-0 z-50 bg-[#1a1f36]/80 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in">
+          <div className="w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl p-8 border border-gray-100 animate-scale-in text-center">
+            <div className="w-16 h-16 bg-[#1a1f36]/5 text-[#1a1f36] rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-100 shadow-inner">
+              <Info size={32} />
+            </div>
+            <h3 className="text-xl font-black text-[#1a1f36] mb-3 uppercase tracking-tighter">
+              {popup.popup_title || 'Aviso del Sistema'}
+            </h3>
+            <p className="text-sm text-gray-500 font-medium leading-relaxed mb-8">
+              {popup.popup_message || 'Bienvenido a la plataforma. Revisa tus tareas diarias.'}
+            </p>
             <button
               type="button"
               onClick={() => setShowPopup(false)}
-              className="mt-4 w-full py-2.5 rounded-xl bg-sav-primary text-white font-medium"
+              className="w-full py-4 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all"
             >
-              Entendido
+              ¡Entendido!
             </button>
           </div>
         </div>
@@ -199,3 +299,4 @@ export default function Dashboard() {
     </Layout>
   );
 }
+

@@ -43,8 +43,8 @@ export default function BillingRecord() {
               <div key={i.id} className="flex justify-between items-start">
                 <div>
                   <p className="text-xs text-gray-500">{i.id?.slice(0, 12)}</p>
-                  <p className={`font-bold ${i.monto < 0 ? 'text-orange-500' : 'text-sav-accent'}`}>
-                    {i.monto?.toFixed(2)}
+                  <p className={`font-black ${i.monto < 0 ? 'text-rose-500' : 'text-[#00C853]'}`}>
+                    {i.monto > 0 ? '+' : ''}{i.monto?.toFixed(2)}
                   </p>
                 </div>
                 <div className="text-right">

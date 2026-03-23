@@ -69,7 +69,7 @@ export default function VincularTarjeta() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 rounded-full bg-sav-accent text-white font-bold disabled:opacity-50"
+          className="w-full py-4 rounded-full bg-[#1a1f36] text-white font-bold disabled:opacity-50 shadow-lg active:scale-95 transition-all"
         >
           {loading ? 'Guardando...' : 'Guardar cuenta'}
         </button>

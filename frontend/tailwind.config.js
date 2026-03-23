@@ -9,12 +9,12 @@ export default {
       colors: {
         sav: {
           primary: '#1a1f36',
-          accent: '#D4AF37',
-          success: '#d4edbc',
+          accent: '#1a1f36',
+          success: '#00C853',
           mint: '#00C853',
-          dark: '#004D40',
-          vip: '#22c55e',
-          vipLight: '#86efac',
+          dark: '#0d101d',
+          vip: '#1a1f36',
+          vipLight: '#2a2f46',
         }
       }
     },

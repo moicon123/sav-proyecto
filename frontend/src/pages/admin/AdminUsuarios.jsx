@@ -64,8 +64,8 @@ export default function AdminUsuarios() {
           <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">Gestión de Usuarios</h1>
           <p className="text-gray-500 font-medium uppercase tracking-widest text-[10px] mt-1">Control total de miembros y niveles</p>
         </div>
-        <div className="bg-sav-primary text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3">
-          <User size={20} className="text-sav-accent" />
+        <div className="bg-[#1a1f36] text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3">
+          <User size={20} className="text-white/60" />
           <span className="font-bold">{users.length} Miembros</span>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function AdminUsuarios() {
           placeholder="Buscar por nombre o teléfono..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-100 focus:border-sav-accent outline-none transition-all shadow-sm font-bold text-gray-700"
+          className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-100 focus:border-[#1a1f36] outline-none transition-all shadow-sm font-bold text-gray-700"
         />
       </div>
 
@@ -99,7 +99,7 @@ export default function AdminUsuarios() {
                 <tr key={u.id} className="hover:bg-gray-50/80 transition-colors group">
                   <td className="p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-sav-primary/5 flex items-center justify-center text-sav-primary font-black group-hover:bg-sav-primary group-hover:text-white transition-all">
+                      <div className="w-12 h-12 rounded-2xl bg-[#1a1f36]/5 flex items-center justify-center text-[#1a1f36] font-black group-hover:bg-[#1a1f36] group-hover:text-white transition-all">
                         {u.nombre_usuario?.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -115,7 +115,7 @@ export default function AdminUsuarios() {
                     <select 
                       value={u.nivel_id} 
                       onChange={(e) => handleChangeNivel(u.id, e.target.value)}
-                      className="bg-gray-50 border-2 border-gray-100 text-gray-700 text-[9px] font-black uppercase tracking-widest rounded-xl px-3 py-2 focus:border-sav-accent outline-none transition-all cursor-pointer"
+                      className="bg-gray-50 border-2 border-gray-100 text-gray-700 text-[9px] font-black uppercase tracking-widest rounded-xl px-3 py-2 focus:border-[#1a1f36] outline-none transition-all cursor-pointer"
                     >
                       {niveles.map(n => (
                         <option key={n.id} value={n.id}>{n.nombre}</option>
@@ -130,7 +130,7 @@ export default function AdminUsuarios() {
                     <div className="flex justify-center gap-2">
                       <button 
                         onClick={() => setSelectedUser(u)}
-                        className="p-3 rounded-xl bg-sav-primary/5 text-sav-primary hover:bg-sav-primary hover:text-white transition-all"
+                        className="p-3 rounded-xl bg-[#1a1f36]/5 text-[#1a1f36] hover:bg-[#1a1f36] hover:text-white transition-all"
                         title="Cambiar Contraseñas"
                       >
                         <Key size={18} />
@@ -151,12 +151,12 @@ export default function AdminUsuarios() {
 
       {/* Modal Cambio de Contraseña */}
       {selectedUser && (
-        <div className="fixed inset-0 bg-sav-primary/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[#1a1f36]/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-slideUp">
-            <div className="bg-sav-primary p-8 text-white flex justify-between items-start">
+            <div className="bg-[#1a1f36] p-8 text-white flex justify-between items-start">
               <div>
                 <h2 className="text-2xl font-black uppercase tracking-tighter">Seguridad</h2>
-                <p className="text-sav-accent text-[10px] font-bold uppercase tracking-widest">Usuario: {selectedUser.nombre_usuario}</p>
+                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Usuario: {selectedUser.nombre_usuario}</p>
               </div>
               <button onClick={() => setSelectedUser(null)} className="p-2 rounded-xl bg-white/10 hover:bg-white/20">
                 <X size={20} />
@@ -174,7 +174,7 @@ export default function AdminUsuarios() {
                       placeholder="Dejar vacío para no cambiar"
                       value={passwords.login}
                       onChange={(e) => setPasswords({...passwords, login: e.target.value})}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-sav-accent outline-none font-bold text-gray-700 transition-all"
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-[#1a1f36] outline-none font-bold text-gray-700 transition-all"
                     />
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export default function AdminUsuarios() {
                       placeholder="Dejar vacío para no cambiar"
                       value={passwords.fondo}
                       onChange={(e) => setPasswords({...passwords, fondo: e.target.value})}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-sav-accent outline-none font-bold text-gray-700 transition-all"
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-[#1a1f36] outline-none font-bold text-gray-700 transition-all"
                     />
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default function AdminUsuarios() {
 
               <button 
                 type="submit"
-                className="w-full py-5 rounded-[2rem] bg-sav-accent text-sav-primary font-black uppercase tracking-widest shadow-xl shadow-sav-accent/20 active:scale-[0.98] transition-all"
+                className="w-full py-5 rounded-[2rem] bg-[#1a1f36] text-white font-black uppercase tracking-widest shadow-xl shadow-[#1a1f36]/20 active:scale-[0.98] transition-all"
               >
                 Actualizar Seguridad
               </button>

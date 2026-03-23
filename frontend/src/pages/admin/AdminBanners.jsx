@@ -57,7 +57,7 @@ export default function AdminBanners() {
             value={orden}
             onChange={(e) => setOrden(parseInt(e.target.value))}
           />
-          <button onClick={handleAdd} className="bg-sav-accent text-sav-primary font-bold px-6 py-2 rounded-xl flex items-center gap-2">
+          <button onClick={handleAdd} className="bg-[#1a1f36] text-white font-black uppercase tracking-widest text-[10px] px-8 py-3 rounded-xl flex items-center gap-2 shadow-lg active:scale-95 transition-all">
             <Plus size={20} /> Agregar
           </button>
         </div>

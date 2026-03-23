@@ -123,7 +123,7 @@ export default function AdminTareas() {
             onChange={e => setForm({...form, recompensa: parseFloat(e.target.value)})}
             required
           />
-          <button type="submit" className="bg-sav-accent text-sav-primary font-bold py-2 px-6 rounded-xl flex items-center justify-center gap-2">
+          <button type="submit" className="bg-[#1a1f36] text-white font-black uppercase tracking-widest text-[10px] py-3 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all">
             <Plus size={20} /> Crear Tarea
           </button>
         </form>
@@ -190,7 +190,7 @@ export default function AdminTareas() {
                       <span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">
                         {niveles.find(n => n.id === t.nivel_id)?.nombre || 'Nivel desconocido'}
                       </span>
-                      <span className="text-xs bg-sav-accent/20 text-sav-primary px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-[#1a1f36]/5 text-[#1a1f36] px-3 py-1 rounded-full font-black uppercase tracking-widest">
                         +{t.recompensa} BOB
                       </span>
                     </div>

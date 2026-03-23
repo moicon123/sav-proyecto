@@ -73,7 +73,7 @@ export default function AdminPremiosRuleta() {
             <label className="block text-sm text-gray-600 mb-1">Probabilidad (0-1)</label>
             <input type="number" step="0.01" min="0" max="1" value={probabilidad} onChange={(e) => setProbabilidad(e.target.value)} placeholder="0.1" className="px-4 py-2 rounded-xl border" />
           </div>
-          <button onClick={agregar} className="flex items-center gap-2 px-6 py-2 rounded-xl bg-sav-accent text-sav-primary font-medium">
+          <button onClick={agregar} className="flex items-center gap-2 px-6 py-2 rounded-xl bg-[#1a1f36] text-white font-bold shadow-lg active:scale-95 transition-all">
             <Plus size={20} /> Agregar
           </button>
         </div>

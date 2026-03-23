@@ -71,7 +71,7 @@ export default function Security() {
                   <p className="text-sm text-gray-500">Puedes agregar varias y eliminar las que quieras</p>
                 </div>
               </div>
-              <Link to="/vincular-tarjeta" className="text-sm text-sav-accent font-medium">
+              <Link to="/vincular-tarjeta" className="text-sm text-[#1a1f36] font-black uppercase tracking-tighter">
                 + Agregar
               </Link>
             </div>

@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
 });
 
 function sanitizeUser(u, levels) {
-  const level = levels.find(l => l.id === u.nivel_id);
+  const level = levels.find(l => String(l.id) === String(u.nivel_id));
   return {
     id: u.id,
     telefono: u.telefono,
@@ -86,6 +86,7 @@ function sanitizeUser(u, levels) {
     avatar_url: u.avatar_url,
     oportunidades_sorteo: u.oportunidades_sorteo ?? 0,
     tiene_password_fondo: !!u.password_fondo_hash,
+    last_device_id: u.last_device_id,
   };
 }
 

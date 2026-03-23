@@ -27,8 +27,10 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Servir archivos estáticos del frontend si están en el mismo repo (para Render)
+// Servir archivos estáticos del frontend y carpetas de medios
 app.use('/imag', express.static(path.join(__dirname, '../../frontend/public/imag')));
+app.use('/video', express.static(path.join(__dirname, '../../frontend/public/video')));
+app.use('/videos', express.static(path.join(__dirname, '../../frontend/public/video')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

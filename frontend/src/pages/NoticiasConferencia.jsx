@@ -26,29 +26,29 @@ export default function NoticiasConferencia() {
   return (
     <Layout>
       <Header title="Noticias" />
-      <div className="p-4 space-y-4">
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200">
-          <div className="w-10 h-10 rounded-full bg-amber-400 flex items-center justify-center flex-shrink-0">
+      <div className="p-4 space-y-4 bg-white min-h-screen">
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50 border border-blue-100 shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-[#1a1f36] flex items-center justify-center flex-shrink-0 shadow-md">
             <Bell className="text-white" size={22} />
           </div>
           <div>
-            <p className="font-bold text-gray-900">{title}</p>
-            <p className="text-xs text-amber-800 mt-1">Todo lo que se tratará en las reuniones (editado por administración)</p>
+            <p className="font-black text-[#1a1f36] uppercase tracking-tighter">{title}</p>
+            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest mt-1">Actualizaciones oficiales del sistema</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
           {lines.length === 0 ? (
-            <p className="text-sm text-gray-500">Aún no hay noticias publicadas.</p>
+            <p className="text-sm text-gray-500 font-medium">Aún no hay noticias publicadas.</p>
           ) : (
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {lines.map((line, i) => (
                 <li
                   key={i}
-                  className="flex gap-3 text-sm text-gray-800 border-b border-gray-100 last:border-0 pb-3 last:pb-0"
+                  className="flex gap-4 text-sm text-gray-700 border-b border-gray-50 last:border-0 pb-4 last:pb-0 items-start"
                 >
-                  <span className="text-sav-accent font-bold">•</span>
-                  <span className="flex-1 whitespace-pre-wrap">{line.replace(/^[•\-*]\s*/, '')}</span>
+                  <span className="text-[#1a1f36] font-black text-lg mt-[-2px]">•</span>
+                  <span className="flex-1 whitespace-pre-wrap font-medium leading-relaxed">{line.replace(/^[•\-*]\s*/, '')}</span>
                 </li>
               ))}
             </ul>

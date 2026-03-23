@@ -48,12 +48,11 @@ export function AuthProvider({ children }) {
       setUser(u);
       localStorage.setItem('user', JSON.stringify(u));
     } catch (err) {
-      // SOLO cerramos sesión si el servidor nos dice explícitamente que el token no vale (401)
-      // Si el servidor está caído o hay error de red (502, 503, etc), MANTENEMOS la sesión guardada
-      if (err.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
+      // Cerramos sesión si el servidor nos dice que el token no vale (401) 
+      // O si el usuario ya no existe en el sistema (404), esto ocurre al reiniciar el seed del servidor
+      if (err.status === 401 || err.status === 404) {
+        console.warn('Sesión inválida o usuario no encontrado, cerrando sesión...', err.message);
+        logout();
       } else {
         console.warn('Error de red al cargar usuario, manteniendo sesión previa:', err.message);
       }

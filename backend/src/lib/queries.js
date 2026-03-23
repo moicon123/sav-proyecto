@@ -36,7 +36,9 @@ export async function findUserById(id) {
   const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('id', id).maybeSingle());
   if (!fallback && data) return data;
   const store = await getStore();
-  return store.users.find(u => u.id === id);
+  const user = store.users.find(u => String(u.id) === String(id));
+  if (user) console.log(`[Queries] findUserById encontrado en store local: ${user.nombre_usuario} (${id})`);
+  return user;
 }
 
 export async function findUserByCodigo(codigo) {
@@ -66,6 +68,7 @@ export async function updateUser(id, updates) {
 export async function getLevels() {
   const { data, fallback } = await trySupabase(() => supabase.from('niveles').select('*').order('orden', { ascending: true }));
   if (!fallback && data && data.length > 0) return data;
+  console.log('[Queries] getLevels fallback to seedLevels');
   return seedLevels;
 }
 
@@ -192,8 +195,49 @@ export async function getAllTasks() {
 export async function getTasks(nivelId) {
   const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('nivel_id', nivelId).eq('activa', true));
   if (!fallback && data && data.length > 0) return data;
+  
   const store = await getStore();
-  return (store.tasks || []).filter(t => t.nivel_id === nivelId);
+  const levels = await getLevels();
+  // Intentar encontrar el nivel por ID, o si no, por código si el nivelId parece ser un UUID de Supabase
+  const currentLevel = levels.find(l => String(l.id) === String(nivelId)) || 
+                       levels.find(l => String(l.codigo) === 'pasante' && (nivelId === 'l1' || nivelId === 'pasante' || String(nivelId).length > 20));
+  
+  console.log(`[Queries] getTasks para: "${nivelId}". Nivel detectado: ${currentLevel?.nombre || 'Desconocido'}, Código: ${currentLevel?.codigo}`);
+
+  // Lógica Ultra-Robusta para encontrar tareas locales
+  const localTasks = (store.tasks || []).filter(t => {
+    // Coincidencia por ID directo
+    if (String(t.nivel_id) === String(nivelId)) return true;
+    
+    if (currentLevel) {
+      // Coincidencia por ID del nivel encontrado
+      if (String(t.nivel_id) === String(currentLevel.id)) return true;
+      // Coincidencia por Código del nivel (ej: 'pasante' o 'internar')
+      const levelCode = String(currentLevel.codigo).toLowerCase();
+      const taskLevelId = String(t.nivel_id).toLowerCase();
+      
+      if (levelCode === taskLevelId) return true;
+      
+      // Mapeo especial para pasante
+      if ((levelCode === 'pasante' || levelCode === 'internar') && 
+          (taskLevelId === 'pasante' || taskLevelId === 'l1' || taskLevelId === 'internar')) return true;
+      
+  // Mapeo para S1, S2, etc.
+      if (levelCode.startsWith('s') && (taskLevelId === levelCode || taskLevelId === String(currentLevel.id).toLowerCase())) return true;
+    }
+    return false;
+  });
+
+  console.log(`[Queries] Tareas filtradas para mostrar: ${localTasks.length}`);
+  
+  // Si después de todo sigue vacío, pero el usuario es pasante, forzamos las tareas de pasante
+  if (localTasks.length === 0 && (nivelId === 'l1' || String(currentLevel?.codigo) === 'pasante' || String(currentLevel?.codigo) === 'internar')) {
+    const forcedTasks = (store.tasks || []).filter(t => t.nivel_id === 'pasante' || t.nivel_id === 'l1' || t.nivel_id === 'internar');
+    console.log(`[Queries] Forzando tareas de pasante: ${forcedTasks.length}`);
+    return forcedTasks;
+  }
+
+  return localTasks;
 }
 
 export async function getPremiosRuleta() {

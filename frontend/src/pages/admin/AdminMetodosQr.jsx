@@ -57,13 +57,13 @@ export default function AdminMetodosQr() {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed hover:border-sav-accent"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed hover:border-[#1a1f36] transition-colors"
           >
             <Upload size={20} />
             {imagen ? 'Cambiar imagen' : 'Subir imagen QR'}
           </button>
           {imagen && <img src={imagen} alt="Preview" className="w-24 h-24 object-contain rounded" />}
-          <button onClick={agregar} className="flex items-center gap-2 px-6 py-2 rounded-xl bg-sav-accent text-sav-primary font-medium">
+          <button onClick={agregar} className="flex items-center gap-2 px-6 py-2 rounded-xl bg-[#1a1f36] text-white font-bold shadow-lg active:scale-95 transition-all">
             <Plus size={20} /> Agregar
           </button>
         </div>

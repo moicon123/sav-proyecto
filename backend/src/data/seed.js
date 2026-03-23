@@ -20,8 +20,12 @@ export async function initStore() {
   const hash = await bcrypt.hash('123456', 10);
   const hashFondo = await bcrypt.hash('123456', 10);
 
+  const adminId = uuidv4();
+  const user1Id = uuidv4();
+  const userA1Id = uuidv4();
+
   const admin = {
-    id: uuidv4(),
+    id: adminId,
     telefono: '+59170000000',
     nombre_usuario: 'admin',
     nombre_real: 'Administrador',
@@ -37,7 +41,7 @@ export async function initStore() {
   };
 
   const user1 = {
-    id: uuidv4(),
+    id: user1Id,
     telefono: '+59163907641',
     nombre_usuario: 'alexj',
     nombre_real: 'Alexander Jimenez',
@@ -54,14 +58,14 @@ export async function initStore() {
   };
 
   const userA1 = {
-    id: uuidv4(),
+    id: userA1Id,
     telefono: '+59170000111',
     nombre_usuario: 'equipo_a1',
     nombre_real: 'Invitado A1',
     password_hash: hash,
     password_fondo_hash: hashFondo,
     codigo_invitacion: 'EQUIPOA1',
-    invitado_por: user1.id,
+    invitado_por: user1Id,
     nivel_id: levels[1].id,
     saldo_principal: 300,
     saldo_comisiones: 40,
@@ -78,7 +82,7 @@ export async function initStore() {
     password_hash: hash,
     password_fondo_hash: hashFondo,
     codigo_invitacion: 'EQUIPOA2',
-    invitado_por: user1.id,
+    invitado_por: user1Id,
     nivel_id: levels[2].id,
     saldo_principal: 520,
     saldo_comisiones: 30,
@@ -95,7 +99,7 @@ export async function initStore() {
     password_hash: hash,
     password_fondo_hash: hashFondo,
     codigo_invitacion: 'EQUIPOB1',
-    invitado_por: userA1.id,
+    invitado_por: userA1Id,
     nivel_id: levels[1].id,
     saldo_principal: 180,
     saldo_comisiones: 15,
@@ -112,7 +116,7 @@ export async function initStore() {
     password_hash: await bcrypt.hash('password123', 10),
     password_fondo_hash: hashFondo,
     codigo_invitacion: 'TEST712',
-    invitado_por: admin.id,
+    invitado_por: adminId,
     nivel_id: levels[0].id, // pasante
     saldo_principal: 0,
     saldo_comisiones: 0,
@@ -122,14 +126,14 @@ export async function initStore() {
   };
 
   const tasks = [
-    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 1', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'CHANEL', opciones: ['CHANEL', 'HERMES', 'DIOR', 'LV'] },
-    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 2', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'HERMES', opciones: ['CHANEL', 'HERMES'] },
-    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 3', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'DIOR', opciones: ['CHANEL', 'DIOR'] },
-    { id: uuidv4(), nivel_id: levels[0].id, nombre: 'Tarea Pasante 4', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'LV', opciones: ['LV', 'GUCCI'] },
-    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 1', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: 'Selecciona la marca', respuesta_correcta: 'COCA-COLA', opciones: ['COCA-COLA', 'PEPSI'] },
-    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 2', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: 'Selecciona la marca', respuesta_correcta: 'PEPSI', opciones: ['COCA-COLA', 'PEPSI'] },
-    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 3', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: 'Selecciona la marca', respuesta_correcta: 'FANTA', opciones: ['FANTA', 'SPRITE'] },
-    { id: uuidv4(), nivel_id: levels[1].id, nombre: 'Tarea S1 - 4', recompensa: 1.80, video_url: '/imag/logo.jpeg', pregunta: 'Selecciona la marca', respuesta_correcta: 'SPRITE', opciones: ['FANTA', 'SPRITE'] },
+    { id: 'task-pasante-1', nivel_id: 'pasante', nombre: 'Tarea Pasante 1', recompensa: 1.80, video_url: '/video/adidas1.mp4', descripcion: 'Adidas es una marca líder en ropa y calzado deportivo, conocida por sus icónicas tres franjas y su innovación constante.', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'ADIDAS', opciones: ['ADIDAS', 'NIKE', 'PUMA', 'REEBOK'] },
+    { id: 'task-pasante-2', nivel_id: 'pasante', nombre: 'Tarea Pasante 2', recompensa: 1.80, video_url: '/video/chanel1.mp4', descripcion: 'Chanel representa el lujo y la elegancia atemporal en la alta costura, perfumes y accesorios de moda.', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'CHANEL', opciones: ['CHANEL', 'DIOR', 'GUCCI', 'PRADA'] },
+    { id: 'task-pasante-3', nivel_id: 'pasante', nombre: 'Tarea Pasante 3', recompensa: 1.80, video_url: '/video/cocacola1.mp4', descripcion: 'Coca-Cola es la bebida refrescante más famosa del mundo, un símbolo global de felicidad y frescura.', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'COCACOLA', opciones: ['COCACOLA', 'PEPSI', 'FANTA', 'SPRITE'] },
+    { id: 'task-pasante-4', nivel_id: 'pasante', nombre: 'Tarea Pasante 4', recompensa: 1.80, video_url: '/video/dior1.mp4', descripcion: 'Dior es sinónimo de sofisticación francesa, redefiniendo el estilo moderno con sus diseños exclusivos.', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'DIOR', opciones: ['CHANEL', 'DIOR', 'HERMES', 'LV'] },
+    { id: 'task-s1-1', nivel_id: 'S1', nombre: 'Tarea S1 - 1', recompensa: 1.80, video_url: '/video/lamborghini1.mp4', descripcion: 'Lamborghini es el epítome de la potencia y el diseño audaz en superdeportivos italianos.', pregunta: 'Selecciona la marca', respuesta_correcta: 'LAMBORGHINI', opciones: ['LAMBORGHINI', 'FERRARI', 'PORSCHE', 'MCLAREN'] },
+    { id: 'task-s1-2', nivel_id: 'S1', nombre: 'Tarea S1 - 2', recompensa: 1.80, video_url: '/video/nike1.mp4', descripcion: 'Nike inspira a atletas de todo el mundo con su tecnología deportiva y su famoso lema "Just Do It".', pregunta: 'Selecciona la marca', respuesta_correcta: 'NIKE', opciones: ['NIKE', 'ADIDAS', 'PUMA', 'UNDER ARMOUR'] },
+    { id: 'task-s1-3', nivel_id: 'S1', nombre: 'Tarea S1 - 3', recompensa: 1.80, video_url: '/video/puma1.mp4', descripcion: 'Puma combina el rendimiento deportivo con el estilo urbano, creando productos dinámicos para el día a día.', pregunta: 'Selecciona la marca', respuesta_correcta: 'PUMA', opciones: ['PUMA', 'NIKE', 'ADIDAS', 'REEBOK'] },
+    { id: 'task-s1-4', nivel_id: 'S1', nombre: 'Tarea S1 - 4', recompensa: 1.80, video_url: '/video/rolex1.mp4', descripcion: 'Rolex es el referente mundial en relojería de lujo, símbolo de precisión, éxito y prestigio eterno.', pregunta: 'Selecciona la marca', respuesta_correcta: 'ROLEX', opciones: ['ROLEX', 'OMEGA', 'CASIO', 'CARTIER'] },
   ];
 
   const banners = [
@@ -140,7 +144,7 @@ export async function initStore() {
   ];
 
   const tarjetas = [
-    { id: uuidv4(), usuario_id: user1.id, tipo: 'yape', numero_masked: '7945', nombre_banco: 'yape' },
+    { id: uuidv4(), usuario_id: user1Id, tipo: 'yape', numero_masked: '7945', nombre_banco: 'yape' },
   ];
 
   const metodosQr = [
@@ -148,7 +152,7 @@ export async function initStore() {
   ];
 
   const retiros = [
-    { id: uuidv4(), usuario_id: user1.id, monto: 500, estado: 'pendiente', created_at: new Date().toISOString() },
+    { id: uuidv4(), usuario_id: user1Id, monto: 500, estado: 'pendiente', created_at: new Date().toISOString() },
   ];
 
   return {
@@ -162,7 +166,7 @@ export async function initStore() {
     recargas: [],
     transacciones: [],
     notificaciones: [
-      { id: uuidv4(), usuario_id: user1.id, titulo: 'Bienvenido', mensaje: '¡Bienvenido a SAV!', leida: false },
+      { id: uuidv4(), usuario_id: user1Id, titulo: 'Bienvenido', mensaje: '¡Bienvenido a SAV!', leida: false },
     ],
     premiosRuleta: [
       { id: uuidv4(), nombre: '0.01 BOB', valor: 0.01, color: '#f59e0b', probabilidad: 0.15, orden: 0, activo: true },
@@ -175,7 +179,7 @@ export async function initStore() {
       { id: uuidv4(), nombre: '10000 BOB', valor: 10000, color: '#059669', probabilidad: 0.01, orden: 7, activo: true },
     ],
     sorteosGanadores: [
-      { id: uuidv4(), usuario_id: user1.id, premio_nombre: '1 BOB', premio_valor: 1, premio_color: '#e11d48', created_at: new Date(Date.now() - 86400000).toISOString() },
+      { id: uuidv4(), usuario_id: user1Id, premio_nombre: '1 BOB', premio_valor: 1, premio_color: '#e11d48', created_at: new Date(Date.now() - 86400000).toISOString() },
       { id: uuidv4(), usuario_id: null, premio_nombre: '0.02 BOB', premio_valor: 0.02, premio_color: '#ea580c', created_at: new Date(Date.now() - 172800000).toISOString() },
       { id: uuidv4(), usuario_id: null, premio_nombre: '10000 BOB', premio_valor: 10000, premio_color: '#059669', created_at: new Date(Date.now() - 259200000).toISOString() },
       { id: uuidv4(), usuario_id: null, premio_nombre: '5 BOB', premio_valor: 5, premio_color: '#db2777', created_at: new Date(Date.now() - 345600000).toISOString() },

@@ -41,7 +41,7 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col md:flex-row relative overflow-hidden">
       {/* Barra superior para móvil */}
-      <header className="md:hidden bg-sav-primary text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-lg">
+      <header className="md:hidden bg-[#1a1f36] text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-lg">
         <div className="flex items-center gap-3">
           <button 
             onClick={toggleSidebar}
@@ -52,21 +52,21 @@ export default function AdminLayout() {
           <Logo variant="header" className="h-6" />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest bg-sav-accent text-sav-primary px-2 py-0.5 rounded-full">Admin</span>
+          <span className="text-[10px] font-black uppercase tracking-widest bg-white text-[#1a1f36] px-2 py-0.5 rounded-full">Admin</span>
         </div>
       </header>
 
       {/* Overlay para móvil cuando el menú está abierto */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-sav-primary/60 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-[#1a1f36]/60 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar lateral */}
       <aside className={`
-        fixed md:sticky top-0 left-0 h-full md:h-screen w-72 bg-sav-primary text-white p-6 z-50 transition-transform duration-300 ease-out
+        fixed md:sticky top-0 left-0 h-full md:h-screen w-72 bg-[#1a1f36] text-white p-6 z-50 transition-transform duration-300 ease-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         flex flex-col shadow-2xl md:shadow-none
       `}>
@@ -75,8 +75,8 @@ export default function AdminLayout() {
             <Logo variant="header" className="h-8" />
           </div>
           <div>
-            <h1 className="font-black text-lg leading-tight uppercase tracking-tighter">Panel SAV</h1>
-            <p className="text-[10px] font-bold text-sav-accent uppercase tracking-[0.2em]">Administrador</p>
+            <h1 className="font-black text-lg leading-tight uppercase tracking-tighter text-white">Panel SAV</h1>
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Administrador</p>
           </div>
         </div>
 
@@ -92,7 +92,7 @@ export default function AdminLayout() {
                 className={`
                   flex items-center justify-between group px-4 py-3.5 rounded-2xl transition-all duration-200
                   ${isActive 
-                    ? 'bg-sav-accent text-sav-primary font-black shadow-[0_10px_20px_-5px_rgba(212,175,55,0.3)]' 
+                    ? 'bg-white text-[#1a1f36] font-black shadow-[0_10px_20px_-5px_rgba(255,255,255,0.1)]' 
                     : 'text-white/60 hover:bg-white/5 hover:text-white'
                   }
                 `}
@@ -109,11 +109,11 @@ export default function AdminLayout() {
 
         <div className="mt-auto pt-6 border-t border-white/10">
           <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-sav-accent/20 flex items-center justify-center text-sav-accent font-black">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-black">
               {user?.nombre_usuario?.charAt(0).toUpperCase()}
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-black truncate uppercase tracking-tighter">{user?.nombre_usuario}</p>
+              <p className="text-sm font-black truncate uppercase tracking-tighter text-white">{user?.nombre_usuario}</p>
               <p className="text-[10px] text-white/40 font-bold uppercase truncate">ID: {user?.id?.slice(0, 8)}</p>
             </div>
           </div>

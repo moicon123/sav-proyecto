@@ -43,14 +43,14 @@ export default function Ganancias() {
   const formatearEstado = (e) => {
     const map = { 
       pendiente: { label: 'En revisión', color: 'text-amber-500', bg: 'bg-amber-50' }, 
-      aprobada: { label: 'Completado', color: 'text-emerald-500', bg: 'bg-emerald-50' }, 
+      aprobada: { label: 'Completado', color: 'text-[#00C853]', bg: 'bg-[#00C853]/10' }, 
       rechazada: { label: 'Rechazado', color: 'text-rose-500', bg: 'bg-rose-50' }, 
-      pagado: { label: 'Pagado', color: 'text-emerald-500', bg: 'bg-emerald-50' }, 
+      pagado: { label: 'Pagado', color: 'text-[#00C853]', bg: 'bg-[#00C853]/10' }, 
       rechazado: { label: 'Rechazado', color: 'text-rose-500', bg: 'bg-rose-50' } 
     };
-    const info = map[e] || { label: e, color: 'text-gray-500', bg: 'bg-gray-50' };
+    const info = map[e] || { label: e, color: 'text-gray-400', bg: 'bg-gray-50' };
     return (
-      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${info.bg} ${info.color}`}>
+      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${info.bg} ${info.color} border border-current/10`}>
         {info.label}
       </span>
     );
@@ -60,8 +60,8 @@ export default function Ganancias() {
     return (
       <Layout>
         <Header title="Historial de Movimientos" />
-        <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-          <div className="w-12 h-12 border-4 border-sav-primary border-t-transparent rounded-full animate-spin" />
+        <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4 bg-white">
+          <div className="w-12 h-12 border-4 border-[#1a1f36] border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-400 font-medium animate-pulse uppercase tracking-widest text-[10px]">Cargando historial...</p>
         </div>
       </Layout>
@@ -72,9 +72,9 @@ export default function Ganancias() {
     <Layout>
       <Header title="Movimientos" />
       
-      {/* Tabs Premium */}
+      {/* Tabs Premium Dark */}
       <div className="px-4 mt-4">
-        <div className="flex bg-gray-100 p-1.5 rounded-[1.5rem] border border-gray-200">
+        <div className="flex bg-gray-50 p-1.5 rounded-[1.5rem] border border-gray-100 shadow-inner">
           {[
             { id: 'todo', label: 'Todo', icon: History },
             { id: 'recargas', label: 'Recargas', icon: Wallet },
@@ -83,7 +83,7 @@ export default function Ganancias() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${tab === t.id ? 'bg-white text-sav-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${tab === t.id ? 'bg-[#1a1f36] text-white shadow-lg' : 'text-gray-400 hover:text-[#1a1f36]'}`}
             >
               <t.icon size={14} />
               {t.label}
@@ -92,17 +92,17 @@ export default function Ganancias() {
         </div>
       </div>
 
-      <div className="p-5 space-y-8 pb-24">
+      <div className="p-5 space-y-8 pb-24 bg-white min-h-screen">
         {grupos.length === 0 ? (
           <div className="text-center py-20 opacity-30 grayscale">
-            <Calendar size={64} className="mx-auto mb-4" />
-            <p className="font-black uppercase tracking-[0.2em] text-xs">Sin movimientos registrados</p>
+            <Calendar size={64} className="mx-auto mb-4 text-[#1a1f36]" />
+            <p className="font-black uppercase tracking-[0.2em] text-xs text-[#1a1f36]">Sin movimientos registrados</p>
           </div>
         ) : (
           grupos.map(([mes, lista]) => (
             <div key={mes} className="space-y-4">
               <div className="flex items-center gap-3 px-2">
-                <Clock size={14} className="text-sav-primary" />
+                <Clock size={14} className="text-[#1a1f36]" />
                 <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{mes}</h3>
               </div>
               
@@ -110,17 +110,17 @@ export default function Ganancias() {
                 {lista.map((i) => {
                   const isRecarga = i.tipo === 'recarga';
                   return (
-                    <div key={i.id} className="bg-white rounded-[2rem] p-5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-gray-50 flex items-center gap-4 group hover:shadow-lg transition-all">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${isRecarga ? 'bg-emerald-50 text-emerald-500' : 'bg-orange-50 text-orange-500'}`}>
+                    <div key={i.id} className="bg-white rounded-[2rem] p-5 shadow-xl border border-gray-100 flex items-center gap-4 group hover:border-[#1a1f36]/30 transition-all">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${isRecarga ? 'bg-emerald-50 text-[#00C853]' : 'bg-orange-50 text-orange-500'} border border-gray-50 shadow-inner`}>
                         {isRecarga ? <ArrowUpCircle size={24} /> : <ArrowDownCircle size={24} />}
                       </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start mb-1">
-                          <p className="font-black text-gray-800 text-sm truncate uppercase tracking-tighter">
+                          <p className="font-black text-[#1a1f36] text-sm truncate uppercase tracking-tighter">
                             {isRecarga ? 'Recarga de Saldo' : 'Retiro de Fondos'}
                           </p>
-                          <p className={`font-black text-sm ${isRecarga ? 'text-emerald-500' : 'text-orange-500'}`}>
+                          <p className={`font-black text-sm ${isRecarga ? 'text-[#00C853]' : 'text-orange-500'}`}>
                             {isRecarga ? '+' : '-'}{i.monto?.toFixed(2)} <span className="text-[8px] opacity-50">BOB</span>
                           </p>
                         </div>
@@ -144,7 +144,7 @@ export default function Ganancias() {
         )}
         
         {grupos.length > 0 && (
-          <div className="pt-4 border-t border-dashed border-gray-200 text-center">
+          <div className="pt-4 border-t border-dashed border-gray-100 text-center">
             <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest italic">Fin del historial</p>
           </div>
         )}

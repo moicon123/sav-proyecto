@@ -48,14 +48,14 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-sav-accent/20 flex items-center justify-center">
-              <Wallet className="text-sav-accent" size={24} />
+            <div className="w-12 h-12 rounded-xl bg-[#1a1f36]/10 flex items-center justify-center">
+              <Wallet className="text-[#1a1f36]" size={24} />
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Total retiros</p>
-              <p className="text-2xl font-bold">{(d.total_retiros ?? 0).toFixed(2)} BOB</p>
+              <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Total retiros</p>
+              <p className="text-2xl font-black text-[#1a1f36]">{(d.total_retiros ?? 0).toFixed(2)} BOB</p>
             </div>
           </div>
         </div>

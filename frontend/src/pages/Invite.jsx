@@ -30,27 +30,27 @@ export default function Invite() {
     return (
       <Layout>
         <Header title="Invitar Amigos" />
-        <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center min-h-[70vh]">
-          <div className="w-24 h-24 bg-indigo-50 text-indigo-500 rounded-[2.5rem] flex items-center justify-center shadow-xl shadow-indigo-500/10 border border-indigo-100 animate-pulse">
+        <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center min-h-[70vh] bg-white">
+          <div className="w-24 h-24 bg-gray-50 text-[#1a1f36] rounded-[2.5rem] flex items-center justify-center shadow-xl border border-gray-100 animate-pulse">
             <Lock size={48} strokeWidth={1.5} />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Invitación No Disponible</h2>
-            <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-xs mx-auto">
-              Como <span className="text-indigo-600 font-bold uppercase tracking-widest">Pasante</span>, el sistema de referidos está desactivado para tu cuenta.
+            <h2 className="text-2xl font-black text-[#1a1f36] uppercase tracking-tighter">Invitación No Disponible</h2>
+            <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-xs mx-auto">
+              Como <span className="text-[#1a1f36] font-bold uppercase tracking-widest">Pasante</span>, el sistema de referidos está desactivado para tu cuenta.
             </p>
           </div>
-          <div className="bg-indigo-50 p-6 rounded-[2.5rem] border border-indigo-100 text-left w-full">
-            <p className="text-xs text-indigo-800 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+          <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 text-left w-full shadow-inner">
+            <p className="text-[10px] text-[#1a1f36] font-black uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
               <Info size={14} /> Beneficio VIP:
             </p>
-            <p className="text-xs text-indigo-700 leading-relaxed font-medium">
-              Sube a nivel <span className="font-bold">S1</span> para activar tu código de invitación y empezar a ganar el <span className="font-bold">15% de comisión</span> por cada amigo que invites.
+            <p className="text-xs text-gray-500 leading-relaxed font-medium">
+              Sube a nivel <span className="text-[#1a1f36] font-bold">S1</span> para activar tu código de invitación y empezar a ganar el <span className="text-[#00C853] font-bold">15% de comisión</span> por cada amigo que invites.
             </p>
           </div>
           <Link 
             to="/vip"
-            className="w-full py-5 rounded-[2.5rem] bg-indigo-600 text-white font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full py-5 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <TrendingUp size={16} />
             Activar Invitación Ahora
@@ -62,60 +62,60 @@ export default function Invite() {
 
   return (
     <Layout>
-      <Header title="Invitar Amigos" />
+      <Header title="Código de invitación" />
       
-      <div className="p-5 space-y-8 pb-24">
-        {/* Banner Principal Hero */}
-        <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-indigo-600 via-purple-700 to-sav-primary p-10 text-white shadow-2xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-sav-accent/20 rounded-full -ml-20 -mb-20 blur-2xl" />
-          
-          <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-            <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center border border-white/30 shadow-inner">
-              <Gift className="text-sav-accent animate-bounce" size={40} />
+      <div className="p-4 space-y-4 pb-24 bg-white min-h-screen">
+        {/* Banner Principal Hero - Basado en 3.11/3.14 */}
+        <div className="relative overflow-hidden rounded-[2rem] bg-[#1a1f36] p-8 text-white shadow-xl border border-white/10 text-center">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+          <div className="relative z-10 flex flex-col items-center space-y-4">
+            <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center border border-white/20 shadow-inner">
+              <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center border-2 border-white/20 shadow-lg">
+                <span className="text-[#1a1f36] font-black text-xl tracking-tighter">SAV</span>
+              </div>
             </div>
-            <div className="space-y-2">
-              <h2 className="text-3xl font-black tracking-tighter uppercase">¡Comparte y Gana!</h2>
-              <p className="text-xs font-bold text-indigo-100 uppercase tracking-[0.2em] opacity-80">Gana hasta un 15% de comisión</p>
+            <div className="space-y-1">
+              <h2 className="text-2xl font-black uppercase tracking-tighter">¡Invita y Gana!</h2>
+              <p className="text-[10px] text-white/60 font-black uppercase tracking-[0.2em]">Construye tu equipo hoy</p>
             </div>
           </div>
         </div>
 
-        {/* Tarjeta de Código y Enlace */}
-        <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-gray-50 -mt-16 relative z-20 mx-2">
-          <div className="space-y-8">
-            {/* Código */}
-            <div className="space-y-3">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Tu Código de Invitación</p>
-              <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                <div className="flex-1 text-center py-3">
-                  <span className="text-3xl font-black text-sav-primary tracking-[0.3em]">
-                    {user?.nivel_codigo === 'internar' ? '**********' : (user?.codigo_invitacion || '------')}
+        {/* Card de Información de Invitación - Basado en 3.4/3.14 */}
+        <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-gray-100">
+          <div className="space-y-6">
+            {/* Código de Invitación */}
+            <div className="flex flex-col items-center space-y-3">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Tu código de invitación</p>
+              <div className="flex items-center gap-4 w-full">
+                <div className="flex-1 bg-gray-50 py-4 rounded-2xl border border-gray-100 text-center shadow-inner">
+                  <span className="text-3xl font-black text-[#1a1f36] tracking-[0.2em]">
+                    {user?.codigo_invitacion || '------'}
                   </span>
                 </div>
                 <button 
                   onClick={handleCopyCode}
-                  disabled={user?.nivel_codigo === 'internar'}
-                  className={`p-4 rounded-xl transition-all ${copiedCode ? 'bg-emerald-500 text-white' : 'bg-sav-primary text-white active:scale-90'} disabled:opacity-30`}
+                  className={`p-4 rounded-2xl transition-all shadow-lg ${copiedCode ? 'bg-[#00C853] text-white shadow-[#00C853]/20' : 'bg-[#1a1f36] text-white active:scale-95 shadow-[#1a1f36]/20'}`}
                 >
-                  {copiedCode ? <Check size={20} /> : <Copy size={20} />}
+                  {copiedCode ? <Check size={24} /> : <Copy size={24} />}
                 </button>
               </div>
             </div>
 
-            {/* Enlace */}
-            <div className="space-y-3">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Enlace de Registro Directo</p>
-              <div className="flex items-center gap-3 p-2 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                <div className="flex-1 truncate pl-4">
-                  <span className="text-xs font-bold text-indigo-600/60">
-                    {user?.nivel_codigo === 'internar' ? 'https://sav-proyecto.vercel.app/registro?ref=**********' : inviteLink}
+            <div className="h-[1px] bg-gray-100 w-full" />
+
+            {/* Enlace de Invitación */}
+            <div className="flex flex-col items-center space-y-3">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Enlace de registro</p>
+              <div className="flex items-center gap-3 w-full bg-gray-50 p-2 rounded-2xl border border-gray-100 shadow-inner">
+                <div className="flex-1 truncate px-3">
+                  <span className="text-[10px] font-bold text-gray-400 tracking-tight">
+                    {inviteLink}
                   </span>
                 </div>
                 <button 
                   onClick={handleCopyLink}
-                  disabled={user?.nivel_codigo === 'internar'}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${copiedLink ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white active:scale-90'} disabled:opacity-30`}
+                  className={`flex items-center gap-2 px-5 py-3 rounded-xl font-black uppercase text-[9px] tracking-widest transition-all shadow-md ${copiedLink ? 'bg-[#00C853] text-white' : 'bg-[#1a1f36] text-white active:scale-95'}`}
                 >
                   {copiedLink ? <Check size={14} /> : <Share2 size={14} />}
                   {copiedLink ? 'Copiado' : 'Copiar'}
@@ -125,45 +125,33 @@ export default function Invite() {
           </div>
         </div>
 
-        {/* Beneficios */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest px-2">¿Por qué invitar?</h3>
+        {/* Beneficios - Basado en 3.10/3.11 */}
+        <div className="space-y-3">
+          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1">Beneficios del equipo</h3>
           <div className="grid grid-cols-1 gap-3">
             {[
-              { icon: Star, title: 'Comisiones de Tareas', desc: 'Gana un % de cada video que vean tus amigos diariamente.', color: 'text-amber-500', bg: 'bg-amber-50' },
-              { icon: Zap, title: 'Bonos de Nivel', desc: 'Recibe bonos instantáneos cuando tus referidos suban a VIP.', color: 'text-sav-primary', bg: 'bg-sav-primary/5' },
-              { icon: ShieldCheck, title: 'Red Segura', desc: 'Construye tu propio equipo y asegura ingresos pasivos.', color: 'text-emerald-500', bg: 'bg-emerald-50' }
+              { icon: TrendingUp, title: 'Comisiones Diarias', desc: 'Recibe un porcentaje de las tareas de tus referidos.', color: 'text-[#1a1f36]', bg: 'bg-[#1a1f36]/5' },
+              { icon: Users, title: 'Bonos por Nivel', desc: 'Premios instantáneos cuando tu equipo sube de nivel VIP.', color: 'text-[#1a1f36]', bg: 'bg-gray-50' },
+              { icon: ShieldCheck, title: 'Crecimiento Seguro', desc: 'Sistema de red transparente y retiro garantizado.', color: 'text-[#00C853]', bg: 'bg-[#00C853]/5' }
             ].map((b, i) => (
-              <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
-                <div className={`w-12 h-12 rounded-2xl ${b.bg} ${b.color} flex items-center justify-center flex-shrink-0`}>
+              <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm group hover:border-[#1a1f36]/30 transition-all">
+                <div className={`w-12 h-12 rounded-xl ${b.bg} ${b.color} flex items-center justify-center flex-shrink-0 shadow-inner border border-gray-50`}>
                   <b.icon size={24} />
                 </div>
                 <div>
-                  <p className="font-black text-gray-800 text-sm uppercase tracking-tighter">{b.title}</p>
-                  <p className="text-xs text-gray-500 leading-relaxed mt-1 font-medium">{b.desc}</p>
+                  <p className="font-black text-[#1a1f36] text-sm uppercase tracking-tight">{b.title}</p>
+                  <p className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5">{b.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Pasos */}
-        <div className="bg-sav-primary/5 rounded-[2.5rem] p-8 border-2 border-dashed border-sav-primary/10">
-          <h3 className="text-center font-black text-sav-primary uppercase tracking-widest text-xs mb-6">3 Pasos para el éxito</h3>
-          <div className="flex justify-between items-start gap-2">
-            {[
-              { n: '1', t: 'Copia' },
-              { n: '2', t: 'Comparte' },
-              { n: '3', t: 'Gana' }
-            ].map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-3 flex-1">
-                <div className="w-10 h-10 rounded-full bg-sav-primary text-white flex items-center justify-center font-black text-sm shadow-lg shadow-sav-primary/20">
-                  {s.n}
-                </div>
-                <p className="text-[10px] font-black text-sav-primary uppercase tracking-tighter">{s.t}</p>
-              </div>
-            ))}
-          </div>
+        {/* Footer Informativo */}
+        <div className="bg-[#00C853]/5 rounded-2xl p-6 border border-[#00C853]/10 text-center shadow-inner">
+          <p className="text-[10px] text-[#00C853] font-black leading-relaxed uppercase tracking-widest">
+            Comparte tu código con amigos y familiares para empezar a generar ingresos pasivos hoy mismo.
+          </p>
         </div>
       </div>
     </Layout>
