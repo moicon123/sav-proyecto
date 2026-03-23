@@ -96,9 +96,16 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
 
   const updates = {
     estado: 'aprobada',
-    procesado_por: req.user.id,
     procesado_at: new Date().toISOString()
   };
+  
+  // Solo agregar procesado_por si el usuario admin existe en la DB (evitar errores de FK en Supabase)
+  if (req.user && req.user.id) {
+    const adminExists = await findUserById(req.user.id);
+    if (adminExists) {
+      updates.procesado_por = req.user.id;
+    }
+  }
   
   const updatedRecarga = await updateRecarga(id, updates);
   if (!updatedRecarga) {
@@ -147,10 +154,15 @@ router.post('/recargas/:id/rechazar', async (req, res) => {
   const { id } = req.params;
   const updates = {
     estado: 'rechazada',
-    procesado_por: req.user.id,
     procesado_at: new Date().toISOString(),
     admin_notas: req.body.motivo || ''
   };
+
+  if (req.user && req.user.id) {
+    const adminExists = await findUserById(req.user.id);
+    if (adminExists) updates.procesado_por = req.user.id;
+  }
+
   await updateRecarga(id, updates);
   res.json({ ok: true });
 });
@@ -164,9 +176,14 @@ router.post('/retiros/:id/aprobar', async (req, res) => {
   const { id } = req.params;
   const updates = {
     estado: 'aprobado',
-    procesado_por: req.user.id,
     procesado_at: new Date().toISOString()
   };
+
+  if (req.user && req.user.id) {
+    const adminExists = await findUserById(req.user.id);
+    if (adminExists) updates.procesado_por = req.user.id;
+  }
+
   await updateRetiro(id, updates);
   res.json({ ok: true });
 });
@@ -180,10 +197,14 @@ router.post('/retiros/:id/rechazar', async (req, res) => {
 
   const updates = {
     estado: 'rechazado',
-    procesado_por: req.user.id,
     procesado_at: new Date().toISOString(),
     admin_notas: motivo || ''
   };
+
+  if (req.user && req.user.id) {
+    const adminExists = await findUserById(req.user.id);
+    if (adminExists) updates.procesado_por = req.user.id;
+  }
   
   await updateRetiro(id, updates);
   
