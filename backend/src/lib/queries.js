@@ -199,14 +199,19 @@ export async function getBanners() {
         imagen_url: b.imagen_url === '/imag/carusel1.jpeg' ? '/imag/carrusel1.jpeg' : b.imagen_url
       }));
     }
-    // Si la DB está vacía, devolvemos los banners por defecto del seed
-    const store = await getStore();
-    return store.banners || [];
   }
 
-  // Si Supabase falló (fallback: true), usamos el store local
-  const store = await getStore();
-  return (store.banners || []).filter(b => b.activo !== false).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+  // Siempre devolver los banners por defecto de la carpeta /imag/ como base
+  // Esto asegura que el carrusel nunca esté vacío
+  const defaultBanners = [
+    { id: 'def-1', imagen_url: '/imag/carrusel1.jpeg', titulo: 'SAV 1', orden: 0, activo: true },
+    { id: 'def-2', imagen_url: '/imag/carrusel2.jpeg', titulo: 'SAV 2', orden: 1, activo: true },
+    { id: 'def-3', imagen_url: '/imag/carrusel3.jpeg', titulo: 'SAV 3', orden: 2, activo: true },
+    { id: 'def-4', imagen_url: '/imag/carrusel4.jpeg', titulo: 'SAV 4', orden: 3, activo: true },
+  ];
+
+  // Si Supabase falló o no hay datos, devolvemos los de la carpeta /imag/
+  return defaultBanners;
 }
 
 export async function getAllTasks() {
