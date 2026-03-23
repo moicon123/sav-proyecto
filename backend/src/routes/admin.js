@@ -114,9 +114,7 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
 
   const user = await findUserById(recarga.usuario_id);
   if (user) {
-    const userUpdates = {
-      saldo_principal: (user.saldo_principal || 0) + recarga.monto
-    };
+    const userUpdates = {};
 
     if (recarga.modo === 'Compra VIP') {
       const niveles = await getLevels();
@@ -124,7 +122,17 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
       if (nuevoNivel) {
         userUpdates.nivel_id = nuevoNivel.id;
       }
+      // Al ser Compra VIP, NO sumamos el monto al saldo_principal, solo actualizamos el nivel.
+    } else {
+      // Si no es Compra VIP, sumamos el saldo normalmente
+      userUpdates.saldo_principal = (user.saldo_principal || 0) + recarga.monto;
+    }
 
+    if (Object.keys(userUpdates).length > 0) {
+      await updateUser(user.id, userUpdates);
+    }
+
+    if (recarga.modo === 'Compra VIP') {
       // Sistema de Comisiones Multi-nivel (A: 15%, B: 5%, C: 2%)
       // Solo se aplica si es Compra VIP y se aprueba por el admin
       let currentInviterId = user.invitado_por;
