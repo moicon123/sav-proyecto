@@ -15,8 +15,18 @@ export default function AdminMetodosQr() {
   const handleFile = (e) => {
     const file = e.target.files?.[0];
     if (!file?.type.startsWith('image/')) return;
+    
+    // Limitar tamaño a 2MB para evitar errores de red en móviles
+    if (file.size > 2 * 1024 * 1024) {
+      alert('La imagen es muy pesada. Máximo 2MB.');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => setImagen(reader.result);
+    reader.onload = () => {
+      setImagen(reader.result);
+    };
+    reader.onerror = () => alert('Error al leer el archivo');
     reader.readAsDataURL(file);
   };
 
