@@ -14,7 +14,8 @@ import {
   Menu, 
   X, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Layers
 } from 'lucide-react';
 import Logo from '../../components/Logo.jsx';
 
@@ -27,6 +28,7 @@ export default function AdminLayout() {
   const menu = [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/admin/usuarios', icon: Users, label: 'Usuarios' },
+    { to: '/admin/niveles', icon: Layers, label: 'Niveles VIP' },
     { to: '/admin/recargas', icon: CreditCard, label: 'Recargas' },
     { to: '/admin/retiros', icon: Wallet, label: 'Retiros' },
     { to: '/admin/tareas', icon: Play, label: 'Tareas' },

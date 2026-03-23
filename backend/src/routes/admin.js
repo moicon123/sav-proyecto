@@ -366,6 +366,28 @@ router.get('/premios-ruleta', async (req, res) => {
   res.json(data || []);
 });
 
+router.get('/niveles', async (req, res) => {
+  const niveles = await getLevels();
+  res.json(niveles);
+});
+
+router.put('/niveles/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  
+  const { data, fallback } = await trySupabase(() => 
+    supabase.from('niveles').update(updates).eq('id', id).select().maybeSingle()
+  );
+  
+  if (!fallback) return res.json(data);
+  
+  // Fallback para memoria local si no hay Supabase
+  const store = await getStore();
+  const nivel = (store.levels || []).find(n => n.id === id);
+  if (nivel) Object.assign(nivel, updates);
+  res.json(nivel || { error: 'Nivel no encontrado' });
+});
+
 router.get('/public-content', async (req, res) => {
   const config = await getPublicContent();
   res.json(config);

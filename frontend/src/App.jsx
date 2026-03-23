@@ -29,6 +29,7 @@ import AdminPremiosRuleta from './pages/admin/AdminPremiosRuleta.jsx';
 import AdminContenidoHome from './pages/admin/AdminContenidoHome.jsx';
 import AdminTareas from './pages/admin/AdminTareas.jsx';
 import AdminBanners from './pages/admin/AdminBanners.jsx';
+import AdminNiveles from './pages/admin/AdminNiveles.jsx';
 
 function PrivateRoute({ children, adminOnly }) {
   const { user, loading } = useAuth();
@@ -46,6 +47,7 @@ function AppRoutes() {
       <Route path="/admin" element={<PrivateRoute adminOnly><AdminLayout /></PrivateRoute>}>
         <Route index element={<AdminDashboard />} />
         <Route path="usuarios" element={<AdminUsuarios />} />
+        <Route path="niveles" element={<AdminNiveles />} />
         <Route path="recargas" element={<AdminRecargas />} />
         <Route path="retiros" element={<AdminRetiros />} />
         <Route path="tareas" element={<AdminTareas />} />
