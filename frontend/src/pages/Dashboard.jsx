@@ -81,11 +81,21 @@ export default function Dashboard() {
   const onInstallApp = async () => {
     if (installPrompt) {
       installPrompt.prompt();
-      await installPrompt.userChoice;
-      setInstallPrompt(null);
+      const { outcome } = await installPrompt.userChoice;
+      console.log(`[PWA] Elección del usuario: ${outcome}`);
+      if (outcome === 'accepted') {
+        setInstallPrompt(null);
+      }
       return;
     }
-    alert('Para instalar la app, abre el menú del navegador y selecciona "Instalar aplicación" o "Agregar a pantalla de inicio".');
+    
+    // Si no es compatible con instalación directa (iOS o ya instalado)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      alert('En iPhone: Toca el botón de "Compartir" (cuadrado con flecha) y selecciona "Agregar a inicio" para descargar la App.');
+    } else {
+      alert('Para descargar la App: Abre el menú de Chrome (3 puntos) y selecciona "Instalar aplicación" o "Agregar a pantalla de inicio".');
+    }
   };
 
   return (
