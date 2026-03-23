@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [popup, setPopup] = useState({ popup_enabled: false, popup_title: '', popup_message: '' });
   const [showPopup, setShowPopup] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     // Definir banners por defecto por si la API falla o está vacía
@@ -64,11 +65,24 @@ export default function Dashboard() {
   }, [banners.length]);
 
   useEffect(() => {
+    // Detectar si ya está instalada la App
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      setIsInstalled(true);
+    }
+
     const handler = (e) => {
       e.preventDefault();
+      console.log('[PWA] beforeinstallprompt capturado correctamente');
       setInstallPrompt(e);
     };
+
     window.addEventListener('beforeinstallprompt', handler);
+    
+    // Si el evento ya ocurrió antes de que se monte el componente
+    if (window.deferredPrompt) {
+      setInstallPrompt(window.deferredPrompt);
+    }
+
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
@@ -79,22 +93,27 @@ export default function Dashboard() {
   };
 
   const onInstallApp = async () => {
+    if (isInstalled) {
+      alert('¡SAV ya está instalado en tu pantalla de inicio!');
+      return;
+    }
+
     if (installPrompt) {
+      // Activar la ventana oficial de instalación (equivale a los 3 puntos -> Instalar)
       installPrompt.prompt();
       const { outcome } = await installPrompt.userChoice;
-      console.log(`[PWA] Elección del usuario: ${outcome}`);
       if (outcome === 'accepted') {
         setInstallPrompt(null);
+        setIsInstalled(true);
       }
       return;
     }
     
-    // Si no es compatible con instalación directa (iOS o ya instalado)
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isIOS) {
-      alert('En iPhone: Toca el botón de "Compartir" (cuadrado con flecha) y selecciona "Agregar a inicio" para descargar la App.');
+      alert('Instalación en iPhone:\n1. Toca el botón central de abajo (Compartir)\n2. Selecciona "Agregar a inicio"');
     } else {
-      alert('Para descargar la App: Abre el menú de Chrome (3 puntos) y selecciona "Instalar aplicación" o "Agregar a pantalla de inicio".');
+      alert('Para instalar directamente:\n1. Asegúrate de usar Google Chrome\n2. Navega unos segundos por la App\n3. Si el botón no se activa, usa los 3 puntos de Chrome -> Instalar');
     }
   };
 
