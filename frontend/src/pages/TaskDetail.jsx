@@ -147,7 +147,7 @@ export default function TaskDetail() {
           autoPlay
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           onCanPlayThrough={(e) => {
             console.log("Video listo para reproducir:", url);
             e.target.play().catch(err => console.warn("Autoplay bloqueado:", err));

@@ -28,7 +28,7 @@ export default function TaskRoom() {
       })
       .catch((err) => {
         console.error('Error cargando tareas:', err);
-        setError(err.message || 'No se pudieron cargar las tareas. Intentalo de nuevo.');
+        setError(err.message || 'No se pudieron cargar las tareas. Inténtalo de nuevo.');
       })
       .finally(() => setLoading(false));
   };
@@ -80,6 +80,12 @@ export default function TaskRoom() {
   return (
     <Layout>
       <Header title="sala de tareas" />
+      {/* Pre-carga de videos para mejorar la velocidad de carga al entrar en detalles */}
+      <div className="hidden">
+        {data.tareas.map(t => (
+          <video key={t.id} src={t.video_url} preload="auto" muted />
+        ))}
+      </div>
       <div className="p-4 space-y-4 bg-white min-h-screen">
         <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-gray-100">
           <div className="flex justify-between items-center mb-4">
