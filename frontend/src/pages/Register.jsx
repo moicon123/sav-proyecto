@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Eye, EyeOff, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, UserPlus } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 
 export default function Register() {
@@ -15,6 +15,13 @@ export default function Register() {
     repeat_password: '',
     codigo_invitacion: refCode || '',
   });
+
+  // Actualizar el código si cambia el parámetro de búsqueda
+  useEffect(() => {
+    if (refCode) {
+      setData(prev => ({ ...prev, codigo_invitacion: refCode }));
+    }
+  }, [refCode]);
 
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
