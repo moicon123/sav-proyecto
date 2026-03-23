@@ -45,11 +45,17 @@ router.post('/girar', authenticate, async (req, res) => {
   const premio = pickByProbability(premios);
   const nuevasOps = Math.max(0, ops - 1);
   
-  // Actualizar oportunidades y sumar premio al saldo de comisiones
+  // Actualizar saldo de comisiones primero (columna garantizada)
   await updateUser(user.id, { 
-    oportunidades_sorteo: nuevasOps,
     saldo_comisiones: (user.saldo_comisiones || 0) + (premio.valor || 0)
   });
+
+  // Intentar actualizar las oportunidades de sorteo (columna opcional en Supabase)
+  try {
+    await updateUser(user.id, { oportunidades_sorteo: nuevasOps });
+  } catch (err) {
+    console.warn('[Raffle] Error al actualizar oportunidades_sorteo:', err.message);
+  }
   
   const ganador = {
     id: uuidv4(),

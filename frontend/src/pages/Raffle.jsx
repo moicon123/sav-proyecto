@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import Header from '../components/Header';
 import { api } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import { Trophy, History, Coins, Info, Play, Sparkles, ChevronRight } from 'lucide-react';
 
 export default function Raffle() {
+  const { refreshUser } = useAuth();
   const [premios, setPremios] = useState([]);
   const [historial, setHistorial] = useState([]);
   const [oportunidades, setOportunidades] = useState(0);
@@ -41,6 +43,10 @@ export default function Raffle() {
         setGanador(premio);
         setShowWinModal(true);
         setOportunidades(oportunidades_restantes);
+        
+        // Refrescar los activos del usuario en el contexto global
+        refreshUser();
+        
         setHistorial((h) => [{ 
           premio_nombre: premio.nombre, 
           premio_valor: premio.valor, 
