@@ -109,7 +109,9 @@ export async function getRetiros() {
 
 export async function getMetodosQr() {
   const { data, fallback } = await trySupabase(() => supabase.from('metodos_qr').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (!fallback && data && data.length > 0) return data;
+  // Si no hay error (fallback es falso), devolvemos data aunque sea una lista vacía []
+  if (!fallback) return data || [];
+  
   const store = await getStore();
   return (store.metodosQr || []).filter(m => m.activo).sort((a, b) => (a.orden || 0) - (b.orden || 0));
 }
@@ -187,9 +189,9 @@ export async function getPublicContent() {
 
 export async function getBanners() {
   const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (!fallback && data && data.length > 0) {
+  if (!fallback) {
     // Hotfix: Corregir URL si tiene el error tipográfico carusel1.jpeg
-    return data.map(b => ({
+    return (data || []).map(b => ({
       ...b,
       imagen_url: b.imagen_url === '/imag/carusel1.jpeg' ? '/imag/carrusel1.jpeg' : b.imagen_url
     }));
@@ -255,7 +257,7 @@ export async function getTasks(nivelId) {
 
 export async function getPremiosRuleta() {
   const { data, fallback } = await trySupabase(() => supabase.from('premios_ruleta').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (!fallback && data && data.length > 0) return data;
+  if (!fallback) return data || [];
   const store = await getStore();
   return (store.premiosRuleta || []).filter(p => p.activo !== false).sort((a, b) => (a.orden || 0) - (b.orden || 0));
 }
