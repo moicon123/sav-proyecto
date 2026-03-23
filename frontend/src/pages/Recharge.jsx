@@ -221,23 +221,27 @@ export default function Recharge() {
                       <div className="w-8 h-8 rounded-full bg-[#1a1f36]/5 flex items-center justify-center text-[#1a1f36] font-black text-xs border border-gray-100 shadow-inner">1</div>
                       <p className="text-sm font-black text-[#1a1f36] uppercase tracking-tight">{m.nombre_titular}</p>
                     </div>
-                    {(m.imagen_base64 || m.imagen_qr_url) ? (
-                      <div className="bg-gray-50 p-6 rounded-[2rem] flex justify-center border border-gray-100 shadow-inner">
+                    {/* Contenedor del QR dinámico */}
+                    <div className="bg-gray-50 p-6 rounded-[2rem] flex flex-col items-center justify-center border border-gray-100 shadow-inner min-h-[16rem]">
+                      {(m.imagen_base64 || m.imagen_qr_url) ? (
                         <img 
                           src={m.imagen_base64 || m.imagen_qr_url} 
-                          alt="QR" 
-                          className="w-56 h-56 object-contain rounded-xl shadow-lg border border-white" 
+                          alt={`QR de ${m.nombre_titular}`} 
+                          className="w-64 h-64 object-contain rounded-xl shadow-lg border border-white" 
                           onError={(e) => {
                             console.error("Error cargando imagen QR:", m.imagen_qr_url);
                             e.target.src = 'https://placehold.co/200x200?text=QR+No+Disponible';
                           }}
                         />
-                      </div>
-                    ) : (
-                      <div className="bg-gray-50 p-12 rounded-[2rem] flex flex-col items-center justify-center border-2 border-dashed border-gray-200">
-                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Esperando imagen QR...</p>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-gray-100 animate-pulse flex items-center justify-center">
+                            <Upload className="text-gray-300" size={24} />
+                          </div>
+                          <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest text-center">Esperando imagen QR del administrador...</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

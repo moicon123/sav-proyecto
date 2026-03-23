@@ -24,8 +24,10 @@ export default function AdminMetodosQr() {
     if (!nombre.trim()) return alert('Ingresa el nombre del titular');
     if (!imagen) return alert('Sube una imagen QR');
     try {
-      const m = await api.admin.crearMetodoQr({ nombre_titular: nombre, imagen_base64: imagen });
-      setMetodos((prev) => [...prev, m]);
+      await api.admin.crearMetodoQr({ nombre_titular: nombre, imagen_base64: imagen });
+      // Refrescar lista completa desde el servidor para asegurar sincronización
+      const list = await api.admin.metodosQr();
+      setMetodos(list);
       setNombre('');
       setImagen(null);
     } catch (e) {
