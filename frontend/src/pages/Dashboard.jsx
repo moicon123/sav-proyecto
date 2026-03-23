@@ -29,7 +29,24 @@ export default function Dashboard() {
   const [installPrompt, setInstallPrompt] = useState(null);
 
   useEffect(() => {
-    api.banners().then(setBanners).catch(() => setBanners([]));
+    // Definir banners por defecto por si la API falla o está vacía
+    const defaultBanners = [
+      { id: 'def-1', imagen_url: '/imag/carrusel1.jpeg', titulo: 'SAV 1', orden: 0, activo: true },
+      { id: 'def-2', imagen_url: '/imag/carrusel2.jpeg', titulo: 'SAV 2', orden: 1, activo: true },
+      { id: 'def-3', imagen_url: '/imag/carrusel3.jpeg', titulo: 'SAV 3', orden: 2, activo: true },
+      { id: 'def-4', imagen_url: '/imag/carrusel4.jpeg', titulo: 'SAV 4', orden: 3, activo: true },
+    ];
+
+    api.banners()
+      .then(data => {
+        if (data && data.length > 0) {
+          setBanners(data);
+        } else {
+          setBanners(defaultBanners);
+        }
+      })
+      .catch(() => setBanners(defaultBanners));
+
     api.users.stats().then(setStats).catch(() => {});
     api.publicContent()
       .then((data) => {
