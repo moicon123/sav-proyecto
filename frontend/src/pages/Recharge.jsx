@@ -221,16 +221,21 @@ export default function Recharge() {
                       <div className="w-8 h-8 rounded-full bg-[#1a1f36]/5 flex items-center justify-center text-[#1a1f36] font-black text-xs border border-gray-100 shadow-inner">1</div>
                       <p className="text-sm font-black text-[#1a1f36] uppercase tracking-tight">{m.nombre_titular}</p>
                     </div>
-                    {(m.imagen_base64 || m.imagen_qr_url) && (
+                    {(m.imagen_base64 || m.imagen_qr_url) ? (
                       <div className="bg-gray-50 p-6 rounded-[2rem] flex justify-center border border-gray-100 shadow-inner">
                         <img 
                           src={m.imagen_base64 || m.imagen_qr_url} 
                           alt="QR" 
                           className="w-56 h-56 object-contain rounded-xl shadow-lg border border-white" 
                           onError={(e) => {
+                            console.error("Error cargando imagen QR:", m.imagen_qr_url);
                             e.target.src = 'https://placehold.co/200x200?text=QR+No+Disponible';
                           }}
                         />
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 p-12 rounded-[2rem] flex flex-col items-center justify-center border-2 border-dashed border-gray-200">
+                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Esperando imagen QR...</p>
                       </div>
                     )}
                   </div>
