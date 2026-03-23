@@ -37,20 +37,23 @@ export default function VincularTarjeta() {
         {error && <div className="p-3 rounded-xl bg-red-50 text-red-800 text-sm">{error}</div>}
         <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Banco / app (ej. Yape, Banco Unión)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del propietario de la cuenta</label>
             <input
               value={nombreBanco}
               onChange={(e) => setNombreBanco(e.target.value)}
               className="w-full rounded-xl border px-3 py-2"
               required
-              placeholder="Yape"
+              placeholder="Nombre completo"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de cuenta / Banco</label>
             <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="w-full rounded-xl border px-3 py-2">
               <option value="yape">Yape</option>
-              <option value="banco">Cuenta bancaria</option>
+              <option value="banco_union">Banco Unión</option>
+              <option value="yasta">Yasta</option>
+              <option value="yolopago">Yolopago</option>
+              <option value="banco_mercantil">Banco Mercantil</option>
               <option value="otro">Otro</option>
             </select>
           </div>

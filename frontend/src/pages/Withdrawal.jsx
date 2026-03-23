@@ -24,13 +24,23 @@ export default function Withdrawal() {
   const [pc, setPc] = useState(null);
 
   useEffect(() => {
+    // Flujo de validación: Contraseña de fondo -> Vincular tarjeta
+    if (user && !user.tiene_password_fondo) {
+      navigate('/cambiar-contrasena-fondo');
+      return;
+    }
+
     api.withdrawals.montos().then(setMontos).catch(() => {});
     api.users.tarjetas().then((list) => {
       setTarjetas(list);
+      if (list.length === 0) {
+        navigate('/vincular-tarjeta');
+        return;
+      }
       if (list[0]) setTarjetaId(list[0].id);
     }).catch(() => setTarjetas([]));
     api.publicContent().then(setPc).catch(() => {});
-  }, []);
+  }, [user, navigate]);
 
   const saldoPrincipal = user?.saldo_principal ?? 0;
   const saldoComisiones = user?.saldo_comisiones ?? 0;
@@ -145,7 +155,6 @@ export default function Withdrawal() {
                 onChange={(e) => setMonto(parseFloat(e.target.value))}
                 className="w-full bg-gray-50 px-5 py-5 rounded-2xl border border-gray-100 focus:border-[#1a1f36]/50 focus:outline-none transition-all text-xl font-black text-[#1a1f36] placeholder:text-gray-300 shadow-inner"
                 placeholder="Monto personalizado"
-                required
               />
               <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 font-black text-xs uppercase tracking-widest">BOB</span>
             </div>

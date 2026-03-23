@@ -68,7 +68,7 @@ export default function Security() {
                 <CreditCard size={22} className="text-gray-600" />
                 <div>
                   <p className="font-medium text-gray-800">Cuentas para retiro</p>
-                  <p className="text-sm text-gray-500">Puedes agregar varias y eliminar las que quieras</p>
+                  <p className="text-sm text-gray-500">Cuentas vinculadas para tus cobros</p>
                 </div>
               </div>
               <Link to="/vincular-tarjeta" className="text-sm text-[#1a1f36] font-black uppercase tracking-tighter">
@@ -85,16 +85,8 @@ export default function Security() {
                     className="flex items-center justify-between gap-2 py-2 border-b border-gray-50 last:border-0"
                   >
                     <span className="text-sm text-gray-800">
-                      {t.nombre_banco} ****{t.numero_masked}
+                      {t.tipo === 'yape' ? 'Yape' : (t.nombre_banco || 'Cuenta')} ****{t.numero_masked}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => eliminarTarjeta(t.id)}
-                      className="p-2 rounded-lg text-red-600 hover:bg-red-50"
-                      aria-label="Eliminar cuenta"
-                    >
-                      <Trash2 size={18} />
-                    </button>
                   </li>
                 ))}
               </ul>
