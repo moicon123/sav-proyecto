@@ -77,7 +77,7 @@ export default function Login() {
                   <select
                     value={pais}
                     onChange={(e) => setPais(e.target.value)}
-                    className="appearance-none w-18 sm:w-20 px-3 sm:px-4 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 focus:border-[#1a1f36]/20 text-[#1a1f36] font-black text-[10px] sm:text-xs transition-all outline-none cursor-pointer"
+                    className="appearance-none w-18 sm:w-20 px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 focus:border-[#1a1f36]/20 text-[#1a1f36] font-black text-[10px] sm:text-xs transition-all outline-none cursor-pointer"
                   >
                     {PAISES.map((p) => (
                       <option key={p.codigo} value={p.codigo} className="bg-white">{p.codigo}</option>
@@ -90,7 +90,7 @@ export default function Login() {
                   inputMode="numeric"
                   value={numero}
                   onChange={(e) => setNumero(e.target.value.replace(/\D/g, ''))}
-                  className="flex-1 px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none placeholder:text-gray-300 shadow-inner"
+                  className="flex-1 px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none placeholder:text-gray-300 shadow-inner"
                   placeholder="70000000"
                   required
                 />
@@ -104,7 +104,7 @@ export default function Login() {
                   type={showPass ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none pr-12 sm:pr-14 placeholder:text-gray-300 shadow-inner"
+                  className="w-full px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none pr-12 sm:pr-14 placeholder:text-gray-300 shadow-inner"
                   placeholder="••••••••"
                   required
                 />

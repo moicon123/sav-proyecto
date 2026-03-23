@@ -87,7 +87,7 @@ export default function Register() {
                 type="tel"
                 value={data.telefono}
                 onChange={(e) => handleChange('telefono', e.target.value)}
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none placeholder:text-gray-300 shadow-inner"
+                className="w-full px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none placeholder:text-gray-300 shadow-inner"
                 placeholder="+591 70000000"
                 required
               />
@@ -99,7 +99,7 @@ export default function Register() {
                 type="text"
                 value={data.nombre_usuario}
                 onChange={(e) => handleChange('nombre_usuario', e.target.value)}
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none placeholder:text-gray-300 shadow-inner"
+                className="w-full px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none placeholder:text-gray-300 shadow-inner"
                 placeholder="Ej: usuario_pro"
                 required
               />
@@ -112,7 +112,7 @@ export default function Register() {
                   type={showPass ? 'text' : 'password'}
                   value={data.password}
                   onChange={(e) => handleChange('password', e.target.value)}
-                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none pr-12 sm:pr-14 placeholder:text-gray-300 shadow-inner"
+                  className="w-full px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none pr-12 sm:pr-14 placeholder:text-gray-300 shadow-inner"
                   placeholder="••••••••"
                   required
                 />
@@ -133,7 +133,7 @@ export default function Register() {
                   type={showPass ? 'text' : 'password'}
                   value={data.repeat_password}
                   onChange={(e) => handleChange('repeat_password', e.target.value)}
-                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none pr-12 sm:pr-14 placeholder:text-gray-300 shadow-inner"
+                  className="w-full px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none pr-12 sm:pr-14 placeholder:text-gray-300 shadow-inner"
                   placeholder="••••••••"
                   required
                 />
@@ -147,7 +147,7 @@ export default function Register() {
                   type="text"
                   value={data.codigo_invitacion}
                   onChange={(e) => handleChange('codigo_invitacion', e.target.value)}
-                  className={`w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl border-2 transition-all outline-none font-black text-xs sm:text-sm shadow-inner ${
+                  className={`w-full px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl border-2 transition-all outline-none font-black text-xs sm:text-sm shadow-inner ${
                     refCode 
                     ? 'bg-gray-100 border-gray-100 text-gray-400 cursor-not-allowed' 
                     : 'bg-gray-50/80 border-gray-50 text-[#1a1f36] focus:border-[#1a1f36]/20'
