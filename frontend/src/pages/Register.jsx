@@ -127,6 +127,20 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Repetir Contraseña</label>
+              <div className="relative group">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  value={data.repeat_password}
+                  onChange={(e) => handleChange('repeat_password', e.target.value)}
+                  className="w-full px-6 py-5 rounded-2xl bg-gray-50/50 border-2 border-gray-50 text-[#1a1f36] font-black text-sm focus:border-[#1a1f36]/30 transition-all outline-none pr-16 placeholder:text-gray-300 shadow-inner"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Código de Invitación</label>
               <div className="relative group">
                 <input
