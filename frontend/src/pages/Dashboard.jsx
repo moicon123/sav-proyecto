@@ -133,10 +133,10 @@ export default function Dashboard() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f36] via-[#1a1f36]/20 to-transparent pointer-events-none" />
             
             {/* Texto decorativo en el Banner */}
-            <div className="absolute bottom-12 left-8 right-8 z-10 text-center transform group-hover:translate-y-[-5px] transition-transform duration-700">
-              <h2 className="text-white text-2xl font-black leading-tight uppercase tracking-tighter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
-                Multiplica tus <span className="text-white underline decoration-4 underline-offset-8 decoration-white/30">Activos</span> <br />
-                <span className="text-sm font-bold tracking-[0.3em] opacity-80">con SAV Global</span>
+            <div className="absolute bottom-10 left-6 right-6 z-10 text-center transform group-hover:translate-y-[-3px] transition-transform duration-700">
+              <h2 className="text-white text-lg font-black leading-tight uppercase tracking-tighter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">
+                Multiplica tus <span className="text-white underline decoration-2 underline-offset-4 decoration-white/30">Activos</span> <br />
+                <span className="text-[10px] font-bold tracking-[0.2em] opacity-80">con SAV Global</span>
               </h2>
             </div>
 
