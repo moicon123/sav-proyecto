@@ -35,6 +35,8 @@ CREATE TABLE usuarios (
   saldo_comisiones DECIMAL(12,2) DEFAULT 0,
   rol VARCHAR(20) DEFAULT 'usuario',
   bloqueado BOOLEAN DEFAULT FALSE,
+  oportunidades_sorteo INT DEFAULT 0,
+  last_device_id TEXT,
   intentos_login INT DEFAULT 0,
   bloqueado_hasta TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),

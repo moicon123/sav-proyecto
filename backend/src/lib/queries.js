@@ -7,15 +7,17 @@ export async function trySupabase(operation) {
     if (hasDb()) {
       const { data, error } = await operation();
       if (error) {
-        console.warn('Supabase operation error, falling back to local store:', error.message);
-        return { data: null, fallback: true };
+        console.warn('[Supabase] Error en la operación:', error.message);
+        return { data: null, error, fallback: true };
       }
-      return { data, fallback: false };
+      return { data, error: null, fallback: false };
     }
+    console.warn('[Supabase] No hay conexión a la base de datos (SUPABASE_URL/KEY faltante)');
   } catch (err) {
-    console.warn('Supabase connection failed (fetch failed), falling back to local store:', err.message);
+    console.error('[Supabase] Error crítico de conexión:', err.message);
+    return { data: null, error: err, fallback: true };
   }
-  return { data: null, fallback: true };
+  return { data: null, error: new Error('No DB connection'), fallback: true };
 }
 
 export async function getUsers() {
@@ -49,8 +51,19 @@ export async function findUserByCodigo(codigo) {
 }
 
 export async function createUser(userData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').insert([userData]).select().maybeSingle());
-  if (!fallback) return data;
+  console.log(`[Queries] Intentando crear usuario: ${userData.nombre_usuario} (${userData.telefono})`);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('usuarios').insert([userData]).select().maybeSingle());
+  
+  if (!fallback) {
+    if (error) {
+      console.error('[Queries] Error crítico al insertar en Supabase:', error);
+      throw new Error(`Error de base de datos: ${error.message}`);
+    }
+    console.log(`[Queries] Usuario creado exitosamente en Supabase: ${userData.nombre_usuario}`);
+    return data;
+  }
+  
+  console.warn('[Queries] Fallback activado: Guardando usuario en memoria local (NO PERSISTENTE)');
   const store = await getStore();
   store.users.push(userData);
   return userData;

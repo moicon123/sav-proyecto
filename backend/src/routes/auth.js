@@ -18,12 +18,15 @@ router.post('/register', async (req, res) => {
     const inviter = await findUserByCodigo(codigo_invitacion);
     if (!inviter) return res.status(400).json({ error: 'Código de invitación inválido' });
     
-    // Verificar que el invitador no sea un pasante (l1)
-    if (inviter.nivel_id === 'l1') {
+    const levels = await getLevels();
+    const pasanteLevel = levels.find(l => String(l.codigo).toLowerCase() === 'pasante' || String(l.id) === 'l1');
+    
+    // Verificar que el invitador no sea un pasante (usando el ID del nivel pasante detectado)
+    if (pasanteLevel && String(inviter.nivel_id) === String(pasanteLevel.id)) {
       return res.status(400).json({ error: 'Este código de invitación pertenece a un usuario en prueba (pasante) y no es válido para nuevos registros. Por favor solicita un código de un usuario VIP.' });
     }
+
     const codigo = Math.random().toString(36).slice(2, 10).toUpperCase();
-    const levels = await getLevels();
     const user = {
       id: uuidv4(),
       telefono,
@@ -32,17 +35,25 @@ router.post('/register', async (req, res) => {
       password_hash: await bcrypt.hash(password, 10),
       codigo_invitacion: codigo,
       invitado_por: inviter.id,
-      nivel_id: levels[0].id,
+      nivel_id: pasanteLevel ? pasanteLevel.id : levels[0].id,
       saldo_principal: 0,
       saldo_comisiones: 0,
       rol: 'usuario',
       bloqueado: false,
+    };
+    
+    // Solo agregar campos extra si no estamos seguros de que causen error en Supabase
+    // (A futuro se deberían agregar estas columnas a la DB)
+    const fullUser = {
+      ...user,
       oportunidades_sorteo: 1,
       last_device_id: deviceId || null,
     };
-    await createUser(user);
+
+    await createUser(user); // Insertamos solo lo esencial para asegurar éxito en Supabase
+    
     const token = jwt.sign({ id: user.id, rol: user.rol }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ user: sanitizeUser(user, levels), token });
+    res.json({ user: sanitizeUser({ ...user, ...fullUser }, levels), token });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
