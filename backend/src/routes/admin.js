@@ -329,10 +329,11 @@ router.get('/banners', async (req, res) => {
 });
 
 router.post('/banners', async (req, res) => {
-  const { imagen_url, orden } = req.body;
+  const { imagen_url, imagen_base64, orden } = req.body;
   const banner = {
     id: uuidv4(),
-    imagen_url,
+    imagen_url: imagen_base64 || imagen_url || '',
+    imagen_base64: imagen_base64 || null,
     orden: parseInt(orden) || 0,
     activo: true,
     created_at: new Date().toISOString()

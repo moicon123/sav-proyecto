@@ -111,86 +111,98 @@ export default function AdminContenidoHome() {
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Contenido Home, notificaciones y horarios</h1>
-      <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Guia (bloque azul en Home)</label>
-          <textarea
-            rows={4}
-            value={form.home_guide || ''}
-            onChange={(e) => setForm((f) => ({ ...f, home_guide: e.target.value }))}
-            className="w-full rounded-xl border border-gray-300 px-3 py-2"
-            placeholder="Texto de guia para principiantes"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Titulo de notificacion</label>
-          <input
-            type="text"
-            value={form.popup_title || ''}
-            onChange={(e) => setForm((f) => ({ ...f, popup_title: e.target.value }))}
-            className="w-full rounded-xl border border-gray-300 px-3 py-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje de notificacion</label>
-          <textarea
-            rows={4}
-            value={form.popup_message || ''}
-            onChange={(e) => setForm((f) => ({ ...f, popup_message: e.target.value }))}
-            className="w-full rounded-xl border border-gray-300 px-3 py-2"
-          />
-        </div>
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={!!form.popup_enabled}
-            onChange={(e) => setForm((f) => ({ ...f, popup_enabled: e.target.checked }))}
-          />
-          Mostrar notificacion al entrar
-        </label>
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Contenido Home</h1>
+        <p className="text-gray-500 font-medium uppercase tracking-widest text-[10px] mt-1">Notificaciones, horarios y noticias generales</p>
+      </div>
 
-        <div className="pt-4 border-t border-gray-200 space-y-4">
-          <h2 className="font-semibold text-gray-800">Horarios de recarga y retiro</h2>
-          <p className="text-sm text-gray-600">
-            Fuera de estos horarios el usuario verá un mensaje al intentar recargar o retirar (validación en servidor).
-          </p>
-          <HorarioEditor
-            label="Restringir recargas"
-            value={form.horario_recarga}
-            onChange={(h) => setForm((f) => ({ ...f, horario_recarga: h }))}
-          />
-          <HorarioEditor
-            label="Restringir retiros"
-            value={form.horario_retiro}
-            onChange={(h) => setForm((f) => ({ ...f, horario_retiro: h }))}
-          />
+      <div className="bg-white rounded-[2rem] shadow-sm p-6 md:p-8 space-y-8 border border-gray-100">
+        <div className="space-y-4">
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Guía y Notificaciones</h2>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Guía (bloque azul en Home)</label>
+              <textarea
+                rows={3}
+                value={form.home_guide || ''}
+                onChange={(e) => setForm((f) => ({ ...f, home_guide: e.target.value }))}
+                className="w-full rounded-2xl bg-gray-50 border-2 border-gray-50 px-5 py-4 text-gray-800 font-bold text-sm focus:border-sav-primary/20 transition-all outline-none"
+                placeholder="Texto de guia para principiantes"
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Título de notificación</label>
+                <input
+                  type="text"
+                  value={form.popup_title || ''}
+                  onChange={(e) => setForm((f) => ({ ...f, popup_title: e.target.value }))}
+                  className="w-full rounded-2xl bg-gray-50 border-2 border-gray-50 px-5 py-4 text-gray-800 font-bold text-sm focus:border-sav-primary/20 transition-all outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Estado</label>
+                <label className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={!!form.popup_enabled}
+                    onChange={(e) => setForm((f) => ({ ...f, popup_enabled: e.target.checked }))}
+                    className="w-5 h-5 rounded-lg border-2 border-gray-300 text-sav-primary focus:ring-0 transition-all"
+                  />
+                  <span className="text-xs font-black text-gray-500 uppercase tracking-widest group-hover:text-gray-800 transition-colors">Mostrar al entrar</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Mensaje de notificación</label>
+              <textarea
+                rows={3}
+                value={form.popup_message || ''}
+                onChange={(e) => setForm((f) => ({ ...f, popup_message: e.target.value }))}
+                className="w-full rounded-2xl bg-gray-50 border-2 border-gray-50 px-5 py-4 text-gray-800 font-bold text-sm focus:border-sav-primary/20 transition-all outline-none"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="pt-4 border-t border-gray-200">
-          <h2 className="font-semibold text-gray-800 mb-3">Noticias de conferencia (reuniones)</h2>
-          <p className="text-sm text-gray-600 mb-3">
-            Lo que ve el usuario en &quot;Noticias de Conferencia&quot; del home. Una línea por tema o usa viñetas.
-          </p>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+        <div className="pt-8 border-t border-gray-100 space-y-6">
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Horarios de Operación</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <HorarioEditor
+              label="Restringir recargas"
+              value={form.horario_recarga}
+              onChange={(h) => setForm((f) => ({ ...f, horario_recarga: h }))}
+            />
+            <HorarioEditor
+              label="Restringir retiros"
+              value={form.horario_retiro}
+              onChange={(h) => setForm((f) => ({ ...f, horario_retiro: h }))}
+            />
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-gray-100 space-y-6">
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Noticias de conferencia</h2>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Título de sección</label>
               <input
                 type="text"
                 value={form.conferencia_title || ''}
                 onChange={(e) => setForm((f) => ({ ...f, conferencia_title: e.target.value }))}
-                className="w-full rounded-xl border border-gray-300 px-3 py-2"
-                placeholder="Noticias de conferencia"
+                className="w-full rounded-2xl bg-gray-50 border-2 border-gray-50 px-5 py-4 text-gray-800 font-bold text-sm focus:border-sav-primary/20 transition-all outline-none"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contenido (temas de la reunión)</label>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Contenido de la reunión</label>
               <textarea
-                rows={8}
+                rows={6}
                 value={form.conferencia_noticias || ''}
                 onChange={(e) => setForm((f) => ({ ...f, conferencia_noticias: e.target.value }))}
-                className="w-full rounded-xl border border-gray-300 px-3 py-2 font-mono text-sm"
+                className="w-full rounded-2xl bg-gray-50 border-2 border-gray-50 px-5 py-4 text-gray-800 font-bold text-sm focus:border-sav-primary/20 transition-all outline-none font-mono"
                 placeholder={'• Reunión sábado 10:00\n• Tema: niveles\n• Enlace Zoom: ...'}
               />
             </div>
@@ -201,9 +213,9 @@ export default function AdminContenidoHome() {
           type="button"
           onClick={save}
           disabled={saving}
-          className="px-5 py-2.5 rounded-xl bg-sav-primary text-white font-medium disabled:opacity-60"
+          className="w-full flex items-center justify-center gap-3 py-5 rounded-2xl bg-[#1a1f36] text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-[#1a1f36]/20 active:scale-[0.98] transition-all"
         >
-          {saving ? 'Guardando...' : 'Guardar cambios'}
+          {saving ? 'Guardando cambios...' : 'Guardar configuración global'}
         </button>
       </div>
     </div>
