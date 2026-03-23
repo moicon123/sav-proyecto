@@ -22,7 +22,18 @@ export default function Recharge() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    api.recharges.metodos().then(setMetodos).catch(() => setMetodos([]));
+    // Forzar recarga de métodos cada vez que se entra a la página
+    const loadData = async () => {
+      try {
+        const list = await api.recharges.metodos();
+        setMetodos(list);
+      } catch (err) {
+        console.error('Error cargando métodos:', err);
+        setMetodos([]);
+      }
+    };
+
+    loadData();
     api.levels.list().then(setNiveles).catch(() => []);
     api.publicContent().then(setPc).catch(() => {});
 
