@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import Header from '../components/Header';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, Check, Upload } from 'lucide-react';
+import { Eye, EyeOff, Check, Upload, Info } from 'lucide-react';
 import { isScheduleOpen } from '../lib/schedule';
 
 export default function Withdrawal() {
@@ -185,7 +185,7 @@ export default function Withdrawal() {
             <div className="space-y-4">
               <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-                  <Check size={20} />
+                  <Info size={20} />
                 </div>
                 <div>
                   <p className="text-[11px] font-black text-amber-700 uppercase tracking-widest">Información de retiro</p>
@@ -195,20 +195,21 @@ export default function Withdrawal() {
 
               <div className="relative group">
                 <input
-                type={showPass ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-gray-50 px-5 py-5 rounded-2xl border border-gray-100 focus:border-[#1a1f36]/50 focus:outline-none transition-all text-sm font-black text-[#1a1f36] placeholder:text-gray-300 shadow-inner"
-                placeholder="••••••••"
-                required
-              />
-              <button 
-                type="button" 
-                onClick={() => setShowPass(!showPass)}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a1f36] transition-colors"
-              >
-                {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+                  type={showPass ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-gray-50 px-5 py-5 rounded-2xl border border-gray-100 focus:border-[#1a1f36]/50 focus:outline-none transition-all text-sm font-black text-[#1a1f36] placeholder:text-gray-300 shadow-inner"
+                  placeholder="••••••••"
+                  required
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a1f36] transition-colors"
+                >
+                  {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
           </div>
 
