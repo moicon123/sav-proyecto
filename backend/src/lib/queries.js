@@ -190,19 +190,7 @@ export async function getPublicContent() {
 export async function getBanners() {
   const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').select('*').eq('activo', true).order('orden', { ascending: true }));
   
-  // Si Supabase responde correctamente (fallback: false)
-  if (!fallback) {
-    // Si hay datos en la DB, los devolvemos corregidos
-    if (data && data.length > 0) {
-      return data.map(b => ({
-        ...b,
-        imagen_url: b.imagen_url === '/imag/carusel1.jpeg' ? '/imag/carrusel1.jpeg' : b.imagen_url
-      }));
-    }
-  }
-
-  // Siempre devolver los banners por defecto de la carpeta /imag/ como base
-  // Esto asegura que el carrusel nunca esté vacío
+  // Siempre incluir los banners por defecto de la carpeta /imag/
   const defaultBanners = [
     { id: 'def-1', imagen_url: '/imag/carrusel1.jpeg', titulo: 'SAV 1', orden: 0, activo: true },
     { id: 'def-2', imagen_url: '/imag/carrusel2.jpeg', titulo: 'SAV 2', orden: 1, activo: true },
@@ -210,7 +198,17 @@ export async function getBanners() {
     { id: 'def-4', imagen_url: '/imag/carrusel4.jpeg', titulo: 'SAV 4', orden: 3, activo: true },
   ];
 
-  // Si Supabase falló o no hay datos, devolvemos los de la carpeta /imag/
+  // Si Supabase responde correctamente (fallback: false)
+  if (!fallback && data && data.length > 0) {
+    // Si hay datos en la DB, combinamos o priorizamos los de la DB
+    // Por ahora, devolvemos los de la DB pero corregimos URLs si es necesario
+    return data.map(b => ({
+      ...b,
+      imagen_url: b.imagen_url === '/imag/carusel1.jpeg' ? '/imag/carrusel1.jpeg' : b.imagen_url
+    }));
+  }
+
+  // Si no hay datos en la DB o Supabase falló, devolvemos siempre los de la carpeta /imag/
   return defaultBanners;
 }
 
