@@ -20,6 +20,28 @@ export default function Recharge() {
   const [error, setError] = useState('');
   const [pc, setPc] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [lastRechargeTime, setLastRechargeTime] = useState(localStorage.getItem('last_recharge_time') || null);
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    if (!lastRechargeTime) return;
+    
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const diff = now - parseInt(lastRechargeTime);
+      const remaining = Math.max(0, (25 * 60 * 1000) - diff);
+      
+      if (remaining === 0) {
+        setLastRechargeTime(null);
+        localStorage.removeItem('last_recharge_time');
+        clearInterval(interval);
+      } else {
+        setTimeLeft(remaining);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lastRechargeTime]);
 
   useEffect(() => {
     // Forzar recarga de métodos cada vez que se entra a la página
@@ -84,6 +106,9 @@ export default function Recharge() {
         comprobante_url: comprobante,
         modo: modo,
       });
+      const now = Date.now().toString();
+      localStorage.setItem('last_recharge_time', now);
+      setLastRechargeTime(now);
       setSuccess(true);
       setMonto('');
       setComprobante(null);
@@ -95,6 +120,9 @@ export default function Recharge() {
   };
 
   if (success) {
+    const minutes = Math.floor(timeLeft / 60000);
+    const seconds = Math.floor((timeLeft % 60000) / 1000);
+
     return (
       <Layout>
         <Header title="Recargar" />
@@ -102,18 +130,33 @@ export default function Recharge() {
           <div className="w-24 h-24 bg-[#00C853]/10 text-[#00C853] rounded-[2.5rem] flex items-center justify-center shadow-xl border border-[#00C853]/20 animate-bounce">
             <CheckCircle2 size={48} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-4">
             <h2 className="text-2xl font-black text-[#1a1f36] uppercase tracking-tighter">¡Solicitud Enviada!</h2>
-            <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-xs mx-auto">
-              Tu recarga está siendo procesada. El saldo se reflejará una vez aprobada por el administrador.
+            <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl space-y-2">
+              <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Espera de Validación</p>
+              <p className="text-xs text-amber-700 font-bold leading-relaxed">
+                Por favor, espera a que el gerente pueda revisar la recarga y validarla. 
+                Tu solicitud está en cola de procesamiento.
+              </p>
+              <div className="text-xl font-black text-[#1a1f36] tabular-nums pt-2">
+                {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest max-w-xs mx-auto">
+              El botón de nueva recarga se habilitará automáticamente al finalizar el tiempo.
             </p>
           </div>
           <div className="w-full space-y-3">
             <button 
+              disabled={timeLeft > 0}
               onClick={() => setSuccess(false)}
-              className="w-full py-5 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#1a1f36]/20 active:scale-95 transition-all"
+              className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg transition-all ${
+                timeLeft > 0 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none' 
+                : 'bg-[#1a1f36] text-white shadow-[#1a1f36]/20 active:scale-95'
+              }`}
             >
-              Hacer otra recarga
+              {timeLeft > 0 ? 'Espere a la validación...' : 'Hacer otra recarga'}
             </button>
             <Link 
               to="/ganancias" 
@@ -122,6 +165,33 @@ export default function Recharge() {
               Ver mis registros
             </Link>
           </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Si ya hay una recarga reciente, bloquear la entrada al formulario
+  if (timeLeft > 0) {
+    const minutes = Math.floor(timeLeft / 60000);
+    const seconds = Math.floor((timeLeft % 60000) / 1000);
+    return (
+      <Layout>
+        <Header title="Recargar" />
+        <div className="p-8 text-center flex flex-col items-center justify-center gap-8 bg-white min-h-screen -mt-10">
+          <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-[2rem] flex items-center justify-center animate-pulse">
+            <CheckCircle2 size={40} />
+          </div>
+          <div className="space-y-4 max-w-xs">
+            <h2 className="text-xl font-black text-[#1a1f36] uppercase tracking-tighter">Validación en curso</h2>
+            <p className="text-sm text-gray-500 font-medium leading-relaxed">
+              Ya tienes una solicitud pendiente. Por favor, espera a que el gerente pueda revisar la recarga y validarla.
+            </p>
+            <div className="bg-[#1a1f36] text-white px-6 py-4 rounded-2xl inline-block shadow-xl">
+              <span className="text-[10px] block opacity-50 font-bold tracking-widest mb-1">TIEMPO RESTANTE</span>
+              <span className="text-2xl font-black tabular-nums">{minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}</span>
+            </div>
+          </div>
+          <Link to="/" className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-[#1a1f36] transition-colors">Volver al inicio</Link>
         </div>
       </Layout>
     );

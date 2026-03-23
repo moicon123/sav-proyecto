@@ -123,6 +123,15 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
       const nuevoNivel = niveles.find(n => (n.deposito || n.costo) === recarga.monto);
       if (nuevoNivel) {
         userUpdates.nivel_id = nuevoNivel.id;
+        
+        // --- LÓGICA DE TOKENS DE RULETA AL ASCENDER ---
+        // 1 token por cualquier nivel S, 3 tokens si es S3
+        const levelCode = String(nuevoNivel.codigo).toUpperCase();
+        if (levelCode.startsWith('S')) {
+          const tokensToAdd = levelCode === 'S3' ? 3 : 1;
+          userUpdates.oportunidades_sorteo = (user.oportunidades_sorteo || 0) + tokensToAdd;
+          console.log(`[Admin] Usuario ${user.telefono} ascendió a ${levelCode}. Se le otorgan ${tokensToAdd} tokens.`);
+        }
       }
       // Al ser Compra VIP, NO sumamos el monto al saldo_principal, solo actualizamos el nivel.
     } else {

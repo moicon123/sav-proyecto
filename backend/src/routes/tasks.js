@@ -48,10 +48,11 @@ router.get('/', authenticate, async (req, res) => {
     }
   }
 
-    const completedTaskIdsToday = new Set(todayCompletedActivity.map(a => a.tarea_id));
-    
     // Filter out tasks already completed successfully today so they "disappear"
-    const availableTasks = allTasks.filter(t => !completedTaskIdsToday.has(t.id));
+    const completedTaskIdsToday = new Set(todayCompletedActivity.map(a => String(a.tarea_id)));
+    
+    // Filtro mejorado para asegurar que desaparezcan incluso con IDs diferentes (uuid vs string)
+    const availableTasks = allTasks.filter(t => !completedTaskIdsToday.has(String(t.id)));
     
     const numTareasDiarias = level.num_tareas_diarias || 0;
     const remaining = Math.max(0, numTareasDiarias - todayCompletedActivity.length);
