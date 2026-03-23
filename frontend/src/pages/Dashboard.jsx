@@ -5,7 +5,7 @@ import { api } from '../lib/api.js';
 import { 
   ClipboardList, TrendingUp, Bell, HandCoins, 
   Wallet, Users, Gift, UserPlus, 
-  ChevronRight, Info, ShieldCheck, Zap
+  ChevronRight, Info, ShieldCheck, DownloadCloud
 } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -138,7 +138,7 @@ export default function Dashboard() {
             onClick={onInstallApp}
             className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#1a1f36] active:scale-90 transition-all shadow-[0_5px_15px_rgba(255,255,255,0.3)] relative overflow-hidden group"
           >
-            <Zap size={18} fill="currentColor" className="relative z-10" />
+            <DownloadCloud size={18} className="relative z-10" />
             <div className="absolute inset-0 bg-gradient-to-tr from-[#1a1f36]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
