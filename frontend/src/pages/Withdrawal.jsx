@@ -52,8 +52,19 @@ export default function Withdrawal() {
   const handleFile = (e) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
+    
+    // Limitar tamaño a 2MB para evitar errores de red
+    if (file.size > 2 * 1024 * 1024) {
+      setError('La imagen es muy pesada. Máximo 2MB.');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => setQrImage(reader.result);
+    reader.onload = () => {
+      setQrImage(reader.result);
+      setError(''); // Limpiar error si se sube correctamente
+    };
+    reader.onerror = () => setError('Error al leer el archivo.');
     reader.readAsDataURL(file);
   };
 

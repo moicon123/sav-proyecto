@@ -44,7 +44,12 @@ router.post('/girar', authenticate, async (req, res) => {
   
   const premio = pickByProbability(premios);
   const nuevasOps = Math.max(0, ops - 1);
-  await updateUser(user.id, { oportunidades_sorteo: nuevasOps });
+  
+  // Actualizar oportunidades y sumar premio al saldo de comisiones
+  await updateUser(user.id, { 
+    oportunidades_sorteo: nuevasOps,
+    saldo_comisiones: (user.saldo_comisiones || 0) + (premio.valor || 0)
+  });
   
   const ganador = {
     id: uuidv4(),
