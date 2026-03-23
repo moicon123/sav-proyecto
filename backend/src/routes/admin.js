@@ -368,4 +368,22 @@ router.get('/public-content', async (req, res) => {
   res.json(config);
 });
 
+router.put('/public-content', async (req, res) => {
+  const updates = req.body;
+  const store = await getStore();
+  
+  // Guardar en Supabase (tabla configuraciones clave-valor)
+  for (const [clave, valor] of Object.entries(updates)) {
+    await trySupabase(() => 
+      supabase.from('configuraciones').upsert({ clave, valor }, { onConflict: 'clave' })
+    );
+  }
+  
+  // Guardar en memoria local
+  if (!store.publicContent) store.publicContent = {};
+  Object.assign(store.publicContent, updates);
+  
+  res.json(store.publicContent);
+});
+
 export default router;
