@@ -215,7 +215,7 @@ router.get('/team', authenticate, async (req, res) => {
       codigo_invitacion: user.codigo_invitacion,
       telefono: user.telefono,
       nivel_red: depth === 0 ? 'TU' : depth === 1 ? 'A' : depth === 2 ? 'B' : 'C',
-      porcentaje_comision: depth === 1 ? 20 : depth === 2 ? 10 : depth >= 3 ? 5 : 0,
+      porcentaje_comision: depth === 1 ? 15 : depth === 2 ? 5 : depth >= 3 ? 2 : 0,
       saldo_principal: user.saldo_principal || 0,
       children,
     };
@@ -237,7 +237,7 @@ router.get('/team', authenticate, async (req, res) => {
       nivel: level,
       total_miembros: arr.length,
       monto_recarga: arr.reduce((s, x) => s + (x.saldo_principal || 0), 0),
-      porcentaje: level === 'A' ? 20 : level === 'B' ? 10 : 5,
+      porcentaje: level === 'A' ? 15 : level === 'B' ? 5 : 2,
     };
   };
 

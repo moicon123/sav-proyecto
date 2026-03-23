@@ -153,8 +153,6 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
         currentInviterId = inviter.invitado_por;
       }
     }
-
-    await updateUser(user.id, userUpdates);
   }
 
   res.json({ ok: true });

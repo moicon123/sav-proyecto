@@ -132,12 +132,13 @@ export default function Dashboard() {
             {/* Overlay Gradient Profundo */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f36] via-[#1a1f36]/20 to-transparent pointer-events-none" />
             
-            {/* Texto decorativo en el Banner */}
-            <div className="absolute bottom-10 left-8 right-8 z-10 text-center transform group-hover:translate-y-[-2px] transition-transform duration-700">
-              <h2 className="text-white text-base font-black leading-tight uppercase tracking-tighter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">
-                Multiplica tus <span className="text-white underline decoration-2 underline-offset-4 decoration-white/30">Activos</span> <br />
-                <span className="text-[10px] font-bold tracking-[0.2em] opacity-70">con SAV Global</span>
-              </h2>
+            {/* Texto decorativo en el Banner - Más pequeño y sutil para no tapar logos */}
+            <div className="absolute bottom-12 left-8 right-8 z-10 text-center pointer-events-none">
+              <div className="inline-block px-4 py-2 rounded-2xl bg-[#1a1f36]/40 backdrop-blur-md border border-white/10 shadow-lg transform group-hover:scale-105 transition-transform duration-700">
+                <h2 className="text-white text-[11px] font-black leading-tight uppercase tracking-[0.2em] drop-shadow-md">
+                  Multiplica tus <span className="text-white underline decoration-1 underline-offset-2 decoration-white/30">Activos</span> con SAV
+                </h2>
+              </div>
             </div>
 
             {banners.length > 1 && (
