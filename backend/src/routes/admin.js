@@ -358,27 +358,40 @@ router.post('/banners', async (req, res) => {
     created_at: new Date().toISOString()
   };
 
-  const { data, fallback } = await trySupabase(() => 
+  const { data, error, fallback } = await trySupabase(() => 
     supabase.from('banners_carrusel').insert([banner]).select().maybeSingle()
   );
   
-  if (!fallback) return res.json(data);
+  if (!fallback) {
+    if (!data) return res.status(500).json({ error: 'Error al insertar banner en la base de datos real' });
+    return res.json(data);
+  }
+
+  if (error) console.error('[Admin] Fallback a local por error en banners Supabase:', error.message);
 
   const store = await getStore();
   if (!store.banners) store.banners = [];
-  store.banners.push({ ...banner, imagen_base64 }); // Guardamos base64 en memoria local
-  res.json(banner);
+  const localBanner = { ...banner, imagen_base64 };
+  store.banners.push(localBanner);
+  res.json(localBanner);
 });
 
 router.delete('/banners/:id', async (req, res) => {
   const { id } = req.params;
-  const { fallback } = await trySupabase(() => supabase.from('banners_carrusel').delete().eq('id', id));
+  const { error, fallback } = await trySupabase(() => supabase.from('banners_carrusel').delete().eq('id', id));
+  
   if (!fallback) return res.json({ ok: true });
+  
+  if (error) console.error('[Admin] Error al eliminar banner en Supabase:', error.message);
 
   const store = await getStore();
   const idx = (store.banners || []).findIndex(x => x.id === id);
-  if (idx !== -1) store.banners.splice(idx, 1);
-  res.json({ ok: true });
+  if (idx !== -1) {
+    store.banners.splice(idx, 1);
+    return res.json({ ok: true });
+  }
+  
+  res.status(error ? 500 : 404).json({ error: error?.message || 'Banner no encontrado' });
 });
 
 router.get('/premios-ruleta', async (req, res) => {
