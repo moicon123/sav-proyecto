@@ -28,7 +28,13 @@ export default function Profile() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    api.users.stats().then(setStats).catch(() => {});
+    const fetchStats = () => api.users.stats().then(setStats).catch(() => {});
+    
+    fetchStats();
+    // Actualización automática cada 5 segundos para mantener los "Ingresos de Hoy" frescos
+    const interval = setInterval(fetchStats, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleCopy = () => {
