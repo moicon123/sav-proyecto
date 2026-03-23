@@ -227,7 +227,7 @@ export default function Recharge() {
             {metodos.length > 0 ? (
               <div className="space-y-6">
                 {metodos.map((m) => (
-                  <div key={m.id} className="space-y-4">
+                  <div key={m.id} className="space-y-4 animate-fade-in">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[#1a1f36]/5 flex items-center justify-center text-[#1a1f36] font-black text-xs border border-gray-100 shadow-inner">1</div>
                       <p className="text-sm font-black text-[#1a1f36] uppercase tracking-tight">{m.nombre_titular}</p>
@@ -239,10 +239,6 @@ export default function Recharge() {
                           src={m.imagen_base64 || m.imagen_qr_url} 
                           alt={`QR de ${m.nombre_titular}`} 
                           className="w-64 h-64 object-contain rounded-xl shadow-lg border border-white" 
-                          onError={(e) => {
-                            console.error("Error cargando imagen QR:", m.imagen_qr_url);
-                            e.target.src = 'https://placehold.co/200x200?text=QR+No+Disponible';
-                          }}
                         />
                       ) : (
                         <div className="flex flex-col items-center gap-3">
@@ -257,7 +253,10 @@ export default function Recharge() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-400 italic text-center py-4">Cargando métodos de pago...</p>
+              <div className="flex flex-col items-center gap-3 py-8">
+                <div className="w-10 h-10 border-4 border-[#1a1f36] border-t-transparent rounded-full animate-spin" />
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Sincronizando métodos de pago...</p>
+              </div>
             )}
           </div>
 
