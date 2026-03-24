@@ -7,6 +7,16 @@ const router = Router();
 
 router.get('/', authenticate, async (req, res) => {
   try {
+    // Restricción de fin de semana (Sábado = 6, Domingo = 0)
+    const now = new Date();
+    const day = now.getDay();
+    if (day === 0 || day === 6) {
+      return res.status(403).json({ 
+        error: 'Las tareas solo están disponibles de lunes a viernes.',
+        es_fin_de_semana: true 
+      });
+    }
+
     const user = await findUserById(req.user.id);
     if (!user) {
       console.warn(`[Tasks] Usuario con ID ${req.user.id} no encontrado en la base de datos.`);

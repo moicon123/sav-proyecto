@@ -29,6 +29,25 @@ router.post('/', authenticate, async (req, res) => {
     });
   }
   const user = await findUserById(req.user.id);
+  // Validar requisitos para S4/S5 (20 subordinados S3)
+  const nivelDestino = (await getLevels()).find(l => (l.deposito || l.costo) === parseFloat(monto));
+  if (nivelDestino && ['S4', 'S5'].includes(nivelDestino.codigo)) {
+    // Si el admin no ha deshabilitado el requisito (por ahora hardcoded en false, 
+    // pero el admin podría activarlo en una tabla de config global)
+    const REQUISITO_ACTIVO = true; 
+    
+    if (REQUISITO_ACTIVO) {
+      const { data: teamData } = await supabase.from('usuarios').select('nivel_id').eq('invitado_por', user.id);
+      const levels = await getLevels();
+      const s3Level = levels.find(l => l.codigo === 'S3');
+      const s3Count = (teamData || []).filter(u => String(u.nivel_id) === String(s3Level?.id)).length;
+      
+      if (s3Count < 20) {
+        return res.status(400).json({ error: `Para ascender a ${nivelDestino.nombre} necesitas al menos 20 subordinados de nivel S3. Actualmente tienes ${s3Count}.` });
+      }
+    }
+  }
+
   const recarga = {
     id: uuidv4(),
     usuario_id: req.user.id,

@@ -202,9 +202,25 @@ export default function Recharge() {
   const schedRec = horarioRec ? isScheduleOpen(horarioRec) : { ok: true };
   const fueraHorario = horarioRec?.enabled && !schedRec.ok;
 
-  // Determinar el orden del nivel actual para filtrar
   const currentLevel = niveles.find(n => n.id === user?.nivel_id || n.codigo === user?.nivel_codigo);
   const currentLevelOrder = currentLevel ? (currentLevel.orden ?? 0) : 0;
+
+  const [teamStats, setTeamStats] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      api.users.team().then(setTeamStats).catch(() => setTeamStats(null));
+    }
+  }, [user]);
+
+  const getS3SubordinatesCount = () => {
+    if (!teamStats?.niveles) return 0;
+    // Buscamos en el Nivel A (directos) cuántos son S3
+    const nivelA = teamStats.niveles.find(n => n.nivel === 'A');
+    if (!nivelA || !nivelA.miembros_detalle) return 0;
+    
+    return nivelA.miembros_detalle.filter(m => m.nivel_codigo === 'S3').length;
+  };
 
   return (
     <Layout>
@@ -258,16 +274,23 @@ export default function Recharge() {
                       const isSelected = monto === valor.toString();
                       const estaBloqueado = nivel.activo === false;
                       
+                      // Lógica de requisito de subordinados para S4 y S5
+                      const esS4oS5 = ['S4', 'S5'].includes(nivel.codigo);
+                      const s3Count = getS3SubordinatesCount();
+                      const cumpleRequisitoSubordinados = !esS4oS5 || s3Count >= 20;
+                      
+                      const deshabilitado = estaBloqueado || !cumpleRequisitoSubordinados;
+
                       return (                    
                         <button
                           key={nivel.id}
                           type="button"
-                          disabled={estaBloqueado}
+                          disabled={deshabilitado}
                           onClick={() => selectLevel(nivel)}
                           className={`py-4 px-2 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 shadow-sm relative ${
                             isSelected 
                               ? 'border-[#1a1f36] bg-[#1a1f36] text-white shadow-lg' 
-                              : estaBloqueado
+                              : deshabilitado
                                 ? 'border-gray-50 bg-gray-50/50 text-gray-300 cursor-not-allowed opacity-60'
                                 : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-[#1a1f36]/30'
                           }`}
@@ -275,10 +298,10 @@ export default function Recharge() {
                           <span className="text-[10px] font-black uppercase tracking-tighter">
                             {nivel.nombre}
                           </span>
-                          <span className={`text-xs font-black ${isSelected ? 'text-white' : estaBloqueado ? 'text-gray-300' : 'text-[#1a1f36]'}`}>
-                            {estaBloqueado ? 'BLOQUEADO' : `${valor} BOB`}
+                          <span className={`text-xs font-black ${isSelected ? 'text-white' : deshabilitado ? 'text-gray-300' : 'text-[#1a1f36]'}`}>
+                            {estaBloqueado ? 'BLOQUEADO' : !cumpleRequisitoSubordinados ? 'REQ. 20 S3' : `${valor} BOB`}
                           </span>
-                          {estaBloqueado && (
+                          {deshabilitado && (
                             <div className="absolute top-1 right-2">
                               <Lock size={10} className="text-gray-300" />
                             </div>
