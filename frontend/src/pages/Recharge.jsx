@@ -203,7 +203,8 @@ export default function Recharge() {
   const fueraHorario = horarioRec?.enabled && !schedRec.ok;
 
   // Determinar el orden del nivel actual para filtrar
-  const currentLevelOrder = niveles.find(n => n.id === user?.nivel_id || n.codigo === user?.nivel_codigo)?.orden || 0;
+  const currentLevel = niveles.find(n => n.id === user?.nivel_id || n.codigo === user?.nivel_codigo);
+  const currentLevelOrder = currentLevel ? (currentLevel.orden ?? 0) : 0;
 
   return (
     <Layout>
@@ -215,7 +216,7 @@ export default function Recharge() {
           <div className="relative z-10">
             <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-2">Nivel Actual</p>
             <h2 className="text-3xl font-black tracking-tighter text-white uppercase">
-              {user?.nivel || 'Pasante'}
+              {currentLevel?.nombre || user?.nivel || 'Pasante'}
             </h2>
             <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest mt-2 max-w-[200px] mx-auto leading-relaxed">
               Las recargas son exclusivamente para solicitar el ascenso a un nivel superior.
@@ -250,7 +251,8 @@ export default function Recharge() {
               <div className="grid grid-cols-2 gap-3">
                 {niveles.length > 0 ? (
                   niveles
-                    .filter(n => n.orden > currentLevelOrder)
+                    .filter(n => (n.orden ?? 0) > currentLevelOrder)
+                    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
                     .map((nivel) => {
                       const valor = nivel.deposito || nivel.costo;
                       const isSelected = monto === valor.toString();
