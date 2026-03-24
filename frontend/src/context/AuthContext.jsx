@@ -73,25 +73,25 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [loadUser]);
 
-  const login = async (telefono, password) => {
+  const login = useCallback(async (telefono, password) => {
     const deviceId = getDeviceId();
     const { user: u, token } = await api.auth.login(telefono, password, deviceId);
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(u));
     setUser(u);
     return u;
-  };
+  }, [getDeviceId]);
 
-  const register = async (data) => {
+  const register = useCallback(async (data) => {
     const deviceId = getDeviceId();
     const { user: u, token } = await api.auth.register({ ...data, deviceId });
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(u));
     setUser(u);
     return u;
-  };
+  }, [getDeviceId]);
 
-  const refreshUser = () => loadUser();
+  const refreshUser = useCallback(() => loadUser(), [loadUser]);
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>

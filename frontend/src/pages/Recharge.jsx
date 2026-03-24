@@ -23,6 +23,7 @@ export default function Recharge() {
   const [lastRechargeTime, setLastRechargeTime] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const [teamStats, setTeamStats] = useState(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -31,6 +32,12 @@ export default function Recharge() {
       setLastRechargeTime(saved);
     }
   }, []);
+
+  useEffect(() => {
+    if (user && isMounted) {
+      api.users.team().then(setTeamStats).catch(() => setTeamStats(null));
+    }
+  }, [user, isMounted]);
 
   useEffect(() => {
     if (!isMounted || !lastRechargeTime) {
@@ -76,7 +83,8 @@ export default function Recharge() {
   }, [isMounted, lastRechargeTime]);
 
   useEffect(() => {
-    // Forzar recarga de métodos cada vez que se entra a la página
+    if (!isMounted) return;
+    
     const loadData = async () => {
       try {
         const list = await api.recharges.metodos();
@@ -91,14 +99,13 @@ export default function Recharge() {
     api.levels.list().then(setNiveles).catch(() => []);
     api.publicContent().then(setPc).catch(() => {});
 
-    // Si viene de VIP, pre-llenar monto y modo
     if (location.state?.monto) {
       setMonto(location.state.monto.toString());
     }
     if (location.state?.modo) {
       setModo(location.state.modo);
     }
-  }, [location.state]);
+  }, [isMounted, location.state]);
 
   const selectLevel = (nivel) => {
     setMonto((nivel.deposito || nivel.costo).toString());
@@ -139,13 +146,11 @@ export default function Recharge() {
     setError('');
     setLoading(true);
     try {
-      console.log('[Recharge] Submitting:', { monto, modo });
       await api.recharges.create({
         monto: parseFloat(monto) || 0,
         comprobante_url: comprobante,
         modo: modo,
       });
-      console.log('[Recharge] Success');
       const now = Date.now().toString();
       localStorage.setItem('last_recharge_time', now);
       setLastRechargeTime(now);
@@ -245,22 +250,12 @@ export default function Recharge() {
   const currentLevel = (niveles || []).find(n => n.id === user?.nivel_id || n.codigo === user?.nivel_codigo);
   const currentLevelOrder = currentLevel ? (currentLevel.orden ?? 0) : 0;
 
-  const [teamStats, setTeamStats] = useState(null);
-
-  useEffect(() => {
-    if (user) {
-      api.users.team().then(setTeamStats).catch(() => setTeamStats(null));
-    }
-  }, [user]);
-
-  const getS3SubordinatesCount = () => {
+  const s3Count = (() => {
     if (!teamStats?.niveles || !Array.isArray(teamStats.niveles)) return 0;
-    // Buscamos en el Nivel A (directos) cuántos son S3
     const nivelA = teamStats.niveles.find(n => n.nivel === 'A');
     if (!nivelA || !nivelA.miembros_detalle || !Array.isArray(nivelA.miembros_detalle)) return 0;
-    
     return nivelA.miembros_detalle.filter(m => m.nivel_codigo === 'S3').length;
-  };
+  })();
 
   return (
     <Layout>
@@ -305,55 +300,26 @@ export default function Recharge() {
             <div className="mt-6">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Selecciona el Nivel al que deseas ascender:</p>
               <div className="grid grid-cols-2 gap-3">
-                {(niveles || []).length > 0 ? (
-                  (niveles || [])
-                    .filter(n => (n.orden ?? 0) > currentLevelOrder)
-                    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-                    .map((nivel) => {
-                      const valor = nivel.deposito || nivel.costo;
-                      const isSelected = monto === valor.toString();
-                      const estaBloqueado = nivel.activo === false;
-                      
-                      // Lógica de requisito de subordinados para S4 y S5
-                      const esS4oS5 = ['S4', 'S5'].includes(nivel.codigo);
-                      const s3Count = getS3SubordinatesCount();
-                      const cumpleRequisitoSubordinados = !esS4oS5 || s3Count >= 20;
-                      
-                      const deshabilitado = estaBloqueado || !cumpleRequisitoSubordinados;
+                {(niveles || [])
+                  .filter(n => (n.orden ?? 0) > currentLevelOrder)
+                  .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+                  .map((nivel) => {
+                    const valor = nivel.deposito || nivel.costo;
+                    const isSelected = monto === valor.toString();
+                    const estaBloqueado = nivel.activo === false;
+                    const esS4oS5 = ['S4', 'S5'].includes(nivel.codigo);
+                    const cumpleRequisitoSubordinados = !esS4oS5 || s3Count >= 20;
+                    const deshabilitado = estaBloqueado || !cumpleRequisitoSubordinados;
 
-                      return (                    
-                        <button
-                          key={nivel.id}
-                          type="button"
-                          disabled={deshabilitado}
-                          onClick={() => selectLevel(nivel)}
-                          className={`py-4 px-2 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 shadow-sm relative ${
-                            isSelected 
-                              ? 'border-[#1a1f36] bg-[#1a1f36] text-white shadow-lg' 
-                              : deshabilitado
-                                ? 'border-gray-50 bg-gray-50/50 text-gray-300 cursor-not-allowed opacity-60'
-                                : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-[#1a1f36]/30'
-                          }`}
-                        >
-                          <span className="text-[10px] font-black uppercase tracking-tighter">
-                            {nivel.nombre}
-                          </span>
-                          <span className={`text-xs font-black ${isSelected ? 'text-white' : deshabilitado ? 'text-gray-300' : 'text-[#1a1f36]'}`}>
-                            {estaBloqueado ? 'BLOQUEADO' : !cumpleRequisitoSubordinados ? 'REQ. 20 S3' : `${valor} BOB`}
-                          </span>
-                          {deshabilitado && (
-                            <div className="absolute top-1 right-2">
-                              <Lock size={10} className="text-gray-300" />
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })
-                ) : (
-                  <div className="col-span-2 text-center py-4">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cargando niveles...</p>
-                  </div>
-                )}
+                    return (                    
+                      <button key={nivel.id} type="button" disabled={deshabilitado} onClick={() => selectLevel(nivel)} className={`py-4 px-2 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 shadow-sm relative ${isSelected ? 'border-[#1a1f36] bg-[#1a1f36] text-white shadow-lg' : deshabilitado ? 'border-gray-50 bg-gray-50/50 text-gray-300 cursor-not-allowed opacity-60' : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-[#1a1f36]/30'}`}>
+                        <span className="text-[10px] font-black uppercase tracking-tighter">{nivel.nombre}</span>
+                        <span className={`text-xs font-black ${isSelected ? 'text-white' : deshabilitado ? 'text-gray-300' : 'text-[#1a1f36]'}`}>{estaBloqueado ? 'BLOQUEADO' : !cumpleRequisitoSubordinados ? 'REQ. 20 S3' : `${valor} BOB`}</span>
+                        {deshabilitado && <div className="absolute top-1 right-2"><Lock size={10} className="text-gray-300" /></div>}
+                      </button>
+                    );
+                  })
+                }
               </div>
               {niveles.filter(n => n.orden > currentLevelOrder).length === 0 && (
                 <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl">
@@ -376,16 +342,10 @@ export default function Recharge() {
                     {/* Contenedor del QR dinámico */}
                     <div className="bg-gray-50 p-6 rounded-[2rem] flex flex-col items-center justify-center border border-gray-100 shadow-inner min-h-[16rem]">
                       {(m.imagen_base64 || m.imagen_qr_url) ? (
-                        <img 
-                          src={m.imagen_base64 || m.imagen_qr_url} 
-                          alt={`QR de ${m.nombre_titular}`} 
-                          className="w-64 h-64 object-contain rounded-xl shadow-lg border border-white" 
-                        />
+                        <img src={m.imagen_base64 || m.imagen_qr_url} alt={`QR de ${m.nombre_titular}`} className="w-64 h-64 object-contain rounded-xl shadow-lg border border-white" />
                       ) : (
                         <div className="flex flex-col items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-gray-100 animate-pulse flex items-center justify-center">
-                            <Upload className="text-gray-300" size={24} />
-                          </div>
+                          <div className="w-12 h-12 rounded-full bg-gray-100 animate-pulse flex items-center justify-center"><Upload className="text-gray-300" size={24} /></div>
                           <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest text-center">Esperando imagen QR del administrador...</p>
                         </div>
                       )}

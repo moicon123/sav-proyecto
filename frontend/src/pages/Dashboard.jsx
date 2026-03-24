@@ -28,8 +28,15 @@ export default function Dashboard() {
   const [showPopup, setShowPopup] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    
     // Definir banners por defecto por si la API falla o está vacía
     const defaultBanners = [
       { id: 'def-1', imagen_url: '/imag/carrusel1.jpeg', titulo: 'SAV 1', orden: 0, activo: true },
@@ -56,15 +63,17 @@ export default function Dashboard() {
         if (data.popup_enabled) setShowPopup(true);
       })
       .catch(() => {});
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
-    if (banners.length <= 1) return;
+    if (!isMounted || banners.length <= 1) return;
     const t = setInterval(() => setSlide((s) => (s + 1) % banners.length), 5000);
     return () => clearInterval(t);
-  }, [banners.length]);
+  }, [isMounted, banners.length]);
 
   useEffect(() => {
+    if (!isMounted) return;
+    
     // Detectar si ya está instalada la App
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
       setIsInstalled(true);
@@ -84,7 +93,7 @@ export default function Dashboard() {
     }
 
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isMounted]);
 
   const imgUrl = (url) => {
     if (!url) return '';
@@ -122,6 +131,14 @@ export default function Dashboard() {
       alert('Para instalar directamente:\n1. Asegúrate de usar Google Chrome\n2. Navega unos segundos por la App\n3. Si el botón no se activa, usa los 3 puntos de Chrome -> Instalar');
     }
   };
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-[#1a1f36] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <Layout>
