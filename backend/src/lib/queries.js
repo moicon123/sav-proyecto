@@ -80,7 +80,19 @@ export async function updateUser(id, updates) {
 
 export async function getLevels() {
   const { data, fallback } = await trySupabase(() => supabase.from('niveles').select('*').order('orden', { ascending: true }));
-  if (!fallback && data && data.length > 0) return data;
+  
+  // Si tenemos datos de la DB, los mapeamos con el estado de bloqueo manual
+  if (!fallback && data && data.length > 0) {
+    return data.map(dbLevel => {
+      const seedLevel = seedLevels.find(s => s.codigo === dbLevel.codigo);
+      return {
+        ...dbLevel,
+        // Si el nivel está marcado como inactivo en el código (S4+), forzar bloqueo
+        activo: seedLevel ? (seedLevel.activo !== false) : (dbLevel.activo !== false)
+      };
+    });
+  }
+  
   console.log('[Queries] getLevels fallback to seedLevels');
   return seedLevels;
 }
