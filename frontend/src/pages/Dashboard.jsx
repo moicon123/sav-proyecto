@@ -120,12 +120,18 @@ export default function Dashboard() {
   return (
     <Layout>
       {/* Header Premium White & Navy */}
-      <header className="bg-gradient-to-r from-[#1a1f36] to-[#2a2f46] px-5 py-4 flex items-center justify-between sticky top-0 z-30 border-b border-white/10 shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.2)] border border-white/30 p-0.5 bg-white/10 backdrop-blur-md">
-            <img src="/imag/logo.jpeg" alt="SAV" className="w-full h-full object-cover rounded-lg" />
+      <header className="bg-gradient-to-r from-[#1a1f36] to-[#2a2f46] px-5 py-4 flex items-center justify-between sticky top-0 z-30 border-b border-white/10 shadow-xl backdrop-blur-md">
+        <div className="flex items-center gap-3 group cursor-pointer active:scale-95 transition-all">
+          <div className="relative">
+            <div className="absolute inset-0 bg-white/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="w-11 h-11 rounded-[1.2rem] overflow-hidden shadow-2xl border border-white/20 p-1 bg-white/5 backdrop-blur-xl relative z-10 transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
+              <img src="/imag/logo.jpeg" alt="SAV" className="w-full h-full object-cover rounded-lg" />
+            </div>
           </div>
-          <span className="text-xl font-black tracking-tighter text-white drop-shadow-md">SAV</span>
+          <div className="flex flex-col justify-center">
+            <span className="text-xl font-black tracking-tighter text-white leading-none drop-shadow-md">SAV</span>
+            <span className="text-[7px] font-black tracking-[0.4em] text-white/30 uppercase mt-0.5 ml-0.5">Platform</span>
+          </div>
         </div>
         
         <div className="flex items-center gap-3">
