@@ -10,7 +10,7 @@ const getRetirosConfig = () => ({
 
 async function send(token, chatId, text, replyMarkup = null) {
   if (!token || !chatId) {
-    console.error('Telegram bot not configured. Token or ChatID missing.');
+    console.error('[Telegram Lib] Missing token or chatId.');
     return;
   }
 
@@ -28,16 +28,18 @@ async function send(token, chatId, text, replyMarkup = null) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
+    const data = await res.json();
     if (!res.ok) {
-      const err = await res.json();
-      console.error('Telegram API error:', err);
+      console.error('[Telegram Lib] Error sending message:', data);
+    } else {
+      console.log('[Telegram Lib] Text message sent successfully.');
     }
   } catch (err) {
-    console.error('Failed to send Telegram message:', err.message);
+    console.error('[Telegram Lib] Exception in send():', err.message);
   }
 }
 
-async function sendPhoto(token, chatId, base64Photo, caption, replyMarkup = null) {
+async function sendPhoto(token, chatId, base64Photo) {
   if (!token || !chatId || !base64Photo) return;
 
   const url = `https://api.telegram.org/bot${token}/sendPhoto`;
@@ -48,9 +50,6 @@ async function sendPhoto(token, chatId, base64Photo, caption, replyMarkup = null
     
     const formData = new FormData();
     formData.append('chat_id', chatId);
-    formData.append('caption', caption);
-    formData.append('parse_mode', 'Markdown');
-    if (replyMarkup) formData.append('reply_markup', JSON.stringify(replyMarkup));
     
     const blob = new Blob([buffer], { type: 'image/jpeg' });
     formData.append('photo', blob, 'comprobante.jpg');
@@ -60,12 +59,14 @@ async function sendPhoto(token, chatId, base64Photo, caption, replyMarkup = null
       body: formData
     });
 
+    const data = await res.json();
     if (!res.ok) {
-      const err = await res.json();
-      console.error('Telegram sendPhoto error:', err);
+      console.error('[Telegram Lib] Error sending photo:', data);
+    } else {
+      console.log('[Telegram Lib] Photo sent successfully.');
     }
   } catch (err) {
-    console.error('Failed to send Telegram photo:', err.message);
+    console.error('[Telegram Lib] Exception in sendPhoto():', err.message);
   }
 }
 
@@ -80,7 +81,7 @@ export const telegram = {
     };
     return send(config.token, config.chatId, text, markup);
   },
-  sendRecargaConFoto: (text, base64Photo, id) => {
+  sendRecargaConFoto: async (text, base64Photo, id) => {
     const config = getRecargasConfig();
     const markup = {
       inline_keyboard: [[
@@ -88,7 +89,10 @@ export const telegram = {
         { text: '❌ Rechazar', callback_data: `recarga_rechazar_${id}` }
       ]]
     };
-    return sendPhoto(config.token, config.chatId, base64Photo, text, markup);
+    // Primero enviamos el texto con los botones
+    await send(config.token, config.chatId, text, markup);
+    // Luego enviamos la foto sola como evidencia
+    return sendPhoto(config.token, config.chatId, base64Photo);
   },
   sendRetiro: (text, id) => {
     const config = getRetirosConfig();
@@ -100,7 +104,7 @@ export const telegram = {
     };
     return send(config.token, config.chatId, text, markup);
   },
-  sendRetiroConFoto: (text, base64Photo, id) => {
+  sendRetiroConFoto: async (text, base64Photo, id) => {
     const config = getRetirosConfig();
     const markup = {
       inline_keyboard: [[
@@ -108,6 +112,9 @@ export const telegram = {
         { text: '❌ Rechazar', callback_data: `retiro_rechazar_${id}` }
       ]]
     };
-    return sendPhoto(config.token, config.chatId, base64Photo, text, markup);
+    // Primero enviamos el texto con los botones
+    await send(config.token, config.chatId, text, markup);
+    // Luego enviamos la foto (el QR)
+    return sendPhoto(config.token, config.chatId, base64Photo);
   },
 };
