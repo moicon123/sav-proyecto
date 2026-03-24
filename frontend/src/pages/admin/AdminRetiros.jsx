@@ -4,6 +4,8 @@ import { Wallet, CheckCircle2, XCircle, Clock, ExternalLink } from 'lucide-react
 
 export default function AdminRetiros() {
   const [list, setList] = useState([]);
+  const [rejectId, setRejectId] = useState(null);
+  const [motivo, setMotivo] = useState('');
 
   useEffect(() => {
     api.admin.retiros().then(setList).catch(() => []);
@@ -19,12 +21,13 @@ export default function AdminRetiros() {
     }
   };
 
-  const handleRechazar = async (id) => {
-    const motivo = prompt('Motivo del rechazo:');
-    if (motivo === null) return;
+  const handleRechazarSubmit = async () => {
+    if (!motivo.trim()) return alert('Por favor ingresa un motivo');
     try {
-      await api.admin.rechazarRetiro(id, motivo);
-      setList((l) => l.map((r) => (r.id === id ? { ...r, estado: 'rechazado' } : r)));
+      await api.admin.rechazarRetiro(rejectId, motivo);
+      setList((l) => l.map((r) => (r.id === rejectId ? { ...r, estado: 'rechazado' } : r)));
+      setRejectId(null);
+      setMotivo('');
     } catch (err) {
       alert(err.message);
     }
@@ -83,7 +86,7 @@ export default function AdminRetiros() {
                   {r.estado === 'pendiente' && (
                     <div className="flex gap-2 justify-center">
                       <button onClick={() => handleAprobar(r.id)} className="px-4 py-2 rounded-xl bg-green-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-sm">Pagar</button>
-                      <button onClick={() => handleRechazar(r.id)} className="px-4 py-2 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-sm">Rechazar</button>
+                      <button onClick={() => setRejectId(r.id)} className="px-4 py-2 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-sm">Rechazar</button>
                     </div>
                   )}
                 </td>
@@ -92,6 +95,28 @@ export default function AdminRetiros() {
           </tbody>
         </table>
       </div>
+
+      {/* Modal Rechazo */}
+      {rejectId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-[2rem] p-8 max-w-md w-full space-y-4">
+            <h3 className="text-xl font-black text-[#1a1f36] uppercase tracking-tighter">Rechazar Retiro</h3>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Motivo del rechazo</label>
+              <textarea
+                value={motivo}
+                onChange={(e) => setMotivo(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:border-[#1a1f36]/30 text-sm font-bold min-h-[100px]"
+                placeholder="Ej: Datos bancarios incorrectos"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => setRejectId(null)} className="flex-1 px-6 py-3 rounded-xl bg-gray-100 text-gray-500 font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all">Cancelar</button>
+              <button onClick={handleRechazarSubmit} className="flex-1 px-6 py-3 rounded-xl bg-red-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg shadow-red-100">Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Vista de móvil (Tarjetas) - Visible solo en móvil */}
       <div className="md:hidden space-y-4">
@@ -148,9 +173,9 @@ export default function AdminRetiros() {
                   <CheckCircle2 size={14} /> Pagar
                 </button>
                 <button 
-                  onClick={() => handleRechazar(r.id)}
-                  className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-200 active:scale-95 transition-all"
-                >
+                    onClick={() => setRejectId(r.id)}
+                    className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-200 active:scale-95 transition-all"
+                  >
                   <XCircle size={14} /> Rechazar
                 </button>
               </div>
