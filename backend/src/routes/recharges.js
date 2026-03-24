@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getMetodosQr, getRecargasByUser, createRecarga, getPublicContent, findUserById } from '../lib/queries.js';
+import { getMetodosQr, getRecargasByUser, createRecarga, getPublicContent, findUserById, getLevels } from '../lib/queries.js';
+import { supabase } from '../lib/db.js';
 import { authenticate } from '../middleware/auth.js';
 import { mergePublicContent } from '../data/publicContentDefaults.js';
 import { isScheduleOpen } from '../lib/schedule.js';
