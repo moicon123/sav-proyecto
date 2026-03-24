@@ -144,12 +144,13 @@ export default function Recharge() {
   };
 
   if (success) {
-    const minutes = Math.floor(timeLeft / 60000);
-    const seconds = Math.floor((timeLeft % 60000) / 1000);
+    const totalSeconds = Math.max(0, Math.floor(timeLeft / 1000));
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
 
     return (
       <Layout>
-        <Header title="Recargar" />
+        <Header title="Subir de Nivel" />
         <div className="p-8 text-center flex flex-col items-center gap-6 bg-white min-h-screen">
           <div className="w-24 h-24 bg-[#00C853]/10 text-[#00C853] rounded-[2.5rem] flex items-center justify-center shadow-xl border border-[#00C853]/20 animate-bounce">
             <CheckCircle2 size={48} />
@@ -163,7 +164,7 @@ export default function Recharge() {
                 Tu solicitud está en cola de procesamiento.
               </p>
               <div className="text-xl font-black text-[#1a1f36] tabular-nums pt-2">
-                {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+                {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
               </div>
             </div>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest max-w-xs mx-auto">
@@ -196,11 +197,13 @@ export default function Recharge() {
 
   // Si ya hay una recarga reciente, bloquear la entrada al formulario
   if (timeLeft > 0) {
-    const minutes = Math.floor(timeLeft / 60000);
-    const seconds = Math.floor((timeLeft % 60000) / 1000);
+    const totalSeconds = Math.max(0, Math.floor(timeLeft / 1000));
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+
     return (
       <Layout>
-        <Header title="Recargar" />
+        <Header title="Subir de Nivel" />
         <div className="p-8 text-center flex flex-col items-center justify-center gap-8 bg-white min-h-screen -mt-10">
           <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-[2rem] flex items-center justify-center animate-pulse">
             <CheckCircle2 size={40} />
@@ -212,7 +215,9 @@ export default function Recharge() {
             </p>
             <div className="bg-[#1a1f36] text-white px-6 py-4 rounded-2xl inline-block shadow-xl">
               <span className="text-[10px] block opacity-50 font-bold tracking-widest mb-1">TIEMPO RESTANTE</span>
-              <span className="text-2xl font-black tabular-nums">{minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}</span>
+              <span className="text-2xl font-black tabular-nums">
+                {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
+              </span>
             </div>
           </div>
           <Link to="/" className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-[#1a1f36] transition-colors">Volver al inicio</Link>
