@@ -11,6 +11,7 @@ import rechargeRoutes from './routes/recharges.js';
 import withdrawalRoutes from './routes/withdrawals.js';
 import adminRoutes from './routes/admin.js';
 import sorteoRoutes from './routes/sorteo.js';
+import telegramWebhookRoutes from './routes/telegram_webhook.js';
 import { getPublicContent, getBanners } from './lib/queries.js';
 import { mergePublicContent } from './data/publicContentDefaults.js';
 
@@ -40,6 +41,7 @@ app.use('/api/recharges', rechargeRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sorteo', sorteoRoutes);
+app.use('/api/telegram-webhook', telegramWebhookRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, message: 'SAV API' });

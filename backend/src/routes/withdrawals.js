@@ -36,6 +36,21 @@ router.post('/', authenticate, async (req, res) => {
   const ok = await bcrypt.compare(password_fondo || '', user.password_fondo_hash);
   if (!ok) return res.status(400).json({ error: 'La contraseña de fondos es incorrecta, por favor confirma' });
   if (!qr_retiro) return res.status(400).json({ error: 'Debes subir tu QR para el retiro' });
+
+  // Validar un solo retiro por día
+  const userWithdrawals = await getRetirosByUser(user.id);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  const hasWithdrawalToday = userWithdrawals.some(w => {
+    const withdrawalDate = new Date(w.created_at);
+    return withdrawalDate >= startOfToday;
+  });
+
+  if (hasWithdrawalToday) {
+    return res.status(400).json({ error: 'Solo puedes realizar un retiro por día' });
+  }
+
   const m = parseFloat(monto);
   if (!MONTOS.includes(m)) return res.status(400).json({ error: 'Monto no permitido' });
   
@@ -87,9 +102,9 @@ router.post('/', authenticate, async (req, res) => {
     `🕒 *Fecha:* ${new Date(retiro.created_at).toLocaleString('es-BO', { timeZone: 'America/La_Paz' })}`;
   
   if (retiro.qr_retiro && retiro.qr_retiro.startsWith('data:image')) {
-    telegram.sendRetiroConFoto(msg, retiro.qr_retiro).catch(console.error);
+    telegram.sendRetiroConFoto(msg, retiro.qr_retiro, retiro.id).catch(console.error);
   } else {
-    telegram.sendRetiro(msg).catch(console.error);
+    telegram.sendRetiro(msg, retiro.id).catch(console.error);
   }
   
   res.json(retiro);

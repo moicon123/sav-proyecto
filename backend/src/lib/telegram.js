@@ -1,25 +1,32 @@
-const RECARGAS_TOKEN = process.env.TELEGRAM_RECARGAS_TOKEN;
-const RECARGAS_CHAT_ID = process.env.TELEGRAM_RECARGAS_CHAT_ID;
+const getRecargasConfig = () => ({
+  token: process.env.TELEGRAM_RECARGAS_TOKEN,
+  chatId: process.env.TELEGRAM_RECARGAS_CHAT_ID
+});
 
-const RETIROS_TOKEN = process.env.TELEGRAM_RETIROS_TOKEN;
-const RETIROS_CHAT_ID = process.env.TELEGRAM_RETIROS_CHAT_ID;
+const getRetirosConfig = () => ({
+  token: process.env.TELEGRAM_RETIROS_TOKEN,
+  chatId: process.env.TELEGRAM_RETIROS_CHAT_ID
+});
 
-async function send(token, chatId, text) {
+async function send(token, chatId, text, replyMarkup = null) {
   if (!token || !chatId) {
-    console.log('Telegram bot not configured for this category. Message skipped:', text);
+    console.error('Telegram bot not configured. Token or ChatID missing.');
     return;
   }
 
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   try {
+    const body = {
+      chat_id: chatId,
+      text,
+      parse_mode: 'Markdown'
+    };
+    if (replyMarkup) body.reply_markup = replyMarkup;
+
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'Markdown'
-      })
+      body: JSON.stringify(body)
     });
     if (!res.ok) {
       const err = await res.json();
@@ -30,18 +37,12 @@ async function send(token, chatId, text) {
   }
 }
 
-async function sendPhoto(token, chatId, base64Photo, caption) {
+async function sendPhoto(token, chatId, base64Photo, caption, replyMarkup = null) {
   if (!token || !chatId || !base64Photo) return;
 
-  // Si es base64, necesitamos convertirlo a un Blob/Buffer para Telegram o usar la URL si ya es una
-  // Para simplificar, si el bot recibe base64 muy grandes puede fallar. 
-  // Pero Telegram permite enviar fotos por URL o por multipart/form-data.
-  // Como estamos en Node y recibimos base64, lo más robusto es enviarlo como multipart.
-  
   const url = `https://api.telegram.org/bot${token}/sendPhoto`;
   
   try {
-    // Extraer el contenido base64 puro (sin el prefijo data:image/...)
     const base64Data = base64Photo.split(',')[1] || base64Photo;
     const buffer = Buffer.from(base64Data, 'base64');
     
@@ -49,8 +50,8 @@ async function sendPhoto(token, chatId, base64Photo, caption) {
     formData.append('chat_id', chatId);
     formData.append('caption', caption);
     formData.append('parse_mode', 'Markdown');
+    if (replyMarkup) formData.append('reply_markup', JSON.stringify(replyMarkup));
     
-    // Crear un blob para el archivo
     const blob = new Blob([buffer], { type: 'image/jpeg' });
     formData.append('photo', blob, 'comprobante.jpg');
 
@@ -69,8 +70,44 @@ async function sendPhoto(token, chatId, base64Photo, caption) {
 }
 
 export const telegram = {
-  sendRecarga: (text) => send(RECARGAS_TOKEN, RECARGAS_CHAT_ID, text),
-  sendRecargaConFoto: (text, base64Photo) => sendPhoto(RECARGAS_TOKEN, RECARGAS_CHAT_ID, base64Photo, text),
-  sendRetiro: (text) => send(RETIROS_TOKEN, RETIROS_CHAT_ID, text),
-  sendRetiroConFoto: (text, base64Photo) => sendPhoto(RETIROS_TOKEN, RETIROS_CHAT_ID, base64Photo, text),
+  sendRecarga: (text, id) => {
+    const config = getRecargasConfig();
+    const markup = {
+      inline_keyboard: [[
+        { text: '✅ Aceptar', callback_data: `recarga_aprobar_${id}` },
+        { text: '❌ Rechazar', callback_data: `recarga_rechazar_${id}` }
+      ]]
+    };
+    return send(config.token, config.chatId, text, markup);
+  },
+  sendRecargaConFoto: (text, base64Photo, id) => {
+    const config = getRecargasConfig();
+    const markup = {
+      inline_keyboard: [[
+        { text: '✅ Aceptar', callback_data: `recarga_aprobar_${id}` },
+        { text: '❌ Rechazar', callback_data: `recarga_rechazar_${id}` }
+      ]]
+    };
+    return sendPhoto(config.token, config.chatId, base64Photo, text, markup);
+  },
+  sendRetiro: (text, id) => {
+    const config = getRetirosConfig();
+    const markup = {
+      inline_keyboard: [[
+        { text: '✅ Aceptar', callback_data: `retiro_aprobar_${id}` },
+        { text: '❌ Rechazar', callback_data: `retiro_rechazar_${id}` }
+      ]]
+    };
+    return send(config.token, config.chatId, text, markup);
+  },
+  sendRetiroConFoto: (text, base64Photo, id) => {
+    const config = getRetirosConfig();
+    const markup = {
+      inline_keyboard: [[
+        { text: '✅ Aceptar', callback_data: `retiro_aprobar_${id}` },
+        { text: '❌ Rechazar', callback_data: `retiro_rechazar_${id}` }
+      ]]
+    };
+    return sendPhoto(config.token, config.chatId, base64Photo, text, markup);
+  },
 };

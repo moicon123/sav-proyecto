@@ -41,6 +41,8 @@ router.post('/', authenticate, async (req, res) => {
   };
   await createRecarga(recarga);
 
+  console.log(`[Recharge] New recharge created: ${recarga.id} for user: ${user?.nombre_usuario}`);
+
   // Notificar por Telegram (Bot de Recargas)
   const msg = `🔔 *Nueva Recarga Pendiente*\n\n` +
     `👤 *Usuario:* ${user?.nombre_usuario || req.user.id}\n` +
@@ -51,9 +53,15 @@ router.post('/', authenticate, async (req, res) => {
     `🕒 *Fecha:* ${new Date(recarga.created_at).toLocaleString('es-BO', { timeZone: 'America/La_Paz' })}`;
   
   if (recarga.comprobante_url && recarga.comprobante_url.startsWith('data:image')) {
-    telegram.sendRecargaConFoto(msg, recarga.comprobante_url).catch(console.error);
+    console.log(`[Recharge] Sending Telegram with photo for ${recarga.id}`);
+    telegram.sendRecargaConFoto(msg, recarga.comprobante_url, recarga.id).catch(err => {
+      console.error(`[Recharge] Telegram sendPhoto error:`, err);
+    });
   } else {
-    telegram.sendRecarga(msg).catch(console.error);
+    console.log(`[Recharge] Sending Telegram text only for ${recarga.id}`);
+    telegram.sendRecarga(msg, recarga.id).catch(err => {
+      console.error(`[Recharge] Telegram send error:`, err);
+    });
   }
 
   res.json(recarga);
