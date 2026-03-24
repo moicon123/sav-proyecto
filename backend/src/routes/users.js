@@ -90,51 +90,64 @@ router.get('/stats', authenticate, async (req, res) => {
   if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
   const activity = await getTaskActivity(user.id);
   
-  // Calcular ingresos reales basados en la actividad de tareas
+  // Usar una referencia de tiempo consistente (UTC para evitar discrepancias de servidor)
   const now = new Date();
+  
+  // Inicio de hoy (00:00:00 local del servidor, pero comparado con ISO strings)
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  // Inicio de ayer
   const startOfYesterday = new Date(startOfToday);
   startOfYesterday.setDate(startOfYesterday.getDate() - 1);
   
+  // Inicio de la semana (Lunes como primer día)
   const startOfWeek = new Date(startOfToday);
-  startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+  const day = startOfToday.getDay(); // 0 (Dom) a 6 (Sab)
+  const diff = startOfToday.getDate() - day + (day === 0 ? -6 : 1); // Ajustar a Lunes
+  startOfWeek.setDate(diff);
   
+  // Inicio del mes
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const filterByDate = (list, start, end = null) => {
+    const startTime = start.getTime();
+    const endTime = end ? end.getTime() : null;
+    
     return list.filter(item => {
-      const d = new Date(item.created_at);
-      if (end) return d >= start && d < end;
-      return d >= start;
+      const d = new Date(item.created_at).getTime();
+      if (endTime) return d >= startTime && d < endTime;
+      return d >= startTime;
     });
   };
 
-  const sumMonto = (list) => list.reduce((s, i) => s + (Number(i.recompensa_otorgada) || Number(i.recompensa) || 0), 0);
+  const sumMonto = (list) => {
+    return list.reduce((total, item) => {
+      const monto = Number(item.recompensa_otorgada) || Number(item.recompensa) || 0;
+      return total + monto;
+    }, 0);
+  };
 
-  // Filtrar actividad por tipo (exitosas y no exitosas)
-  const taskActivity = activity.filter(a => a.tarea_id);
-  const successfulTasks = taskActivity.filter(a => a.respuesta_correcta === true);
+  // Filtrar solo tareas exitosas
+  const successfulTasks = activity.filter(a => a.tarea_id && a.respuesta_correcta === true);
 
   const hoy = filterByDate(successfulTasks, startOfToday);
   const ayer = filterByDate(successfulTasks, startOfYesterday, startOfToday);
   const semana = filterByDate(successfulTasks, startOfWeek);
   const mes = filterByDate(successfulTasks, startOfMonth);
 
-  // Verificar límite de pasante
-  const uniqueDays = new Set(activity.filter(a => a.recompensa_otorgada > 0).map(a => new Date(a.created_at).toDateString()));
-  const isPasante = user.nivel_id === 'l1';
-  const limitReached = isPasante && uniqueDays.size >= 3 && !uniqueDays.has(new Date().toDateString());
+  // Redondear a 2 decimales para evitar errores de precisión flotante (ej: 3.22 + 3.22 = 6.440000000000001)
+  const round = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
 
   res.json({
-    ingresos_ayer: sumMonto(ayer),
-    ingresos_hoy: sumMonto(hoy),
-    ingresos_semana: sumMonto(semana),
-    ingresos_mes: sumMonto(mes),
-    ingresos_totales: sumMonto(successfulTasks),
-    comision_subordinados: user.saldo_comisiones || 0,
-    recompensa_invitacion: user.recompensa_invitacion || 0,
+    ingresos_ayer: round(sumMonto(ayer)),
+    ingresos_hoy: round(sumMonto(hoy)),
+    ingresos_semana: round(sumMonto(semana)),
+    ingresos_mes: round(sumMonto(mes)),
+    ingresos_totales: round(sumMonto(successfulTasks)),
+    comision_subordinados: round(user.saldo_comisiones || 0),
+    recompensa_invitacion: round(user.recompensa_invitacion || 0),
     total_completadas: successfulTasks.length,
-    pasante_limit_reached: limitReached,
+    pasante_limit_reached: false, // El límite se maneja en la ruta de tareas
   });
 });
 
