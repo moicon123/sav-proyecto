@@ -3,21 +3,21 @@ import { getStore } from '../data/store.js';
 import { levels as seedLevels } from '../data/seed.js';
 
 export async function trySupabase(operation) {
+  if (!supabase || !hasDb()) {
+    console.warn('[Supabase] No client configured, using memory fallback');
+    return { data: null, error: new Error('No client'), fallback: true };
+  }
   try {
-    if (hasDb()) {
-      const { data, error } = await operation();
-      if (error) {
-        console.warn('[Supabase] Error en la operación:', error.message);
-        return { data: null, error, fallback: true };
-      }
-      return { data, error: null, fallback: false };
+    const { data, error } = await operation();
+    if (error) {
+      console.error('[Supabase] Error executing query:', error);
+      return { data: null, error, fallback: true };
     }
-    console.warn('[Supabase] No hay conexión a la base de datos (SUPABASE_URL/KEY faltante)');
+    return { data, error: null, fallback: false };
   } catch (err) {
-    console.error('[Supabase] Error crítico de conexión:', err.message);
+    console.error('[Supabase] Critical exception:', err);
     return { data: null, error: err, fallback: true };
   }
-  return { data: null, error: new Error('No DB connection'), fallback: true };
 }
 
 export async function getUsers() {
@@ -233,45 +233,35 @@ export async function getAllTasks() {
 
 export async function getTasks(nivelId) {
   const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('nivel_id', nivelId).eq('activa', true));
-  if (!fallback && data && data.length > 0) return data;
   
   const store = await getStore();
   const levels = await getLevels();
-  // Intentar encontrar el nivel por ID, o si no, por código si el nivelId parece ser un UUID de Supabase
   const currentLevel = levels.find(l => String(l.id) === String(nivelId)) || 
                        levels.find(l => String(l.codigo) === 'pasante' && (nivelId === 'l1' || nivelId === 'pasante' || String(nivelId).length > 20));
   
-  console.log(`[Queries] getTasks para: "${nivelId}". Nivel detectado: ${currentLevel?.nombre || 'Desconocido'}, Código: ${currentLevel?.codigo}`);
+  // Si tenemos datos de Supabase, los usamos
+  if (!fallback && data && data.length > 0) return data;
 
-  // Lógica Ultra-Robusta para encontrar tareas locales
+  // Si no, usamos el store local
   const localTasks = (store.tasks || []).filter(t => {
-    // Coincidencia por ID directo
     if (String(t.nivel_id) === String(nivelId)) return true;
     
     if (currentLevel) {
-      // Coincidencia por ID del nivel encontrado
       if (String(t.nivel_id) === String(currentLevel.id)) return true;
-      // Coincidencia por Código del nivel (ej: 'pasante' o 'internar')
       const levelCode = String(currentLevel.codigo).toLowerCase();
       const taskLevelId = String(t.nivel_id).toLowerCase();
       
       if (levelCode === taskLevelId) return true;
       
-      // Mapeo especial para pasante
       if ((levelCode === 'pasante' || levelCode === 'internar') && 
           (taskLevelId === 'pasante' || taskLevelId === 'l1' || taskLevelId === 'internar')) return true;
       
-  // Mapeo para S1, S2, etc.
       if (levelCode.startsWith('s') && (taskLevelId === levelCode || taskLevelId === String(currentLevel.id).toLowerCase())) return true;
     }
     return false;
   });
 
-  console.log(`[Queries] Tareas filtradas para mostrar: ${localTasks.length}`);
-  
-  // Si después de todo sigue vacío, pero el usuario es pasante, forzamos las tareas de pasante
   if (localTasks.length === 0) {
-    console.log(`[Queries] No se encontraron tareas para nivel ${nivelId}, buscando pool genérico...`);
     const genericTasks = (store.tasks || []).filter(t => 
       t.nivel_id === 'pasante' || t.nivel_id === 'l1' || t.nivel_id === 'S1'
     );
@@ -314,9 +304,17 @@ export async function getTaskById(id) {
 
 export async function getTaskActivity(userId) {
   const { data, fallback } = await trySupabase(() => supabase.from('actividad_tareas').select('*').eq('usuario_id', userId));
-  if (!fallback && data && data.length > 0) return data;
   const store = await getStore();
-  return (store.actividadTareas || []).filter(a => a.usuario_id === userId);
+  const localActivity = (store.actividadTareas || []).filter(a => a.usuario_id === userId);
+
+  if (!fallback && data) {
+    // Combinar datos de Supabase con locales para no perder nada durante la sesión
+    const supabaseIds = new Set(data.map(d => d.id));
+    const combined = [...data, ...localActivity.filter(la => !supabaseIds.has(la.id))];
+    return combined;
+  }
+  
+  return localActivity;
 }
 
 export async function createTaskActivity(activity) {

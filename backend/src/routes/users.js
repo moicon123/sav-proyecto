@@ -109,7 +109,7 @@ router.get('/stats', authenticate, async (req, res) => {
     });
   };
 
-  const sumMonto = (list) => list.reduce((s, i) => s + (i.recompensa || 0), 0);
+  const sumMonto = (list) => list.reduce((s, i) => s + (Number(i.recompensa_otorgada) || Number(i.recompensa) || 0), 0);
 
   const hoy = filterByDate(activity, startOfToday);
   const ayer = filterByDate(activity, startOfYesterday, startOfToday);

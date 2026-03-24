@@ -72,13 +72,13 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     loadUser();
     
-    // Polling inteligente para actualizar datos en tiempo real cada 30 segundos
+    // Polling inteligente para actualizar datos en tiempo real cada 15 segundos
     // solo si el usuario está logueado y la pestaña está activa
     const interval = setInterval(() => {
       if (localStorage.getItem('token') && document.visibilityState === 'visible') {
         loadUser();
       }
-    }, 30000);
+    }, 15000);
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible' && localStorage.getItem('token')) {
