@@ -20,7 +20,15 @@ export default function Recharge() {
   const [error, setError] = useState('');
   const [pc, setPc] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [lastRechargeTime, setLastRechargeTime] = useState(localStorage.getItem('last_recharge_time') || null);
+  const [lastRechargeTime, setLastRechargeTime] = useState(() => {
+    const saved = localStorage.getItem('last_recharge_time');
+    // Validar que sea un número, si no, borrarlo
+    if (saved && isNaN(parseInt(saved))) {
+      localStorage.removeItem('last_recharge_time');
+      return null;
+    }
+    return saved;
+  });
   const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
@@ -31,7 +39,15 @@ export default function Recharge() {
     
     const calculateRemaining = () => {
       const now = Date.now();
-      const diff = now - parseInt(lastRechargeTime);
+      const timestamp = parseInt(lastRechargeTime);
+      
+      if (isNaN(timestamp)) {
+        localStorage.removeItem('last_recharge_time');
+        setLastRechargeTime(null);
+        return 0;
+      }
+
+      const diff = now - timestamp;
       const remaining = Math.max(0, (25 * 60 * 1000) - diff);
       
       if (remaining <= 0) {
@@ -148,6 +164,9 @@ export default function Recharge() {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
 
+    const displayMins = isNaN(mins) ? '00' : String(mins).padStart(2, '0');
+    const displaySecs = isNaN(secs) ? '00' : String(secs).padStart(2, '0');
+
     return (
       <Layout>
         <Header title="Validación" />
@@ -173,14 +192,16 @@ export default function Recharge() {
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-xl" />
               <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Tiempo de Espera</p>
               <div className="text-4xl font-black tabular-nums tracking-tighter">
-                {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
+                {displayMins}:{displaySecs}
               </div>
               <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-3">Procesando solicitud...</p>
             </div>
 
             <div className="pt-4 space-y-3">
               <button 
-                onClick={() => setSuccess(false)}
+                onClick={() => {
+                  if (timeLeft <= 0) setSuccess(false);
+                }}
                 disabled={timeLeft > 0}
                 className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg ${
                   timeLeft > 0 
@@ -209,7 +230,7 @@ export default function Recharge() {
   const schedRec = horarioRec ? isScheduleOpen(horarioRec) : { ok: true };
   const fueraHorario = horarioRec?.enabled && !schedRec.ok;
 
-  const currentLevel = niveles.find(n => n.id === user?.nivel_id || n.codigo === user?.nivel_codigo);
+  const currentLevel = (niveles || []).find(n => n.id === user?.nivel_id || n.codigo === user?.nivel_codigo);
   const currentLevelOrder = currentLevel ? (currentLevel.orden ?? 0) : 0;
 
   const [teamStats, setTeamStats] = useState(null);
@@ -221,10 +242,10 @@ export default function Recharge() {
   }, [user]);
 
   const getS3SubordinatesCount = () => {
-    if (!teamStats?.niveles) return 0;
+    if (!teamStats?.niveles || !Array.isArray(teamStats.niveles)) return 0;
     // Buscamos en el Nivel A (directos) cuántos son S3
     const nivelA = teamStats.niveles.find(n => n.nivel === 'A');
-    if (!nivelA || !nivelA.miembros_detalle) return 0;
+    if (!nivelA || !nivelA.miembros_detalle || !Array.isArray(nivelA.miembros_detalle)) return 0;
     
     return nivelA.miembros_detalle.filter(m => m.nivel_codigo === 'S3').length;
   };
@@ -272,8 +293,8 @@ export default function Recharge() {
             <div className="mt-6">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Selecciona el Nivel al que deseas ascender:</p>
               <div className="grid grid-cols-2 gap-3">
-                {niveles.length > 0 ? (
-                  niveles
+                {(niveles || []).length > 0 ? (
+                  (niveles || [])
                     .filter(n => (n.orden ?? 0) > currentLevelOrder)
                     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
                     .map((nivel) => {

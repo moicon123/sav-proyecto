@@ -99,12 +99,18 @@ export default function Dashboard() {
     }
 
     if (installPrompt) {
-      // Activar la ventana oficial de instalación (equivale a los 3 puntos -> Instalar)
-      installPrompt.prompt();
-      const { outcome } = await installPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setInstallPrompt(null);
-        setIsInstalled(true);
+      try {
+        // Activar la ventana oficial de instalación (equivale a los 3 puntos -> Instalar)
+        if (typeof installPrompt.prompt === 'function') {
+          installPrompt.prompt();
+          const { outcome } = await installPrompt.userChoice;
+          if (outcome === 'accepted') {
+            setInstallPrompt(null);
+            setIsInstalled(true);
+          }
+        }
+      } catch (e) {
+        console.error('PWA install prompt error:', e);
       }
       return;
     }
