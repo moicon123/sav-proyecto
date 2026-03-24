@@ -96,72 +96,23 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
   
   if (recarga.estado === 'aprobada') return res.status(400).json({ error: 'Esta recarga ya fue aprobada previamente' });
 
-  const updates = {
-    estado: 'aprobada',
-    procesado_at: new Date().toISOString()
-  };
-  
-  // Solo agregar procesado_por si el usuario admin existe en la DB (evitar errores de FK en Supabase)
-  if (req.user && req.user.id) {
-    const adminExists = await findUserById(req.user.id);
-    if (adminExists) {
-      updates.procesado_por = req.user.id;
-    }
-  }
-  
-  const updatedRecarga = await updateRecarga(id, updates);
-  if (!updatedRecarga) {
-    return res.status(500).json({ error: 'Error al actualizar el estado de la recarga' });
-  }
-
   const user = await findUserById(recarga.usuario_id);
-  if (user) {
-    const userUpdates = {};
+  const { data: niveles } = await trySupabase(() => supabase.from('niveles').select('*'));
+  const nivelDestino = niveles.find(n => (n.deposito || n.costo) === recarga.monto);
+  const nivelActual = niveles.find(n => n.id === user.nivel_id);
 
-    if (recarga.modo === 'Compra VIP') {
-      const niveles = await getLevels();
-      const nuevoNivel = niveles.find(n => (n.deposito || n.costo) === recarga.monto);
-      if (nuevoNivel) {
-        userUpdates.nivel_id = nuevoNivel.id;
-        
-        // --- LÓGICA DE TOKENS DE RULETA AL ASCENDER ---
-        // 1 token por cualquier nivel S, 3 tokens si es S3
-        const levelCode = String(nuevoNivel.codigo).toUpperCase();
-        if (levelCode.startsWith('S')) {
-          const tokensToAdd = levelCode === 'S3' ? 3 : 1;
-          userUpdates.oportunidades_sorteo = (user.oportunidades_sorteo || 0) + tokensToAdd;
-          console.log(`[Admin] Usuario ${user.telefono} ascendió a ${levelCode}. Se le otorgan ${tokensToAdd} tokens.`);
-        }
-      }
-      // Al ser Compra VIP, NO sumamos el monto al saldo_principal, solo actualizamos el nivel.
-    } else {
-      // Si no es Compra VIP, sumamos el saldo normalmente
-      userUpdates.saldo_principal = (user.saldo_principal || 0) + recarga.monto;
+  if (nivelDestino) {
+    const updates = { nivel_id: nivelDestino.id };
+    if (nivelActual && (nivelActual.deposito > 0 || nivelActual.costo > 0)) {
+      const montoADevolver = nivelActual.deposito || nivelActual.costo;
+      updates.saldo_comisiones = (user.saldo_comisiones || 0) + montoADevolver;
     }
-
-    if (Object.keys(userUpdates).length > 0) {
-      await updateUser(user.id, userUpdates);
-    }
-
-    if (recarga.modo === 'Compra VIP') {
-      // Sistema de Comisiones Multi-nivel (A: 15%, B: 5%, C: 2%)
-      // Solo se aplica si es Compra VIP y se aprueba por el admin
-      let currentInviterId = user.invitado_por;
-      const levelsCommissions = [0.15, 0.05, 0.02];
-
-      for (let i = 0; i < levelsCommissions.length; i++) {
-        if (!currentInviterId) break;
-        const inviter = await findUserById(currentInviterId);
-        if (!inviter) break;
-
-        const commissionAmount = recarga.monto * levelsCommissions[i];
-        await updateUser(inviter.id, {
-          saldo_comisiones: (inviter.saldo_comisiones || 0) + commissionAmount
-        });
-
-        currentInviterId = inviter.invitado_por;
-      }
-    }
+    await updateUser(user.id, updates);
+    await updateRecarga(id, { estado: 'aprobada' });
+  } else {
+    // Fallback anterior
+    await updateUser(user.id, { saldo_principal: (user.saldo_principal || 0) + recarga.monto });
+    await updateRecarga(id, { estado: 'aprobada' });
   }
 
   res.json({ ok: true });

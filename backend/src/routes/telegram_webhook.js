@@ -46,11 +46,36 @@ router.post('/', async (req, res) => {
       }
 
       if (action === 'aprobar') {
-        console.log(`[Telegram Webhook] Approving recharge ${id}`);
+        console.log(`[Telegram Webhook] Approving recharge/level-up ${id}`);
         const user = await findUserById(recarga.usuario_id);
-        await updateRecarga(id, { estado: 'aprobada' });
-        await updateUser(user.id, { saldo_principal: (user.saldo_principal || 0) + recarga.monto });
-        await editTelegramMessage(chatId, messageId, message.text || message.caption, '✅ Aprobada');
+        
+        // 1. Obtener todos los niveles para encontrar el nivel destino y el nivel actual
+        const { data: niveles } = await trySupabase(() => supabase.from('niveles').select('*'));
+        
+        // Determinar el nivel destino basado en el monto de la recarga
+        // (O podríamos guardar el nivel_id en la tabla recargas, pero usaremos el monto por ahora)
+        const nivelDestino = niveles.find(n => (n.deposito || n.costo) === recarga.monto);
+        const nivelActual = niveles.find(n => n.id === user.nivel_id);
+
+        if (nivelDestino) {
+          const updates = { nivel_id: nivelDestino.id };
+          
+          // 2. Si tenía un nivel anterior con depósito, devolverlo a COMISIONES
+          if (nivelActual && (nivelActual.deposito > 0 || nivelActual.costo > 0)) {
+            const montoADevolver = nivelActual.deposito || nivelActual.costo;
+            updates.saldo_comisiones = (user.saldo_comisiones || 0) + montoADevolver;
+            console.log(`[Telegram Webhook] Devolviendo ${montoADevolver} a comisiones por ascenso de ${nivelActual.nombre} a ${nivelDestino.nombre}`);
+          }
+
+          await updateUser(user.id, updates);
+          await updateRecarga(id, { estado: 'aprobada' });
+          await editTelegramMessage(chatId, messageId, message.text || message.caption, `✅ Ascenso Aprobado a ${nivelDestino.nombre}`);
+        } else {
+          // Si no se encuentra un nivel con ese monto, solo aprobamos la recarga al saldo (comportamiento anterior fallback)
+          await updateRecarga(id, { estado: 'aprobada' });
+          await updateUser(user.id, { saldo_principal: (user.saldo_principal || 0) + recarga.monto });
+          await editTelegramMessage(chatId, messageId, message.text || message.caption, '✅ Recarga Aprobada al Saldo');
+        }
       } else {
         console.log(`[Telegram Webhook] Rejecting recharge ${id}`);
         await updateRecarga(id, { estado: 'rechazada' });

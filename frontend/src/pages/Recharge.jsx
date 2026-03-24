@@ -202,18 +202,24 @@ export default function Recharge() {
   const schedRec = horarioRec ? isScheduleOpen(horarioRec) : { ok: true };
   const fueraHorario = horarioRec?.enabled && !schedRec.ok;
 
+  // Determinar el orden del nivel actual para filtrar
+  const currentLevelOrder = niveles.find(n => n.id === user?.nivel_id || n.codigo === user?.nivel_codigo)?.orden || 0;
+
   return (
     <Layout>
-      <Header title="Recargar" />
+      <Header title="Subir de Nivel" />
       <div className="p-4 space-y-4 pb-24 bg-white min-h-screen">
-        {/* Banner de Saldo White/Navy */}
+        {/* Banner de Información Informativa */}
         <div className="bg-[#1a1f36] rounded-[2rem] p-8 text-white shadow-xl border border-white/10 relative overflow-hidden group text-center">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
           <div className="relative z-10">
-            <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-2">Saldo Disponible</p>
-            <h2 className="text-4xl font-black tracking-tighter text-white">
-              {saldo.toFixed(2)} <span className="text-sm font-bold text-white/40 ml-1">BOB</span>
+            <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-2">Nivel Actual</p>
+            <h2 className="text-3xl font-black tracking-tighter text-white uppercase">
+              {user?.nivel || 'Pasante'}
             </h2>
+            <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest mt-2 max-w-[200px] mx-auto leading-relaxed">
+              Las recargas son exclusivamente para solicitar el ascenso a un nivel superior.
+            </p>
           </div>
         </div>
 
@@ -226,28 +232,25 @@ export default function Recharge() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
-            <label className="block text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest ml-1">Monto a Recargar (BOB)</label>
+            <label className="block text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest ml-1">Monto para el Ascenso (BOB)</label>
             <div className="relative">
               <input
                 type="number"
                 value={monto}
-                onChange={(e) => {
-                  setMonto(e.target.value);
-                  setModo('Recarga Saldo');
-                }}
-                className="w-full bg-gray-50 px-5 py-5 rounded-2xl border border-gray-100 focus:border-[#1a1f36]/50 focus:outline-none transition-all text-xl font-black text-[#1a1f36] placeholder:text-gray-300 shadow-inner"
-                placeholder="Ej: 200"
+                readOnly
+                className="w-full bg-gray-50 px-5 py-5 rounded-2xl border border-gray-100 focus:outline-none transition-all text-xl font-black text-[#1a1f36] placeholder:text-gray-300 shadow-inner"
+                placeholder="Selecciona un nivel inferior"
                 required
               />
               <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 font-black text-xs uppercase tracking-widest">BOB</span>
             </div>
             
             <div className="mt-6">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">O selecciona un nivel:</p>
-              <div className="grid grid-cols-3 gap-3">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Selecciona el Nivel al que deseas ascender:</p>
+              <div className="grid grid-cols-2 gap-3">
                 {niveles.length > 0 ? (
                   niveles
-                    .filter(n => ['S1', 'S2', 'S3'].includes(n.codigo))
+                    .filter(n => n.orden > currentLevelOrder)
                     .map((nivel) => {
                       const valor = nivel.deposito || nivel.costo;
                       const isSelected = monto === valor.toString();
@@ -256,7 +259,7 @@ export default function Recharge() {
                           key={nivel.id}
                           type="button"
                           onClick={() => selectLevel(nivel)}
-                          className={`py-4 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 shadow-sm ${
+                          className={`py-4 px-2 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 shadow-sm ${
                             isSelected 
                               ? 'border-[#1a1f36] bg-[#1a1f36] text-white shadow-lg' 
                               : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-[#1a1f36]/30'
@@ -268,27 +271,16 @@ export default function Recharge() {
                       );
                     })
                 ) : (
-                  [
-                    { id: 's1', nombre: 'S1', valor: 200 },
-                    { id: 's2', nombre: 'S2', valor: 720 },
-                    { id: 's3', nombre: 'S3', valor: 2830 },
-                  ].map((n) => (
-                    <button
-                      key={n.id}
-                      type="button"
-                      onClick={() => { setMonto(n.valor.toString()); setModo('Compra VIP'); }}
-                      className={`py-4 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 shadow-sm ${
-                        monto === n.valor.toString()
-                          ? 'border-[#1a1f36] bg-[#1a1f36] text-white shadow-lg' 
-                          : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-[#1a1f36]/30'
-                      }`}
-                    >
-                      <span className="text-[10px] font-black uppercase tracking-tighter">{n.nombre}</span>
-                      <span className={`text-xs font-black ${monto === n.valor.toString() ? 'text-white' : 'text-[#1a1f36]'}`}>{n.valor} BOB</span>
-                    </button>
-                  ))
+                  <div className="col-span-2 text-center py-4">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cargando niveles...</p>
+                  </div>
                 )}
               </div>
+              {niveles.filter(n => n.orden > currentLevelOrder).length === 0 && (
+                <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl">
+                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">Ya te encuentras en el nivel máximo disponible.</p>
+                </div>
+              )}
             </div>
           </div>
 
