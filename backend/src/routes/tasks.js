@@ -169,10 +169,13 @@ router.post('/:id/responder', authenticate, async (req, res) => {
 
     const respuestaLimpia = (String(respuesta || '')).toUpperCase().trim();
     const correctaLimpia = (String(task.respuesta_correcta || '')).toUpperCase().trim();
-    const correcta = respuestaLimpia === correctaLimpia;
-    const recompensa = correcta ? task.recompensa : 0;
     
-    if (correcta) {
+    // CORRECCIÓN: Usar correctaLimpia para comparar con la respuesta del usuario
+    const esCorrectaReal = respuestaLimpia === correctaLimpia;
+    
+    const recompensa = esCorrectaReal ? task.recompensa : 0;
+    
+    if (esCorrectaReal) {
       await updateUser(user.id, {
         saldo_principal: (Number(user.saldo_principal) || 0) + Number(recompensa),
       });
@@ -182,12 +185,12 @@ router.post('/:id/responder', authenticate, async (req, res) => {
       id: uuidv4(),
       usuario_id: user.id,
       tarea_id: task.id,
-      respuesta_correcta: correcta,
+      respuesta_correcta: esCorrectaReal,
       recompensa_otorgada: recompensa,
       created_at: new Date().toISOString(),
     });
 
-    res.json({ correcta, recompensa });
+    res.json({ correcta: esCorrectaReal, recompensa });
   } catch (err) {
     console.error('[Tasks] Error crítico al procesar respuesta:', err);
     res.status(500).json({ error: 'Error al procesar la respuesta' });

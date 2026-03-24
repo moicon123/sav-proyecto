@@ -111,10 +111,14 @@ router.get('/stats', authenticate, async (req, res) => {
 
   const sumMonto = (list) => list.reduce((s, i) => s + (Number(i.recompensa_otorgada) || Number(i.recompensa) || 0), 0);
 
-  const hoy = filterByDate(activity, startOfToday);
-  const ayer = filterByDate(activity, startOfYesterday, startOfToday);
-  const semana = filterByDate(activity, startOfWeek);
-  const mes = filterByDate(activity, startOfMonth);
+  // Filtrar actividad por tipo (exitosas y no exitosas)
+  const taskActivity = activity.filter(a => a.tarea_id);
+  const successfulTasks = taskActivity.filter(a => a.respuesta_correcta === true);
+
+  const hoy = filterByDate(successfulTasks, startOfToday);
+  const ayer = filterByDate(successfulTasks, startOfYesterday, startOfToday);
+  const semana = filterByDate(successfulTasks, startOfWeek);
+  const mes = filterByDate(successfulTasks, startOfMonth);
 
   // Verificar límite de pasante
   const uniqueDays = new Set(activity.filter(a => a.recompensa_otorgada > 0).map(a => new Date(a.created_at).toDateString()));
@@ -126,10 +130,10 @@ router.get('/stats', authenticate, async (req, res) => {
     ingresos_hoy: sumMonto(hoy),
     ingresos_semana: sumMonto(semana),
     ingresos_mes: sumMonto(mes),
-    ingresos_totales: sumMonto(activity),
+    ingresos_totales: sumMonto(successfulTasks),
     comision_subordinados: user.saldo_comisiones || 0,
     recompensa_invitacion: user.recompensa_invitacion || 0,
-    total_completadas: activity.length,
+    total_completadas: successfulTasks.length,
     pasante_limit_reached: limitReached,
   });
 });
