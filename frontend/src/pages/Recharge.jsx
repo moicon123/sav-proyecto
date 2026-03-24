@@ -160,7 +160,18 @@ export default function Recharge() {
     }
   };
 
-  if (isMounted && (success || timeLeft > 0)) {
+  if (!isMounted) {
+    return (
+      <Layout>
+        <Header title="Cargando..." />
+        <div className="p-8 flex items-center justify-center min-h-[50vh]">
+          <div className="w-10 h-10 border-4 border-[#1a1f36] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (success || timeLeft > 0) {
     const totalSeconds = Math.max(0, Math.floor(timeLeft / 1000));
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;

@@ -4,10 +4,7 @@ import { api } from '../lib/api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const logout = useCallback(() => {
@@ -29,6 +26,17 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('token');
     const deviceId = getDeviceId();
     
+    // Al cargar por primera vez, intentar recuperar del localStorage para evitar el flicker
+    // pero de forma segura para la hidratación
+    const savedUser = localStorage.getItem('user');
+    if (savedUser && !user) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem('user');
+      }
+    }
+
     if (!token) {
       setUser(null);
       localStorage.removeItem('user');
