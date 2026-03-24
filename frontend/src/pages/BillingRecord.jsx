@@ -9,8 +9,14 @@ export default function BillingRecord() {
   const [recargas, setRecargas] = useState([]);
 
   useEffect(() => {
-    api.withdrawals.list().then(setRetiros).catch(() => []);
-    api.recharges.list().then(setRecargas).catch(() => []);
+    const fetchData = () => {
+      api.withdrawals.list().then(setRetiros).catch(() => []);
+      api.recharges.list().then(setRecargas).catch(() => []);
+    };
+    
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Actualizar cada 10s
+    return () => clearInterval(interval);
   }, []);
 
   const items = tab === 'ingresos' 

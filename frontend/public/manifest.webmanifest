@@ -1,11 +1,12 @@
 {
-  "name": "SAV Plataforma",
+  "name": "SAV GLOBAL",
   "short_name": "SAV",
-  "description": "Plataforma de tareas por niveles SAV",
-  "start_url": "/",
-  "display": "standalone",
+  "description": "SAV GLOBAL - Activos Virtuales",
+  "start_url": "/?pwa=true",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#F9F9F5",
+  "background_color": "#0a0c1a",
   "theme_color": "#1a1f36",
   "icons": [
     {

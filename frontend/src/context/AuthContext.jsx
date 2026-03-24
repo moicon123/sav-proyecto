@@ -71,6 +71,26 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     loadUser();
+    
+    // Polling inteligente para actualizar datos en tiempo real cada 30 segundos
+    // solo si el usuario está logueado y la pestaña está activa
+    const interval = setInterval(() => {
+      if (localStorage.getItem('token') && document.visibilityState === 'visible') {
+        loadUser();
+      }
+    }, 30000);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && localStorage.getItem('token')) {
+        loadUser();
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [loadUser]);
 
   const login = useCallback(async (telefono, password) => {
