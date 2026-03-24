@@ -20,13 +20,8 @@ export default function Recharge() {
   const [error, setError] = useState('');
   const [pc, setPc] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [lastRechargeTime, setLastRechargeTime] = useState(null);
+  const [lastRechargeTime, setLastRechargeTime] = useState(localStorage.getItem('last_recharge_time') || null);
   const [timeLeft, setTimeLeft] = useState(0);
-
-  useEffect(() => {
-    const savedTime = localStorage.getItem('last_recharge_time');
-    if (savedTime) setLastRechargeTime(savedTime);
-  }, []);
 
   useEffect(() => {
     if (!lastRechargeTime) {
@@ -34,19 +29,30 @@ export default function Recharge() {
       return;
     }
     
-    const interval = setInterval(() => {
+    const calculateRemaining = () => {
       const now = Date.now();
       const diff = now - parseInt(lastRechargeTime);
       const remaining = Math.max(0, (25 * 60 * 1000) - diff);
       
-      if (remaining === 0) {
+      if (remaining <= 0) {
         setLastRechargeTime(null);
         localStorage.removeItem('last_recharge_time');
         setTimeLeft(0);
-        clearInterval(interval);
-      } else {
-        setTimeLeft(remaining);
+        return 0;
       }
+      return remaining;
+    };
+
+    // Calcular inmediatamente
+    const initialRemaining = calculateRemaining();
+    setTimeLeft(initialRemaining);
+
+    if (initialRemaining <= 0) return;
+
+    const interval = setInterval(() => {
+      const remaining = calculateRemaining();
+      setTimeLeft(remaining);
+      if (remaining <= 0) clearInterval(interval);
     }, 1000);
 
     return () => clearInterval(interval);

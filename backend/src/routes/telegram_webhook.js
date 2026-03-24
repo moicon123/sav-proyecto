@@ -34,15 +34,17 @@ router.post('/', async (req, res) => {
     const parts = data.split('_'); // ej: recarga_aprobar_uuid
     const type = parts[0];
     const action = parts[1];
-    const id = parts.slice(2).join('_'); // Reensamblar el ID por si tiene guiones bajos
+    const id = parts.slice(2).join('_'); // Reensamblar el ID
 
     console.log(`[Telegram Webhook] Type: ${type}, Action: ${action}, ID: ${id}`);
 
     if (type === 'recarga') {
       const recarga = await getRecargaById(id);
-      if (!recarga || recarga.estado !== 'pendiente') {
-        console.warn(`[Telegram Webhook] Recarga ${id} not found or not pending.`);
-        return answerCallback(callbackQueryId, 'Esta recarga ya no está pendiente o no existe.');
+      console.log(`[Telegram Webhook] Found recarga:`, recarga ? 'YES' : 'NOT FOUND');
+      
+      if (!recarga || (recarga.estado !== 'pendiente' && recarga.estado !== 'pendiente_ascenso')) {
+        console.warn(`[Telegram Webhook] Recarga ${id} not found or not pending. Current status: ${recarga?.estado}`);
+        return answerCallback(callbackQueryId, 'Esta solicitud ya no está pendiente.');
       }
 
       if (action === 'aprobar') {
