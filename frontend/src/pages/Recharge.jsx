@@ -20,11 +20,19 @@ export default function Recharge() {
   const [error, setError] = useState('');
   const [pc, setPc] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [lastRechargeTime, setLastRechargeTime] = useState(localStorage.getItem('last_recharge_time') || null);
+  const [lastRechargeTime, setLastRechargeTime] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
-    if (!lastRechargeTime) return;
+    const savedTime = localStorage.getItem('last_recharge_time');
+    if (savedTime) setLastRechargeTime(savedTime);
+  }, []);
+
+  useEffect(() => {
+    if (!lastRechargeTime) {
+      setTimeLeft(0);
+      return;
+    }
     
     const interval = setInterval(() => {
       const now = Date.now();
@@ -34,6 +42,7 @@ export default function Recharge() {
       if (remaining === 0) {
         setLastRechargeTime(null);
         localStorage.removeItem('last_recharge_time');
+        setTimeLeft(0);
         clearInterval(interval);
       } else {
         setTimeLeft(remaining);
@@ -98,14 +107,22 @@ export default function Recharge() {
       setError('Por favor sube el comprobante de pago');
       return;
     }
+    
+    if (!monto || parseFloat(monto) <= 0) {
+      setError('Por favor selecciona un nivel superior');
+      return;
+    }
+
     setError('');
     setLoading(true);
     try {
+      console.log('[Recharge] Submitting:', { monto, modo });
       await api.recharges.create({
         monto: parseFloat(monto) || 0,
         comprobante_url: comprobante,
         modo: modo,
       });
+      console.log('[Recharge] Success');
       const now = Date.now().toString();
       localStorage.setItem('last_recharge_time', now);
       setLastRechargeTime(now);
@@ -113,7 +130,8 @@ export default function Recharge() {
       setMonto('');
       setComprobante(null);
     } catch (err) {
-      setError(err.message || 'Error');
+      console.error('[Recharge] Error:', err);
+      setError(err.message || 'Error al enviar la recarga');
     } finally {
       setLoading(false);
     }
