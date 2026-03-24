@@ -50,25 +50,31 @@ export default function TaskRoom() {
   }
 
   if (error || !data) {
+    const isWeekend = error?.includes('lunes a viernes') || data?.es_fin_de_semana;
+
     return (
       <Layout>
         <Header title="sala de tareas" />
         <div className="p-8 text-center space-y-6 flex flex-col items-center justify-center min-h-[60vh] bg-white">
-          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-[2rem] flex items-center justify-center shadow-xl border border-rose-100">
-            <TrendingUp size={40} className="rotate-180" />
+          <div className={`w-20 h-20 ${isWeekend ? 'bg-amber-50 text-amber-500' : 'bg-rose-50 text-rose-500'} rounded-[2rem] flex items-center justify-center shadow-xl border ${isWeekend ? 'border-amber-100' : 'border-rose-100'}`}>
+            {isWeekend ? <Info size={40} /> : <TrendingUp size={40} className="rotate-180" />}
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-black text-[#1a1f36] uppercase tracking-tighter">Ocurrió un error</h2>
+            <h2 className="text-xl font-black text-[#1a1f36] uppercase tracking-tighter">
+              {isWeekend ? 'Fin de Semana' : 'Ocurrió un error'}
+            </h2>
             <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-xs mx-auto">
               {error || 'No se pudo conectar con el servidor.'}
             </p>
           </div>
-          <button 
-            onClick={fetchTasks}
-            className="px-8 py-4 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all"
-          >
-            Reintentar
-          </button>
+          {!isWeekend && (
+            <button 
+              onClick={fetchTasks}
+              className="px-8 py-4 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all"
+            >
+              Reintentar
+            </button>
+          )}
         </div>
       </Layout>
     );

@@ -32,11 +32,8 @@ router.post('/', authenticate, async (req, res) => {
   // Validar requisitos para S4/S5 (20 subordinados S3)
   const nivelDestino = (await getLevels()).find(l => (l.deposito || l.costo) === parseFloat(monto));
   if (nivelDestino && ['S4', 'S5'].includes(nivelDestino.codigo)) {
-    // Si el admin no ha deshabilitado el requisito (por ahora hardcoded en false, 
-    // pero el admin podría activarlo en una tabla de config global)
-    const REQUISITO_ACTIVO = true; 
-    
-    if (REQUISITO_ACTIVO) {
+    // Usar la configuración global del Admin
+    if (pc.require_s3_subordinates !== false) {
       const { data: teamData } = await supabase.from('usuarios').select('nivel_id').eq('invitado_por', user.id);
       const levels = await getLevels();
       const s3Level = levels.find(l => l.codigo === 'S3');

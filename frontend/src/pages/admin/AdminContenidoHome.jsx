@@ -90,6 +90,7 @@ export default function AdminContenidoHome() {
     conferencia_noticias: '',
     horario_recarga: defaultHorario(),
     horario_retiro: defaultHorario(),
+    require_s3_subordinates: true,
   });
   const [saving, setSaving] = useState(false);
 
@@ -164,6 +165,29 @@ export default function AdminContenidoHome() {
                 onChange={(e) => setForm((f) => ({ ...f, popup_message: e.target.value }))}
                 className="w-full rounded-2xl bg-gray-50 border-2 border-gray-50 px-5 py-4 text-gray-800 font-bold text-sm focus:border-sav-primary/20 transition-all outline-none"
               />
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-gray-100 space-y-6">
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Restricciones de Niveles</h2>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Requisito para S4/S5</label>
+              <label className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={!!form.require_s3_subordinates}
+                  onChange={(e) => setForm((f) => ({ ...f, require_s3_subordinates: e.target.checked }))}
+                  className="w-5 h-5 rounded-lg border-2 border-gray-300 text-sav-primary focus:ring-0 transition-all"
+                />
+                <span className="text-xs font-black text-gray-500 uppercase tracking-widest group-hover:text-gray-800 transition-colors">
+                  Exigir 20 subordinados S3 para subir a S4/S5
+                </span>
+              </label>
+              <p className="text-[10px] text-gray-400 italic ml-2 font-medium">
+                Si está activado, el sistema verificará automáticamente que el usuario tenga 20 subordinados de nivel S3 antes de permitirle solicitar el ascenso a S4 o S5.
+              </p>
             </div>
           </div>
         </div>

@@ -19,6 +19,8 @@ export const publicContentDefaults = {
     hora_inicio: '09:00',
     hora_fin: '18:00',
   },
+  /** Requisito de 20 subordinados S3 para ascender a S4/S5 */
+  require_s3_subordinates: true,
 };
 
 export function mergePublicContent(pc) {
