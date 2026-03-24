@@ -71,7 +71,7 @@ export default function VIP() {
           {niveles.map((nivel) => {
             const esActual = nivel.id === user?.nivel_id;
             const esSuperior = esNivelSuperior(nivel);
-            const estaBloqueadoAdmin = ['S4', 'S5', 'S6', 'S7', 'S8', 'S9'].includes(nivel.codigo);
+            const estaBloqueadoAdmin = nivel.activo === false;
 
             return (
               <div

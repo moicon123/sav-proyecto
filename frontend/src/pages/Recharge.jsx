@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { isScheduleOpen } from '../lib/schedule';
-import { Upload, CheckCircle2 } from 'lucide-react';
+import { Upload, CheckCircle2, Lock } from 'lucide-react';
 
 export default function Recharge() {
   const { user } = useAuth();
@@ -256,19 +256,33 @@ export default function Recharge() {
                     .map((nivel) => {
                       const valor = nivel.deposito || nivel.costo;
                       const isSelected = monto === valor.toString();
+                      const estaBloqueado = nivel.activo === false;
+                      
                       return (                    
                         <button
                           key={nivel.id}
                           type="button"
+                          disabled={estaBloqueado}
                           onClick={() => selectLevel(nivel)}
-                          className={`py-4 px-2 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 shadow-sm ${
+                          className={`py-4 px-2 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 shadow-sm relative ${
                             isSelected 
                               ? 'border-[#1a1f36] bg-[#1a1f36] text-white shadow-lg' 
-                              : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-[#1a1f36]/30'
+                              : estaBloqueado
+                                ? 'border-gray-50 bg-gray-50/50 text-gray-300 cursor-not-allowed opacity-60'
+                                : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-[#1a1f36]/30'
                           }`}
                         >
-                          <span className="text-[10px] font-black uppercase tracking-tighter">{nivel.nombre}</span>
-                          <span className={`text-xs font-black ${isSelected ? 'text-white' : 'text-[#1a1f36]'}`}>{valor} BOB</span>
+                          <span className="text-[10px] font-black uppercase tracking-tighter">
+                            {nivel.nombre}
+                          </span>
+                          <span className={`text-xs font-black ${isSelected ? 'text-white' : estaBloqueado ? 'text-gray-300' : 'text-[#1a1f36]'}`}>
+                            {estaBloqueado ? 'BLOQUEADO' : `${valor} BOB`}
+                          </span>
+                          {estaBloqueado && (
+                            <div className="absolute top-1 right-2">
+                              <Lock size={10} className="text-gray-300" />
+                            </div>
+                          )}
                         </button>
                       );
                     })

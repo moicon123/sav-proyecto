@@ -94,6 +94,17 @@ export default function AdminNiveles() {
                       onChange={e => setEditing({...editing, ganancia_tarea: parseFloat(e.target.value)})}
                     />
                   </div>
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="flex items-center gap-2 cursor-pointer p-2 rounded-xl hover:bg-gray-100 transition-colors">
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 rounded-lg border-gray-300 text-sav-primary focus:ring-sav-primary"
+                        checked={editing.activo !== false}
+                        onChange={e => setEditing({...editing, activo: e.target.checked})}
+                      />
+                      <span className="text-xs font-black text-gray-700 uppercase tracking-widest">Nivel Activo (Visible para usuarios)</span>
+                    </label>
+                  </div>
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button onClick={handleUpdate} className="flex-1 bg-[#1a1f36] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg active:scale-95"><Save size={16}/> Guardar Cambios</button>
@@ -110,6 +121,9 @@ export default function AdminNiveles() {
                     <div className="flex items-center gap-2">
                       <h3 className="font-black text-gray-800 text-base uppercase tracking-tighter">{nivel.nombre}</h3>
                       <span className="text-[8px] font-black bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full uppercase tracking-widest">Orden: {nivel.orden}</span>
+                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${nivel.activo !== false ? 'bg-green-100 text-green-600' : 'bg-rose-100 text-rose-600'}`}>
+                        {nivel.activo !== false ? 'Activo' : 'Bloqueado'}
+                      </span>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
                       <p className="text-[10px] font-bold text-sav-primary uppercase tracking-wide">Costo: {(nivel.deposito || nivel.costo || 0).toFixed(2)} BOB</p>

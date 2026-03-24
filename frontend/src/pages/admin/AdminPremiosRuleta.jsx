@@ -49,11 +49,33 @@ export default function AdminPremiosRuleta() {
 
   const totalProb = premios.reduce((s, p) => s + (p.probabilidad || 0), 0);
 
+  const equilibrarProbabilidades = async () => {
+    if (premios.length === 0) return;
+    const probEquitativa = (1 / premios.length).toFixed(4);
+    try {
+      for (const p of premios) {
+        await api.admin.actualizarPremioRuleta(p.id, { ...p, probabilidad: parseFloat(probEquitativa) });
+      }
+      setPremios(prev => prev.map(p => ({ ...p, probabilidad: parseFloat(probEquitativa) })));
+      alert('Probabilidades equilibradas equitativamente.');
+    } catch (e) {
+      alert('Error al equilibrar: ' + e.message);
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Premios de la Ruleta</h1>
-        <p className="text-gray-500 font-medium uppercase tracking-widest text-[10px] mt-1">Configura los premios y probabilidades del sorteo</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Premios de la Ruleta</h1>
+          <p className="text-gray-500 font-medium uppercase tracking-widest text-[10px] mt-1">Configura los premios y probabilidades del sorteo</p>
+        </div>
+        <button 
+          onClick={equilibrarProbabilidades}
+          className="px-6 py-3 rounded-2xl bg-gray-100 text-gray-600 font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-colors border border-gray-200"
+        >
+          Equilibrar Probabilidades
+        </button>
       </div>
 
       <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 mb-8">

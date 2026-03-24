@@ -104,10 +104,10 @@ export default function Raffle() {
                 </div>
               </div>
 
-              <div className="relative p-8 rounded-full bg-gradient-to-b from-white to-gray-200 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.15)] border-[12px] border-white overflow-hidden group/ruleta">
+              <div className="relative p-6 rounded-full bg-gradient-to-b from-white to-gray-50 shadow-xl border-8 border-white overflow-hidden group/ruleta">
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#1a1f36]/5 to-transparent opacity-0 group-hover/ruleta:opacity-100 transition-opacity duration-700" />
                 <div 
-                  className="relative w-72 h-72 md:w-80 md:h-80 rounded-full overflow-hidden transition-transform duration-[5000ms] ease-[cubic-bezier(0.15,0,0.15,1)] shadow-[inset_0_0_40px_rgba(0,0,0,0.1)]"
+                  className="relative w-64 h-64 md:w-72 md:h-72 rounded-full overflow-hidden transition-transform duration-[5000ms] ease-[cubic-bezier(0.15,0,0.15,1)] shadow-inner"
                   style={{ transform: `rotate(${rotation}deg)` }}
                 >
                   {premios.length > 0 ? (
@@ -191,8 +191,8 @@ export default function Raffle() {
               <div className="grid grid-cols-2 gap-4 relative z-10">
                 {premios.map((p, i) => (
                   <div key={p.id} className="flex items-center gap-4 p-4 rounded-[1.5rem] bg-gray-50 border border-gray-100 hover:border-[#1a1f36]/30 transition-all group/item shadow-sm">
-                    <div className={`w-3.5 h-3.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-transform group-hover/item:scale-125 ${i % 2 === 0 ? 'bg-[#1a1f36]' : 'bg-[#00C853]'}`} />
-                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest group-hover/item:text-[#1a1f36]">{p.nombre} BOB</span>
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#1a1f36] shadow-[0_0_10px_rgba(26,31,54,0.3)] transition-transform group-hover/item:scale-125" />
+                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest group-hover/item:text-[#1a1f36]">{p.nombre}</span>
                   </div>
                 ))}
               </div>
