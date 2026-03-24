@@ -61,13 +61,13 @@ router.post('/', authenticate, async (req, res) => {
   console.log(`[Recharge] New recharge created: ${recarga.id} for user: ${user?.nombre_usuario}`);
 
   // Notificar por Telegram (Bot de Recargas)
-  const msg = `🔔 *Nueva Recarga Pendiente*\n\n` +
-    `👤 *Usuario:* ${user?.nombre_usuario || req.user.id}\n` +
-    `📛 *Nombre Real:* ${user?.nombre_real || 'No especificado'}\n` +
-    `📱 *Teléfono:* ${user?.telefono || 'No disponible'}\n` +
-    `💰 *Monto:* ${recarga.monto} BOB\n` +
-    `🛠 *Modo:* ${recarga.modo}\n` +
-    `🕒 *Fecha:* ${new Date(recarga.created_at).toLocaleString('es-BO', { timeZone: 'America/La_Paz' })}`;
+  const msg = `🔔 Nueva Recarga Pendiente\n\n` +
+    `👤 Usuario: ${user?.nombre_usuario || req.user.id}\n` +
+    `📛 Nombre Real: ${user?.nombre_real || 'No especificado'}\n` +
+    `📱 Teléfono: ${user?.telefono || 'No disponible'}\n` +
+    `💰 Monto: ${recarga.monto} BOB\n` +
+    `🛠 Modo: ${recarga.modo}\n` +
+    `🕒 Fecha: ${new Date(recarga.created_at).toLocaleString('es-BO', { timeZone: 'America/La_Paz' })}`;
   
   if (recarga.comprobante_url && recarga.comprobante_url.startsWith('data:image')) {
     console.log(`[Recharge] Sending Telegram with photo for ${recarga.id}`);

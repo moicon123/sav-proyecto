@@ -18,8 +18,7 @@ async function send(token, chatId, text, replyMarkup = null) {
   try {
     const body = {
       chat_id: chatId,
-      text,
-      parse_mode: 'Markdown'
+      text
     };
     if (replyMarkup) body.reply_markup = replyMarkup;
 

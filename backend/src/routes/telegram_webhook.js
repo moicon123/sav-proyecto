@@ -128,7 +128,7 @@ async function editTelegramMessage(chatId, messageId, oldText, statusText) {
   // Para simplificar, usamos los tokens de las variables de entorno
   const tokens = [process.env.TELEGRAM_RECARGAS_TOKEN, process.env.TELEGRAM_RETIROS_TOKEN];
   
-  const newText = `${oldText}\n\n📢 *Estado:* ${statusText}`;
+  const newText = `${oldText}\n\n📢 Estado: ${statusText}`;
 
   for (const token of tokens) {
     if (!token) continue;
