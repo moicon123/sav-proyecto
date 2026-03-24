@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import Header from '../components/Header.jsx';
 import { api } from '../lib/api.js';
-import { Play, TrendingUp } from 'lucide-react';
+import { Play, TrendingUp, Info } from 'lucide-react';
 
 export default function TaskRoom() {
   const [data, setData] = useState(null);

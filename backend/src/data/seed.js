@@ -134,6 +134,10 @@ export async function initStore() {
     { id: 'task-s1-2', nivel_id: 'S1', nombre: 'Tarea S1 - 2', recompensa: 1.80, video_url: '/video/nike1.mp4', descripcion: 'Nike inspira a atletas de todo el mundo con su tecnología deportiva y su famoso lema "Just Do It".', pregunta: 'Selecciona la marca', respuesta_correcta: 'NIKE', opciones: ['NIKE', 'ADIDAS', 'PUMA', 'UNDER ARMOUR'] },
     { id: 'task-s1-3', nivel_id: 'S1', nombre: 'Tarea S1 - 3', recompensa: 1.80, video_url: '/video/puma1.mp4', descripcion: 'Puma combina el rendimiento deportivo con el estilo urbano, creando productos dinámicos para el día a día.', pregunta: 'Selecciona la marca', respuesta_correcta: 'PUMA', opciones: ['PUMA', 'NIKE', 'ADIDAS', 'REEBOK'] },
     { id: 'task-s1-4', nivel_id: 'S1', nombre: 'Tarea S1 - 4', recompensa: 1.80, video_url: '/video/rolex1.mp4', descripcion: 'Rolex es el referente mundial en relojería de lujo, símbolo de precisión, éxito y prestigio eterno.', pregunta: 'Selecciona la marca', respuesta_correcta: 'ROLEX', opciones: ['ROLEX', 'OMEGA', 'CASIO', 'CARTIER'] },
+    { id: 'task-s2-1', nivel_id: 'S2', nombre: 'Tarea S2 - 1', recompensa: 3.22, video_url: '/video/adidas1.mp4', descripcion: 'Tarea de nivel S2.', pregunta: '¿Qué marca se promociona?', respuesta_correcta: 'ADIDAS', opciones: ['ADIDAS', 'NIKE', 'PUMA', 'REEBOK'] },
+    { id: 'task-s2-2', nivel_id: 'S2', nombre: 'Tarea S2 - 2', recompensa: 3.22, video_url: '/video/nike1.mp4', descripcion: 'Tarea de nivel S2.', pregunta: 'Selecciona la marca', respuesta_correcta: 'NIKE', opciones: ['NIKE', 'ADIDAS', 'PUMA', 'REEBOK'] },
+    { id: 'task-s3-1', nivel_id: 'S3', nombre: 'Tarea S3 - 1', recompensa: 6.76, video_url: '/video/lamborghini1.mp4', descripcion: 'Tarea de nivel S3.', pregunta: 'Selecciona la marca', respuesta_correcta: 'LAMBORGHINI', opciones: ['LAMBORGHINI', 'FERRARI', 'PORSCHE', 'MCLAREN'] },
+    { id: 'task-s3-2', nivel_id: 'S3', nombre: 'Tarea S3 - 2', recompensa: 6.76, video_url: '/video/rolex1.mp4', descripcion: 'Tarea de nivel S3.', pregunta: 'Selecciona la marca', respuesta_correcta: 'ROLEX', opciones: ['ROLEX', 'OMEGA', 'CASIO', 'CARTIER'] },
   ];
 
   const banners = [

@@ -270,10 +270,12 @@ export async function getTasks(nivelId) {
   console.log(`[Queries] Tareas filtradas para mostrar: ${localTasks.length}`);
   
   // Si después de todo sigue vacío, pero el usuario es pasante, forzamos las tareas de pasante
-  if (localTasks.length === 0 && (nivelId === 'l1' || String(currentLevel?.codigo) === 'pasante' || String(currentLevel?.codigo) === 'internar')) {
-    const forcedTasks = (store.tasks || []).filter(t => t.nivel_id === 'pasante' || t.nivel_id === 'l1' || t.nivel_id === 'internar');
-    console.log(`[Queries] Forzando tareas de pasante: ${forcedTasks.length}`);
-    return forcedTasks;
+  if (localTasks.length === 0) {
+    console.log(`[Queries] No se encontraron tareas para nivel ${nivelId}, buscando pool genérico...`);
+    const genericTasks = (store.tasks || []).filter(t => 
+      t.nivel_id === 'pasante' || t.nivel_id === 'l1' || t.nivel_id === 'S1'
+    );
+    return genericTasks;
   }
 
   return localTasks;

@@ -31,8 +31,19 @@ router.get('/', authenticate, async (req, res) => {
     const allTasks = await getTasks(level.id);
     const activity = await getTaskActivity(user.id);
     
-    console.log(`[Tasks] Nivel: ${level.nombre}, Tareas encontradas: ${allTasks.length}, Actividad total: ${activity.length}`);
+    console.log(`[Tasks] Nivel: ${level.nombre} (Activo: ${level.activo}), Tareas encontradas: ${allTasks.length}, Actividad total: ${activity.length}`);
   
+    if (level.activo === false) {
+      return res.json({
+        nivel: level.nombre,
+        nivel_id: level.id,
+        tareas_restantes: 0,
+        tareas_completadas: 0,
+        tareas: [],
+        mensaje: 'Este nivel está bloqueado temporalmente por el administrador. Contacta con soporte para más información.'
+      });
+    }
+
     const today = new Date().toDateString();
     const todayCompletedActivity = activity.filter(a => 
       new Date(a.created_at).toDateString() === today && a.respuesta_correcta === true
@@ -69,15 +80,19 @@ router.get('/', authenticate, async (req, res) => {
     
     console.log(`[Tasks] Diarias: ${numTareasDiarias}, Completadas: ${todayCompletedActivity.length}, Restantes: ${remaining}, Disponibles: ${availableTasks.length}`);
      
-     // Remove the limit to show all tasks of the level, allowing users to see what's available
-     const tasksToShow = availableTasks;
- 
+     let mensaje = null;
+     if (remaining <= 0 && numTareasDiarias > 0) {
+       mensaje = '¡Felicidades! Has completado todas tus tareas de hoy. Vuelve mañana para seguir ganando.';
+     } else if (availableTasks.length === 0) {
+       mensaje = 'No hay más videos disponibles para tu nivel en este momento. Por favor, contacta al administrador.';
+     }
+
      res.json({
        nivel: level.nombre,
        nivel_id: level.id,
        tareas_restantes: remaining,
        tareas_completadas: todayCompletedActivity.length,
-       tareas: tasksToShow.map(t => ({
+       tareas: availableTasks.map(t => ({
          id: t.id,
          nombre: t.nombre,
          nivel: level.nombre,
@@ -85,6 +100,7 @@ router.get('/', authenticate, async (req, res) => {
          video_url: t.video_url,
          imagen_url: t.video_url,
        })),
+       mensaje
      });
   } catch (err) {
     console.error('[Tasks] Error crítico cargando sala de tareas:', err);
