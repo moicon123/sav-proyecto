@@ -53,8 +53,8 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-[#0a0c1a] flex flex-col items-center justify-center p-4 sm:p-6 py-8 sm:py-12 relative overflow-hidden">
       {/* Elementos decorativos de fondo dinámicos */}
-      <div className="absolute top-[-20%] -right-[10%] w-[120%] h-[60%] bg-[#1a1f36] rounded-[100%] blur-[120px] opacity-40 animate-pulse pointer-events-none" />
-      <div className="absolute bottom-[-20%] -left-[10%] w-[120%] h-[60%] bg-blue-900/20 rounded-[100%] blur-[120px] opacity-40 animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-[-20%] -right-[10%] w-[120%] h-[60%] bg-[#1a1f36] rounded-[100%] blur-[80px] opacity-40 animate-pulse pointer-events-none" />
+      <div className="absolute bottom-[-20%] -left-[10%] w-[120%] h-[60%] bg-blue-900/20 rounded-[100%] blur-[80px] opacity-40 animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
       
       {/* Partículas decorativas */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
