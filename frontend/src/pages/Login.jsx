@@ -40,102 +40,126 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-      {/* Elementos decorativos de fondo */}
-      <div className="absolute top-[-10%] -left-[10%] w-[100%] sm:w-[50%] h-[50%] bg-[#1a1f36]/5 rounded-full blur-[100px] sm:blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] -right-[10%] w-[100%] sm:w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[100px] sm:blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-[#0a0c1a] flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+      {/* Elementos decorativos de fondo dinámicos */}
+      <div className="absolute top-[-20%] -left-[10%] w-[120%] h-[60%] bg-[#1a1f36] rounded-[100%] blur-[120px] opacity-40 animate-pulse pointer-events-none" />
+      <div className="absolute bottom-[-20%] -right-[10%] w-[120%] h-[60%] bg-blue-900/20 rounded-[100%] blur-[120px] opacity-40 animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+      
+      {/* Partículas decorativas */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-white rounded-full animate-ping" />
+        <div className="absolute top-3/4 right-1/3 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 right-1/4 w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '1.5s' }} />
+      </div>
 
       <div className="w-full max-w-sm relative z-10 py-8">
-        <div className="text-center mb-6 sm:mb-10 animate-fade-in">
-          <div className="inline-flex items-center justify-center p-3 sm:p-4 rounded-[1.5rem] sm:rounded-[2rem] bg-white mb-4 sm:mb-6 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] border border-gray-100 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-[#1a1f36]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="relative z-10">
-              <img src="/imag/logo.jpeg" alt="SAV" className="w-12 h-12 sm:w-16 sm:h-16 object-contain rounded-lg sm:rounded-xl shadow-inner transition-transform group-hover:scale-110 duration-500" />
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-6 h-6 sm:w-8 sm:h-8 bg-[#1a1f36] rounded-full flex items-center justify-center text-white border-2 border-white shadow-lg">
-              <Zap size={10} fill="currentColor" className="animate-pulse sm:w-3 sm:h-3" />
+        <div className="text-center mb-8 sm:mb-12 animate-fade-in">
+          <div className="relative inline-block group">
+            {/* Brillo exterior del logo */}
+            <div className="absolute inset-[-15px] bg-gradient-to-tr from-blue-500/30 to-purple-500/30 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            <div className="relative z-10 inline-flex items-center justify-center p-4 sm:p-5 rounded-[2.2rem] bg-[#1a1f36] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
+              <img src="/imag/logo.jpeg" alt="SAV" className="w-14 h-14 sm:w-20 sm:h-20 object-contain rounded-2xl shadow-2xl" />
+              
+              {/* Badge de estado premium */}
+              <div className="absolute -top-1 -right-1 w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white border-2 border-[#1a1f36] shadow-xl animate-bounce">
+                <Zap size={14} fill="currentColor" />
+              </div>
             </div>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#1a1f36] uppercase tracking-tighter drop-shadow-sm">
-            BIENVENIDO A <span className="text-[#1a1f36] underline decoration-4 decoration-[#1a1f36]/10 underline-offset-8">SAV</span>
-          </h1>
-          <p className="text-[8px] sm:text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] mt-2 sm:mt-3 opacity-60 px-4 leading-relaxed">Sistema de Activos Virtuales</p>
+          
+          <div className="mt-8 space-y-1">
+            <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tighter italic">
+              SAV <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">GLOBAL</span>
+            </h1>
+            <div className="flex items-center justify-center gap-2">
+              <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-white/20" />
+              <p className="text-[9px] sm:text-[11px] text-white/40 font-black uppercase tracking-[0.4em]">Activos Virtuales</p>
+              <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-white/20" />
+            </div>
+          </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.12)] border border-white/50 animate-slideUp">
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+        <div className="bg-[#1a1f36]/40 backdrop-blur-3xl rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/5 relative overflow-hidden group animate-slideUp">
+          {/* Brillo interno del formulario */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+          
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 relative z-10">
             {error && (
-              <div className="p-3 sm:p-4 rounded-xl bg-rose-50 text-rose-500 text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-rose-100 animate-shake text-center">
+              <div className="p-4 rounded-2xl bg-rose-500/10 text-rose-400 text-[10px] font-black uppercase tracking-widest border border-rose-500/20 animate-shake text-center backdrop-blur-md">
                 {error}
               </div>
             )}
             
-            <div className="space-y-1 sm:space-y-1.5">
-              <label className="block text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Teléfono Móvil</label>
+            <div className="space-y-2">
+              <label className="block text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-4">Acceso Móvil</label>
               <div className="flex gap-2">
-                <div className="relative group flex-shrink-0">
+                <div className="relative flex-shrink-0">
                   <select
                     value={pais}
                     onChange={(e) => setPais(e.target.value)}
-                    className="appearance-none w-18 sm:w-20 px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 focus:border-[#1a1f36]/20 text-[#1a1f36] font-black text-[10px] sm:text-xs transition-all outline-none cursor-pointer"
+                    className="appearance-none w-20 px-4 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-blue-500/50 text-white font-black text-xs transition-all outline-none cursor-pointer hover:bg-white/10"
                   >
                     {PAISES.map((p) => (
-                      <option key={p.codigo} value={p.codigo} className="bg-white">{p.codigo}</option>
+                      <option key={p.codigo} value={p.codigo} className="bg-[#1a1f36]">{p.codigo}</option>
                     ))}
                   </select>
-                  <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px] sm:text-[9px]">▼</div>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/20 text-[8px]">▼</div>
                 </div>
                 <input
                   type="tel"
                   inputMode="numeric"
                   value={numero}
                   onChange={(e) => setNumero(e.target.value.replace(/\D/g, ''))}
-                  className="flex-1 px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none placeholder:text-gray-300 shadow-inner"
-                  placeholder="70000000"
+                  className="flex-1 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-sm focus:border-blue-500/50 transition-all outline-none placeholder:text-white/10 shadow-inner hover:bg-white/10"
+                  placeholder="Número de teléfono"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-1 sm:space-y-1.5">
-              <label className="block text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Contraseña</label>
+            <div className="space-y-2">
+              <label className="block text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-4">Contraseña Segura</label>
               <div className="relative group">
                 <input
                   type={showPass ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl bg-gray-50/80 border-2 border-gray-50 text-[#1a1f36] font-black text-xs sm:text-sm focus:border-[#1a1f36]/20 transition-all outline-none pr-12 sm:pr-14 placeholder:text-gray-300 shadow-inner"
+                  className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-sm focus:border-blue-500/50 transition-all outline-none pr-14 placeholder:text-white/10 shadow-inner hover:bg-white/10"
                   placeholder="••••••••"
                   required
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowPass(!showPass)} 
-                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a1f36] transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-blue-400 transition-colors"
                 >
-                  {showPass ? <EyeOff size={18} sm:size={20} strokeWidth={2.5} /> : <Eye size={18} sm:size={20} strokeWidth={2.5} />}
+                  {showPass ? <EyeOff size={20} strokeWidth={2.5} /> : <Eye size={20} strokeWidth={2.5} />}
                 </button>
               </div>
             </div>
 
             <button 
               type="submit" 
-              className="w-full py-4 sm:py-5 mt-2 sm:mt-4 rounded-[1.2rem] sm:rounded-[1.5rem] bg-[#1a1f36] text-white font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs shadow-lg shadow-[#1a1f36]/20 active:scale-[0.98] transition-all relative overflow-hidden group"
+              className="w-full py-5 mt-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black uppercase tracking-[0.3em] text-xs shadow-[0_15px_30px_rgba(37,99,235,0.3)] active:scale-[0.98] transition-all relative overflow-hidden group hover:brightness-110"
             >
-              Iniciar Sesión
+              <span className="relative z-10">Entrar al Sistema</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
             </button>
           </form>
         </div>
 
-        <div className="mt-8 sm:mt-10 text-center animate-fade-in delay-500">
-          <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-            ¿Aún no eres miembro?
+        <div className="mt-12 text-center animate-fade-in delay-700">
+          <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">
+            ¿No tienes una cuenta?
           </p>
           <Link 
             to="/registro" 
-            className="inline-block mt-2 sm:mt-3 px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-[1rem] sm:rounded-[1.2rem] bg-white text-[#1a1f36] font-black uppercase tracking-[0.1em] text-[8px] sm:text-[9px] shadow-sm border border-gray-100 hover:border-[#1a1f36]/20 active:scale-95 transition-all"
+            className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/5 text-white font-black uppercase tracking-widest text-[10px] border border-white/10 hover:bg-white/10 transition-all overflow-hidden"
           >
-            Crear Nueva Cuenta
+            <span className="relative z-10">Registrarme Ahora</span>
+            <ChevronRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
         </div>
       </div>
