@@ -7,6 +7,11 @@ import {
 
 const router = Router();
 
+// Ruta GET para verificar que el webhook es accesible desde el navegador
+router.get('/', (req, res) => {
+  res.send('✅ El endpoint del Webhook de Telegram está activo y listo para recibir señales.');
+});
+
 // Endpoint para recibir webhooks de Telegram
 // NOTA: Deberás configurar este webhook en Telegram usando:
 // https://api.telegram.org/bot<TOKEN>/setWebhook?url=<TU_URL>/api/telegram-webhook
