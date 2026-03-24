@@ -99,6 +99,7 @@ router.get('/', authenticate, async (req, res) => {
          recompensa: t.recompensa,
          video_url: t.video_url,
          imagen_url: t.video_url,
+         descripcion: t.descripcion,
        })),
        mensaje
      });

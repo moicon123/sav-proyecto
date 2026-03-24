@@ -162,13 +162,24 @@ export default function TaskRoom() {
                     <img src="/imag/logo.jpeg" alt="SAV" className="w-full h-full object-cover opacity-80" />
                   </div>
                 </div>
-                <div className="flex-1 py-1 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <span className="inline-block px-3 py-1 rounded-full bg-[#1a1f36]/5 text-[#1a1f36] text-[9px] font-black uppercase tracking-widest border border-[#1a1f36]/10">
-                      {t.nivel}
-                    </span>
-                    <p className="text-gray-400 text-[9px] font-black uppercase tracking-[0.2em]">Recompensa</p>
-                    <p className="text-[#1a1f36] font-black text-xl tracking-tight">+{t.recompensa} <span className="text-xs text-gray-400">BOB</span></p>
+                <div className="flex-1 py-1 flex flex-col justify-between overflow-hidden">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-block px-3 py-1 rounded-full bg-[#1a1f36]/5 text-[#1a1f36] text-[9px] font-black uppercase tracking-widest border border-[#1a1f36]/10">
+                        {t.nivel}
+                      </span>
+                      <p className="text-[#1a1f36] font-black text-sm tracking-tight">+{t.recompensa} BOB</p>
+                    </div>
+                    <p className="text-gray-500 text-[9px] font-medium line-clamp-2 italic leading-tight mt-1">
+                      {t.descripcion || 'No description available for this task.'}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-gray-400 text-[8px] font-black uppercase tracking-[0.2em]">Verify content</p>
+                    <div className="flex items-center gap-1 text-[#00C853]">
+                      <div className="w-1 h-1 bg-[#00C853] rounded-full animate-pulse" />
+                      <span className="text-[8px] font-black uppercase">Online</span>
+                    </div>
                   </div>
                 </div>
               </Link>

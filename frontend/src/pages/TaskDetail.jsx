@@ -93,24 +93,18 @@ export default function TaskDetail() {
     if (isDrive) {
       const fileId = url.split('/d/')[1]?.split('/')[0] || url.split('id=')[1]?.split('&')[0];
       if (fileId) {
-        // Usamos el reproductor nativo de Drive pero en modo preview para mayor compatibilidad
         return (
           <div className="relative w-full aspect-video bg-black overflow-hidden rounded-2xl shadow-inner">
-            <iframe
-              className="absolute top-0 left-0 w-full h-full border-0"
-              src={`https://docs.google.com/get_video_info?docid=${fileId}`}
-              style={{ display: 'none' }} // Solo para pre-carga si fuera necesario
-            ></iframe>
             <iframe
               className="absolute top-[-10%] left-0 w-full h-[120%]"
               src={`https://drive.google.com/file/d/${fileId}/preview`}
               allow="autoplay"
+              loading="lazy"
             ></iframe>
-            {/* Overlay para ocultar controles de Drive y hacerlo más profesional */}
             <div className="absolute inset-0 z-10 bg-transparent pointer-events-none" />
             <div className="absolute bottom-4 left-4 flex items-center gap-2 z-20 pointer-events-none">
               <div className="w-2 h-2 bg-[#00C853] rounded-full animate-pulse" />
-              <span className="text-[10px] text-white/70 font-black uppercase tracking-widest">Stream Privado · 4K</span>
+              <span className="text-[10px] text-white/70 font-black uppercase tracking-widest">Optimized Stream</span>
             </div>
           </div>
         );
@@ -126,13 +120,12 @@ export default function TaskDetail() {
             src={`https://www.youtube.com/embed/${id}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&showinfo=0`}
             allow="autoplay; encrypted-media"
             allowFullScreen
+            loading="lazy"
           ></iframe>
-          {/* Overlay para bloquear clics y ocultar el logo de YouTube al final */}
           <div className="absolute inset-0 z-10" />
-          {/* Indicador de reproducción profesional */}
           <div className="absolute bottom-4 left-4 flex items-center gap-2 z-20">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-[10px] text-white/70 font-black uppercase tracking-widest">En directo · HD</span>
+            <span className="text-[10px] text-white/70 font-black uppercase tracking-widest">Global HD Stream</span>
           </div>
         </div>
       );
@@ -140,40 +133,51 @@ export default function TaskDetail() {
 
     if (isVideoFile) {
       return (
-        <video
-          className="w-full aspect-video object-cover bg-black"
-          src={url}
-          controls
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          onCanPlayThrough={(e) => {
-            console.log("Video listo para reproducir:", url);
-            e.target.play().catch(err => console.warn("Autoplay bloqueado:", err));
-          }}
-          onError={(e) => {
-            console.error("Error cargando video local:", url);
-            // Fallback si el video falla
-            e.target.style.display = 'none';
-            const img = document.createElement('img');
-            img.src = '/imag/logo.jpeg';
-            img.className = 'w-full aspect-video object-cover';
-            e.target.parentNode.appendChild(img);
-          }}
-        />
+        <div className="relative w-full aspect-video bg-black">
+          <video
+            className="w-full h-full object-cover"
+            src={url}
+            controls
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            onLoadStart={(e) => {
+              const loader = e.target.parentElement.querySelector('.video-loader');
+              if (loader) loader.style.display = 'flex';
+            }}
+            onCanPlay={(e) => {
+              const loader = e.target.parentElement.querySelector('.video-loader');
+              if (loader) loader.style.display = 'none';
+              e.target.play().catch(() => {});
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+              const img = e.target.parentElement.querySelector('.fallback-img');
+              if (img) img.style.display = 'block';
+            }}
+          />
+          <div className="video-loader absolute inset-0 flex items-center justify-center bg-black/50 z-10 hidden">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              <span className="text-[8px] text-white font-black uppercase tracking-widest">Loading...</span>
+            </div>
+          </div>
+          <img
+            src="/imag/logo.jpeg"
+            alt=""
+            className="fallback-img absolute inset-0 w-full h-full object-cover hidden"
+          />
+        </div>
       );
     }
 
-    // Fallback para imágenes
     return (
       <img
         className="w-full aspect-video object-cover"
         src={url || '/imag/logo.jpeg'}
         alt=""
-        onError={(e) => {
-          e.target.src = '/imag/logo.jpeg';
-        }}
+        onError={(e) => { e.target.src = '/imag/logo.jpeg'; }}
       />
     );
   };
