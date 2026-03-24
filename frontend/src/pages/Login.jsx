@@ -60,11 +60,6 @@ export default function Login() {
             
             <div className="relative z-10 inline-flex items-center justify-center p-4 sm:p-5 rounded-[2.2rem] bg-[#1a1f36] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
               <img src="/imag/logo.jpeg" alt="SAV" className="w-14 h-14 sm:w-20 sm:h-20 object-contain rounded-2xl shadow-2xl" />
-              
-              {/* Badge de estado premium */}
-              <div className="absolute -top-1 -right-1 w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white border-2 border-[#1a1f36] shadow-xl animate-bounce">
-                <Zap size={14} fill="currentColor" />
-              </div>
             </div>
           </div>
           
