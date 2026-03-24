@@ -143,84 +143,62 @@ export default function Recharge() {
     }
   };
 
-  if (success) {
+  if (success || timeLeft > 0) {
     const totalSeconds = Math.max(0, Math.floor(timeLeft / 1000));
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
 
     return (
       <Layout>
-        <Header title="Subir de Nivel" />
-        <div className="p-8 text-center flex flex-col items-center gap-6 bg-white min-h-screen">
-          <div className="w-24 h-24 bg-[#00C853]/10 text-[#00C853] rounded-[2.5rem] flex items-center justify-center shadow-xl border border-[#00C853]/20 animate-bounce">
+        <Header title="Validación" />
+        <div className="p-8 text-center flex flex-col items-center justify-center min-h-[80vh] bg-white">
+          <div className="w-24 h-24 bg-amber-500/10 text-amber-500 rounded-[2.5rem] flex items-center justify-center shadow-xl border border-amber-100 animate-pulse mb-6">
             <CheckCircle2 size={48} />
           </div>
-          <div className="space-y-4">
-            <h2 className="text-2xl font-black text-[#1a1f36] uppercase tracking-tighter">¡Solicitud Enviada!</h2>
-            <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl space-y-2">
-              <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Espera de Validación</p>
-              <p className="text-xs text-amber-700 font-bold leading-relaxed">
-                Por favor, espera a que el gerente pueda revisar la recarga y validarla. 
-                Tu solicitud está en cola de procesamiento.
+          
+          <div className="space-y-6 max-w-xs w-full">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black text-[#1a1f36] uppercase tracking-tighter">
+                {success ? '¡Solicitud Enviada!' : 'Validación en curso'}
+              </h2>
+              <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                {success 
+                  ? 'Tu comprobante ha sido enviado correctamente.' 
+                  : 'Ya tienes una solicitud enviada previamente.'}
+                {" "}Por favor, espera a que el gerente revise y valide tu ascenso.
               </p>
-              <div className="text-xl font-black text-[#1a1f36] tabular-nums pt-2">
+            </div>
+
+            <div className="bg-[#1a1f36] text-white p-6 rounded-[2rem] shadow-2xl shadow-[#1a1f36]/20 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-xl" />
+              <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Tiempo de Espera</p>
+              <div className="text-4xl font-black tabular-nums tracking-tighter">
                 {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
               </div>
+              <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-3">Procesando solicitud...</p>
             </div>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest max-w-xs mx-auto">
-              El botón de nueva recarga se habilitará automáticamente al finalizar el tiempo.
-            </p>
-          </div>
-          <div className="w-full space-y-3">
-            <button 
-              disabled={timeLeft > 0}
-              onClick={() => setSuccess(false)}
-              className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg transition-all ${
-                timeLeft > 0 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none' 
-                : 'bg-[#1a1f36] text-white shadow-[#1a1f36]/20 active:scale-95'
-              }`}
-            >
-              {timeLeft > 0 ? 'Espere a la validación...' : 'Hacer otra recarga'}
-            </button>
-            <Link 
-              to="/ganancias" 
-              className="block w-full py-5 rounded-2xl bg-gray-50 text-[#1a1f36] font-black uppercase tracking-widest text-xs border border-gray-100 active:scale-95 transition-all text-center"
-            >
-              Ver mis registros
-            </Link>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
-  // Si ya hay una recarga reciente, bloquear la entrada al formulario
-  if (timeLeft > 0) {
-    const totalSeconds = Math.max(0, Math.floor(timeLeft / 1000));
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-
-    return (
-      <Layout>
-        <Header title="Subir de Nivel" />
-        <div className="p-8 text-center flex flex-col items-center justify-center gap-8 bg-white min-h-screen -mt-10">
-          <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-[2rem] flex items-center justify-center animate-pulse">
-            <CheckCircle2 size={40} />
-          </div>
-          <div className="space-y-4 max-w-xs">
-            <h2 className="text-xl font-black text-[#1a1f36] uppercase tracking-tighter">Validación en curso</h2>
-            <p className="text-sm text-gray-500 font-medium leading-relaxed">
-              Ya tienes una solicitud pendiente. Por favor, espera a que el gerente pueda revisar la recarga y validarla.
-            </p>
-            <div className="bg-[#1a1f36] text-white px-6 py-4 rounded-2xl inline-block shadow-xl">
-              <span className="text-[10px] block opacity-50 font-bold tracking-widest mb-1">TIEMPO RESTANTE</span>
-              <span className="text-2xl font-black tabular-nums">
-                {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
-              </span>
+            <div className="pt-4 space-y-3">
+              <button 
+                onClick={() => setSuccess(false)}
+                disabled={timeLeft > 0}
+                className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg ${
+                  timeLeft > 0 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200' 
+                  : 'bg-[#1a1f36] text-white shadow-[#1a1f36]/20 active:scale-95'
+                }`}
+              >
+                {timeLeft > 0 ? 'Botón bloqueado temporalmente' : 'Hacer otra recarga'}
+              </button>
+              
+              <Link 
+                to="/" 
+                className="block w-full py-5 rounded-2xl bg-gray-50 text-[#1a1f36] font-black uppercase tracking-widest text-[10px] border border-gray-100 active:scale-95 transition-all"
+              >
+                Volver al inicio
+              </Link>
             </div>
           </div>
-          <Link to="/" className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-[#1a1f36] transition-colors">Volver al inicio</Link>
         </div>
       </Layout>
     );
