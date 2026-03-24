@@ -2,8 +2,10 @@ import { Router } from 'express';
 import { 
   getRecargaById, updateRecarga, 
   getRetiroById, updateRetiro, 
-  findUserById, updateUser 
+  findUserById, updateUser,
+  getLevels
 } from '../lib/queries.js';
+import { supabase } from '../lib/db.js';
 
 const router = Router();
 
@@ -52,7 +54,7 @@ router.post('/', async (req, res) => {
         const user = await findUserById(recarga.usuario_id);
         
         // 1. Obtener todos los niveles para encontrar el nivel destino y el nivel actual
-        const { data: niveles } = await trySupabase(() => supabase.from('niveles').select('*'));
+        const niveles = await getLevels();
         
         // Determinar el nivel destino basado en el monto de la recarga
         // (O podríamos guardar el nivel_id en la tabla recargas, pero usaremos el monto por ahora)

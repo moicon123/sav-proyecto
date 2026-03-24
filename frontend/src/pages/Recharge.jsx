@@ -20,19 +20,20 @@ export default function Recharge() {
   const [error, setError] = useState('');
   const [pc, setPc] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [lastRechargeTime, setLastRechargeTime] = useState(() => {
-    const saved = localStorage.getItem('last_recharge_time');
-    // Validar que sea un número, si no, borrarlo
-    if (saved && isNaN(parseInt(saved))) {
-      localStorage.removeItem('last_recharge_time');
-      return null;
-    }
-    return saved;
-  });
+  const [lastRechargeTime, setLastRechargeTime] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (!lastRechargeTime) {
+    setIsMounted(true);
+    const saved = localStorage.getItem('last_recharge_time');
+    if (saved && !isNaN(parseInt(saved))) {
+      setLastRechargeTime(saved);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted || !lastRechargeTime) {
       setTimeLeft(0);
       return;
     }
@@ -72,7 +73,7 @@ export default function Recharge() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lastRechargeTime]);
+  }, [isMounted, lastRechargeTime]);
 
   useEffect(() => {
     // Forzar recarga de métodos cada vez que se entra a la página
@@ -159,7 +160,7 @@ export default function Recharge() {
     }
   };
 
-  if (success || timeLeft > 0) {
+  if (isMounted && (success || timeLeft > 0)) {
     const totalSeconds = Math.max(0, Math.floor(timeLeft / 1000));
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
