@@ -311,23 +311,17 @@ router.get('/premios-ruleta', async (req, res) => {
 router.post('/premios-ruleta/sync-10', async (req, res) => {
   const { data: existing } = await trySupabase(() => supabase.from('premios_ruleta').select('*').order('orden', { ascending: true }));
   
-  const colors = [
-    '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', 
-    '#F06292', '#AED581', '#FFD54F', '#4DB6AC', '#7986CB'
-  ];
-
   const defaultPremios = Array.from({ length: 10 }, (_, i) => ({
     id: uuidv4(),
     nombre: existing?.[i]?.nombre || `Premio ${i + 1}`,
     valor: existing?.[i]?.valor || 0,
-    probabilidad: existing?.[i]?.probabilidad || 10, // Probabilidad base de 10%
-    color: existing?.[i]?.color || colors[i],
+    probabilidad: existing?.[i]?.probabilidad || 10,
     activo: existing?.[i]?.activo !== undefined ? existing?.[i]?.activo : true,
     orden: i,
     created_at: new Date().toISOString()
   }));
 
-  // Limpiar y re-insertar para asegurar los 10 segmentos
+  // Limpiar y re-insertar
   await trySupabase(() => supabase.from('premios_ruleta').delete().neq('id', '00000000-0000-0000-0000-000000000000'));
   const { data, error } = await trySupabase(() => supabase.from('premios_ruleta').insert(defaultPremios).select());
 
@@ -413,13 +407,12 @@ router.post('/premios-ruleta-especial/sync-10', async (req, res) => {
 });
 
 router.post('/premios-ruleta', async (req, res) => {
-  const { nombre, valor, probabilidad, color, activa, orden } = req.body;
+  const { nombre, valor, probabilidad, activa, orden } = req.body;
   const premio = {
     id: uuidv4(),
     nombre: nombre || 'Nuevo Premio',
     valor: parseFloat(valor) || 0,
     probabilidad: parseFloat(probabilidad) || 0,
-    color: color || '#1a1f36',
     activo: activa !== undefined ? activa : true,
     orden: parseInt(orden) || 0,
     created_at: new Date().toISOString()
