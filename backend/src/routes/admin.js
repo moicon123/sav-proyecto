@@ -304,7 +304,7 @@ router.delete('/banners/:id', async (req, res) => {
 });
 
 router.get('/premios-ruleta', async (req, res) => {
-  const { data } = await supabase.from('premios_ruleta').select('*').order('orden', { ascending: true });
+  const { data } = await trySupabase(() => supabase.from('premios_ruleta').select('*').order('orden', { ascending: true }));
   res.json(data || []);
 });
 
@@ -341,7 +341,7 @@ router.post('/premios-ruleta/sync-10', async (req, res) => {
 // --- NUEVAS RUTAS PARA RULETA ESPECIAL ---
 
 router.get('/premios-ruleta-especial', async (req, res) => {
-  const { data } = await supabase.from('premios_ruleta_especial').select('*').order('orden', { ascending: true });
+  const { data } = await trySupabase(() => supabase.from('premios_ruleta_especial').select('*').order('orden', { ascending: true }));
   res.json(data || []);
 });
 
@@ -357,7 +357,7 @@ router.post('/premios-ruleta-especial', async (req, res) => {
     orden: parseInt(orden) || 0,
     created_at: new Date().toISOString()
   };
-  const { data, error } = await supabase.from('premios_ruleta_especial').insert([premio]).select().maybeSingle();
+  const { data, error } = await trySupabase(() => supabase.from('premios_ruleta_especial').insert([premio]).select().maybeSingle());
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
@@ -367,21 +367,25 @@ router.put('/premios-ruleta-especial/:id', async (req, res) => {
   const updates = req.body;
   if (updates.valor !== undefined) updates.valor = parseFloat(updates.valor) || 0;
   if (updates.probabilidad !== undefined) updates.probabilidad = parseFloat(updates.probabilidad) || 0;
-  const { data, error } = await supabase.from('premios_ruleta_especial').update(updates).eq('id', id).select().maybeSingle();
+  const { data, error } = await trySupabase(() => supabase.from('premios_ruleta_especial').update(updates).eq('id', id).select().maybeSingle());
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
 router.delete('/premios-ruleta-especial/:id', async (req, res) => {
   const { id } = req.params;
-  const { error } = await supabase.from('premios_ruleta_especial').delete().eq('id', id);
+  const { error } = await trySupabase(() => supabase.from('premios_ruleta_especial').delete().eq('id', id));
   if (error) return res.status(500).json({ error: error.message });
   res.json({ ok: true });
 });
 
 router.post('/premios-ruleta-especial/sync-10', async (req, res) => {
-  const { data: existing } = await supabase.from('premios_ruleta_especial').select('*').order('orden', { ascending: true });
+  const { data: existing } = await trySupabase(() => 
+    supabase.from('premios_ruleta_especial').select('*').order('orden', { ascending: true })
+  );
+  
   const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#1e293b'];
+  
   const defaultPremios = Array.from({ length: 10 }, (_, i) => ({
     id: uuidv4(),
     nombre: existing?.[i]?.nombre || `Especial ${i + 1}`,
@@ -392,20 +396,30 @@ router.post('/premios-ruleta-especial/sync-10', async (req, res) => {
     orden: i,
     created_at: new Date().toISOString()
   }));
-  await supabase.from('premios_ruleta_especial').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-  const { data, error } = await supabase.from('premios_ruleta_especial').insert(defaultPremios).select();
-  if (error) return res.status(500).json({ error: error.message });
+
+  await trySupabase(() => 
+    supabase.from('premios_ruleta_especial').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  );
+  
+  const { data, error } = await trySupabase(() => 
+    supabase.from('premios_ruleta_especial').insert(defaultPremios).select()
+  );
+
+  if (error) {
+    console.error('[Admin] Error en sync-10 especial:', error);
+    return res.status(500).json({ error: error.message });
+  }
   res.json(data);
 });
 
 router.post('/premios-ruleta', async (req, res) => {
-  const { nombre, valor, probabilidad, imagen_url, activa, orden } = req.body;
+  const { nombre, valor, probabilidad, color, activa, orden } = req.body;
   const premio = {
     id: uuidv4(),
     nombre: nombre || 'Nuevo Premio',
     valor: parseFloat(valor) || 0,
     probabilidad: parseFloat(probabilidad) || 0,
-    imagen_url: imagen_url || '',
+    color: color || '#1a1f36',
     activo: activa !== undefined ? activa : true,
     orden: parseInt(orden) || 0,
     created_at: new Date().toISOString()
