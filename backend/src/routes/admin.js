@@ -372,14 +372,22 @@ router.post('/regalar-tickets', async (req, res) => {
     const CHUNK_SIZE = 5;
     console.log(`[Admin] Iniciando regalo de ${numTickets} tickets a ${users.length} usuarios en bloques de ${CHUNK_SIZE}`);
     
+    // Si la columna no existe, esto fallará en Supabase.
+    // Vamos a manejar el error de forma que el admin sepa qué pasa.
     for (let i = 0; i < users.length; i += CHUNK_SIZE) {
       const chunk = users.slice(i, i + CHUNK_SIZE);
       console.log(`[Admin] Procesando bloque ${Math.floor(i/CHUNK_SIZE) + 1}...`);
-      await Promise.all(chunk.map(user => {
-        const currentTickets = Number(user.tickets_ruleta) || 0;
-        return updateUser(user.id, {
-          tickets_ruleta: currentTickets + numTickets
-        });
+      
+      const results = await Promise.all(chunk.map(async (user) => {
+        try {
+          const currentTickets = Number(user.tickets_ruleta) || 0;
+          return await updateUser(user.id, {
+            tickets_ruleta: currentTickets + numTickets
+          });
+        } catch (e) {
+          console.error(`[Admin] Falló actualización de usuario ${user.id}:`, e.message);
+          throw e; // Relanzar para que el Promise.all falle
+        }
       }));
     }
 
