@@ -25,6 +25,15 @@ async function request(url, options = {}, retries = 3) {
     
     clearTimeout(timeoutId);
 
+    // 304 Not Modified es un éxito (usando caché del navegador)
+    if (res.status === 304) {
+      // Intentamos recuperar del cache local si existe, sino devolvemos objeto vacío
+      // Nota: Fetch suele manejar esto automáticamente, pero si llega aquí como 304,
+      // significa que no hay cuerpo. Devolvemos el usuario guardado en localStorage como fallback.
+      const cachedUser = localStorage.getItem('user');
+      return cachedUser ? JSON.parse(cachedUser) : {};
+    }
+
     const data = await res.json().catch(() => ({}));
     
     if (!res.ok) {

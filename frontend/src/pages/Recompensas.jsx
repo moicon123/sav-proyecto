@@ -170,7 +170,7 @@ export default function Recompensas() {
                       <g key={premio.id}>
                         <path 
                           d={`M 50 50 L ${x1} ${y1} A 50 50 0 0 1 ${x2} ${y2} Z`}
-                          fill={i % 2 === 0 ? '#1a1f36' : '#2a2f46'}
+                          fill={premio.color || (i % 2 === 0 ? '#1a1f36' : '#2a2f46')}
                           stroke="white"
                           strokeWidth="0.2"
                         />
@@ -178,19 +178,28 @@ export default function Recompensas() {
                           x="50"
                           y="20"
                           fill="white"
-                          fontSize="4"
+                          fontSize="3.5"
                           fontWeight="900"
                           textAnchor="middle"
                           transform={`rotate(${rotationAngle + angle/2}, 50, 50)`}
-                          style={{ textTransform: 'uppercase' }}
+                          style={{ textTransform: 'uppercase', paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.2)', strokeWidth: '0.1px' }}
                         >
                           {premio.valor} BOB
                         </text>
                       </g>
                     );
                   })}
+                  {premios.length === 0 && (
+                    <circle cx="50" cy="50" r="50" fill="#f3f4f6" />
+                  )}
                 </svg>
               </div>
+              
+              {premios.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center text-center p-10">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Configura premios en el panel para ver la ruleta</p>
+                </div>
+              )}
               
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-[#1a1f36] border-4 border-white shadow-2xl flex items-center justify-center z-20">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-rose-500 animate-pulse flex items-center justify-center">
