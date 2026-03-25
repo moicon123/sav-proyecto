@@ -93,12 +93,23 @@ router.get('/stats', authenticate, async (req, res) => {
     const activity = await getTaskActivity(user.id);
     
     // Helper para manejar fechas en la zona horaria de Bolivia (UTC-4)
-    const getBoliviaDate = (date = new Date()) => {
-      const d = new Date(date.toLocaleString('en-US', { timeZone: 'America/La_Paz' }));
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const getBoliviaDate = (dateInput) => {
+      try {
+        const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+        if (isNaN(date.getTime())) return null;
+        
+        // Convertir a string de Bolivia y luego volver a Date para obtener solo Año-Mes-Día
+        const boliviaString = date.toLocaleString('en-US', { timeZone: 'America/La_Paz' });
+        const d = new Date(boliviaString);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      } catch (e) {
+        return null;
+      }
     };
 
-    const startOfToday = getBoliviaDate();
+    const now = new Date();
+    const startOfToday = getBoliviaDate(now);
+    if (!startOfToday) throw new Error('Error al obtener la fecha actual');
     
     // Inicio de ayer
     const startOfYesterday = new Date(startOfToday);
@@ -107,21 +118,25 @@ router.get('/stats', authenticate, async (req, res) => {
     // Inicio de la semana (Lunes como primer día)
     const startOfWeek = new Date(startOfToday);
     const day = startOfToday.getDay(); // 0 (Dom) a 6 (Sab)
-    const diff = startOfToday.getDate() - day + (day === 0 ? -6 : 1); // Ajustar a Lunes
+    const diff = startOfToday.getDate() - (day === 0 ? 6 : day - 1); // Ajustar a Lunes
     startOfWeek.setDate(diff);
     
     // Inicio del mes
     const startOfMonth = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), 1);
 
     const filterByDate = (list, start, end = null) => {
-      if (!list) return [];
+      if (!list || !start) return [];
       const startTime = start.getTime();
       const endTime = end ? end.getTime() : null;
       
       return list.filter(item => {
-        const boliviaItemDate = getBoliviaDate(new Date(item.created_at)).getTime();
-        if (endTime) return boliviaItemDate >= startTime && boliviaItemDate < endTime;
-        return boliviaItemDate >= startTime;
+        if (!item.created_at) return false;
+        const boliviaItemDate = getBoliviaDate(item.created_at);
+        if (!boliviaItemDate) return false;
+        
+        const itemTime = boliviaItemDate.getTime();
+        if (endTime) return itemTime >= startTime && itemTime < endTime;
+        return itemTime >= startTime;
       });
     };
 
