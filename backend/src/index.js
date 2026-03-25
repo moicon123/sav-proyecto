@@ -19,27 +19,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Configuración de CORS ultra-robusta para producción
-const allowedOrigins = [
-  'https://sav-proyecto.vercel.app',
-  'https://sav-proyecto-ba1m6lwn0-moicon123s-projects.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:3000'
-];
+// Logger simple para ver peticiones en Render
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+  next();
+});
 
+// Configuración de CORS simplificada pero compatible con credentials
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permitir peticiones sin origen (como apps móviles o curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('vercel.app')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Refleja el origen de la petición automáticamente
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Allow-Origin'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
   maxAge: 86400
 }));
