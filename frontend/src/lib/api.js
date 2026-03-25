@@ -1,4 +1,5 @@
-const VITE_API_URL = import.meta.env.VITE_API_URL || '/api';
+// Forzar la URL de la API de Render si no está definida en el entorno
+const VITE_API_URL = import.meta.env.VITE_API_URL || 'https://sav-proyecto.onrender.com/api';
 const API = VITE_API_URL;
 
 function getToken() {
