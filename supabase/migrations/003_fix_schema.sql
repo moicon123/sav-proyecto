@@ -20,6 +20,12 @@ ALTER TABLE tareas ADD COLUMN IF NOT EXISTS recompensa DECIMAL(12,2) DEFAULT 0;
 -- 3. Asegurar que actividad_tareas tenga recompensa_otorgada
 ALTER TABLE actividad_tareas ADD COLUMN IF NOT EXISTS recompensa_otorgada DECIMAL(12,2) DEFAULT 0;
 
+-- 3.1 Asegurar que premios_ruleta tenga imagen_url y color
+ALTER TABLE premios_ruleta ADD COLUMN IF NOT EXISTS imagen_url TEXT;
+ALTER TABLE premios_ruleta ADD COLUMN IF NOT EXISTS color TEXT;
+ALTER TABLE premios_ruleta ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT TRUE;
+ALTER TABLE premios_ruleta ADD COLUMN IF NOT EXISTS orden INTEGER DEFAULT 0;
+
 -- 4. Añadir restricción única para permitir upsert por nombre y nivel
 ALTER TABLE tareas ADD CONSTRAINT unique_tarea_nombre_nivel UNIQUE (nombre, nivel_id);
 

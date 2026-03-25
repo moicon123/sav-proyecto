@@ -475,17 +475,12 @@ router.put('/niveles/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
   
-  const { data, fallback } = await trySupabase(() => 
+  const { data, error } = await trySupabase(() => 
     supabase.from('niveles').update(updates).eq('id', id).select().maybeSingle()
   );
   
-  if (!fallback) return res.json(data);
-  
-  // Fallback para memoria local si no hay Supabase
-  const store = await getStore();
-  const nivel = (store.levels || []).find(n => n.id === id);
-  if (nivel) Object.assign(nivel, updates);
-  res.json(nivel || { error: 'Nivel no encontrado' });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 router.get('/public-content', async (req, res) => {
@@ -495,20 +490,18 @@ router.get('/public-content', async (req, res) => {
 
 router.put('/public-content', async (req, res) => {
   const updates = req.body;
-  const store = await getStore();
   
   // Guardar en Supabase (tabla configuraciones clave-valor)
-  for (const [clave, valor] of Object.entries(updates)) {
-    await trySupabase(() => 
-      supabase.from('configuraciones').upsert({ clave, valor }, { onConflict: 'clave' })
-    );
+  try {
+    for (const [clave, valor] of Object.entries(updates)) {
+      await trySupabase(() => 
+        supabase.from('configuraciones').upsert({ clave, valor }, { onConflict: 'clave' })
+      );
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  
-  // Guardar en memoria local
-  if (!store.publicContent) store.publicContent = {};
-  Object.assign(store.publicContent, updates);
-  
-  res.json(store.publicContent);
 });
 
 export default router;
