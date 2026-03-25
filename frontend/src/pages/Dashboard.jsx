@@ -297,15 +297,27 @@ export default function Dashboard() {
         </div>
 
         {/* Floating Gift / Sorteo (Enhanced) */}
-        <Link
-          to="/sorteo"
-          className="fixed right-6 bottom-24 z-40 w-18 h-18 rounded-full bg-gradient-to-br from-[#1a1f36] to-[#2a2f46] flex items-center justify-center shadow-[0_15px_40px_rgba(26,31,54,0.4)] border-4 border-white active:scale-90 transition-all hover:scale-110"
-        >
-          <Gift className="text-white animate-bounce" size={36} />
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full border-2 border-white flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
-          </div>
-        </Link>
+        <div className="fixed right-6 bottom-24 z-40 flex flex-col gap-4">
+          <Link
+            to="/sorteo-especial"
+            className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_15px_40px_rgba(245,158,11,0.4)] border-4 border-white active:scale-90 transition-all hover:scale-110 group relative"
+          >
+            <Sparkles className="text-white animate-pulse" size={24} />
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-amber-500 flex items-center justify-center">
+              <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
+            </div>
+          </Link>
+          
+          <Link
+            to="/sorteo"
+            className="w-18 h-18 rounded-full bg-gradient-to-br from-[#1a1f36] to-[#2a2f46] flex items-center justify-center shadow-[0_15px_40px_rgba(26,31,54,0.4)] border-4 border-white active:scale-90 transition-all hover:scale-110"
+          >
+            <Gift className="text-white animate-bounce" size={36} />
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full border-2 border-white flex items-center justify-center">
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+            </div>
+          </Link>
+        </div>
 
         {/* Noticia / Guía Estilo Marquee (Vibrant) */}
         <div className="px-4 mt-8">

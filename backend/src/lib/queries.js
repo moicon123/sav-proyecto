@@ -21,61 +21,52 @@ export async function trySupabase(operation) {
 }
 
 export async function getUsers() {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*'));
-  if (!fallback && data && data.length > 0) return data;
-  const store = await getStore();
-  return store.users;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('usuarios').select('*'));
+  if (fallback || error) throw new Error('No se pudo conectar con la base de datos de usuarios');
+  return data || [];
 }
 
 export async function findUserByTelefono(telefono) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('telefono', telefono).maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  return store.users.find(u => u.telefono === telefono);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('telefono', telefono).maybeSingle());
+  if (fallback || error) throw new Error('Error al buscar usuario en la base de datos');
+  return data;
 }
 
 export async function findUserById(id) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('id', id).maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  const user = store.users.find(u => String(u.id) === String(id));
-  if (user) console.log(`[Queries] findUserById encontrado en store local: ${user.nombre_usuario} (${id})`);
-  return user;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('id', id).maybeSingle());
+  if (fallback || error) throw new Error('Error al recuperar datos del usuario');
+  return data;
 }
 
 export async function findUserByCodigo(codigo) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('codigo_invitacion', codigo).maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  return store.users.find(u => u.codigo_invitacion === codigo);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('usuarios').select('*').eq('codigo_invitacion', codigo).maybeSingle());
+  if (fallback || error) throw new Error('Error al validar código de invitación');
+  return data;
 }
 
 export async function createUser(userData) {
   console.log(`[Queries] Intentando crear usuario: ${userData.nombre_usuario} (${userData.telefono})`);
   const { data, error, fallback } = await trySupabase(() => supabase.from('usuarios').insert([userData]).select().maybeSingle());
   
-  if (!fallback) {
-    if (error) {
-      console.error('[Queries] Error crítico al insertar en Supabase:', error);
-      throw new Error(`Error de base de datos: ${error.message}`);
-    }
-    console.log(`[Queries] Usuario creado exitosamente en Supabase: ${userData.nombre_usuario}`);
-    return data;
+  if (fallback || error) {
+    console.error('[Queries] Error crítico al insertar en Supabase:', error);
+    throw new Error(`Error de base de datos (Persistencia Definitiva): ${error?.message || 'No se pudo conectar con la DB'}`);
   }
   
-  console.warn('[Queries] Fallback activado: Guardando usuario en memoria local (NO PERSISTENTE)');
-  const store = await getStore();
-  store.users.push(userData);
-  return userData;
+  console.log(`[Queries] Usuario creado exitosamente en Supabase: ${userData.nombre_usuario}`);
+  return data;
 }
 
 export async function updateUser(id, updates) {
-  const { data, fallback } = await trySupabase(() => supabase.from('usuarios').update(updates).eq('id', id).select().maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  const user = store.users.find(u => u.id === id);
-  if (user) Object.assign(user, updates);
-  return user;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('usuarios').update(updates).eq('id', id).select().maybeSingle());
+  
+  if (fallback || error) {
+    console.error(`[Queries] Error al actualizar usuario ${id}:`, error);
+    // Si es un error de conexión o columna inexistente, lo reportamos para no perder datos en memoria
+    throw new Error(`Error de persistencia en base de datos: ${error?.message || 'Conexión fallida'}`);
+  }
+  
+  return data;
 }
 
 export async function getLevels() {
@@ -98,130 +89,117 @@ export async function getLevels() {
 }
 
 export async function getRecargas() {
-  const { data, fallback } = await trySupabase(() => supabase.from('recargas').select('*, usuario:usuarios!usuario_id(nombre_usuario)').order('created_at', { ascending: false }));
-  if (!fallback && data && data.length > 0) return data;
-  const store = await getStore();
-  return store.recargas || [];
+  const { data, error, fallback } = await trySupabase(() => supabase.from('recargas').select('*, usuario:usuarios!usuario_id(nombre_usuario)').order('created_at', { ascending: false }));
+  if (fallback || error) throw new Error('No se pudo recuperar la lista de recargas');
+  return data || [];
 }
 
 export async function getRecargaById(id) {
-  const { data, fallback } = await trySupabase(() => supabase.from('recargas').select('*').eq('id', id).maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  return (store.recargas || []).find(r => r.id === id);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('recargas').select('*').eq('id', id).maybeSingle());
+  if (fallback || error) throw new Error('No se pudo encontrar la recarga especificada');
+  return data;
 }
 
 export async function getRetiros() {
-  const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*, usuario:usuarios!usuario_id(nombre_usuario)').order('created_at', { ascending: false }));
-  if (!fallback && data && data.length > 0) return data;
-  const store = await getStore();
-  return store.retiros || [];
+  const { data, error, fallback } = await trySupabase(() => supabase.from('retiros').select('*, usuario:usuarios!usuario_id(nombre_usuario)').order('created_at', { ascending: false }));
+  if (fallback || error) throw new Error('No se pudo recuperar la lista de retiros');
+  return data || [];
 }
 
 
 export async function getMetodosQr() {
-  const { data, fallback } = await trySupabase(() => supabase.from('metodos_qr').select('*').eq('activo', true).order('orden', { ascending: true }));
-  // Si no hay error (fallback es falso), devolvemos data aunque sea una lista vacía []
-  if (!fallback) return data || [];
-  
-  const store = await getStore();
-  return (store.metodosQr || []).filter(m => m.activo).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+  const { data, error, fallback } = await trySupabase(() => supabase.from('metodos_qr').select('*').eq('activo', true).order('orden', { ascending: true }));
+  if (fallback || error) throw new Error('No se pudo recuperar los métodos de pago QR');
+  return data || [];
 }
 
 export async function getRecargasByUser(userId) {
-  const { data, fallback } = await trySupabase(() => supabase.from('recargas').select('*').eq('usuario_id', userId).order('created_at', { ascending: false }));
-  if (!fallback && data && data.length > 0) return data;
-  const store = await getStore();
-  return (store.recargas || []).filter(r => r.usuario_id === userId);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('recargas').select('*').eq('usuario_id', userId).order('created_at', { ascending: false }));
+  if (fallback || error) throw new Error('No se pudo recuperar el historial de recargas');
+  return data || [];
 }
 
 export async function createRecarga(recargaData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('recargas').insert([recargaData]).select().maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  if (!store.recargas) store.recargas = [];
-  store.recargas.push(recargaData);
-  return recargaData;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('recargas').insert([recargaData]).select().maybeSingle());
+  if (fallback || error) {
+    console.error('[Queries] Error al crear recarga:', error);
+    throw new Error('No se pudo crear la recarga de forma persistente');
+  }
+  return data;
 }
 
 export async function updateRecarga(id, updates) {
-  const { data, fallback } = await trySupabase(() => supabase.from('recargas').update(updates).eq('id', id).select().maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  const recarga = (store.recargas || []).find(r => r.id === id);
-  if (recarga) Object.assign(recarga, updates);
-  return recarga;
-}
-
-export async function getRetirosByUser(userId) {
-  const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('usuario_id', userId).order('created_at', { ascending: false }));
-  if (!fallback && data && data.length > 0) return data;
-  const store = await getStore();
-  return (store.retiros || []).filter(r => r.usuario_id === userId);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('recargas').update(updates).eq('id', id).select().maybeSingle());
+  if (fallback || error) {
+    console.error('[Queries] Error al actualizar recarga:', error);
+    throw new Error('No se pudo actualizar la recarga en la base de datos');
+  }
+  return data;
 }
 
 export async function createRetiro(retiroData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('retiros').insert([retiroData]).select().maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  if (!store.retiros) store.retiros = [];
-  store.retiros.push(retiroData);
-  return retiroData;
-}
-
-export async function getRetiroById(id) {
-  const { data, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('id', id).maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  return (store.retiros || []).find(r => r.id === id);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('retiros').insert([retiroData]).select().maybeSingle());
+  if (fallback || error) {
+    console.error('[Queries] Error al crear retiro:', error);
+    throw new Error('No se pudo crear el retiro de forma persistente');
+  }
+  return data;
 }
 
 export async function updateRetiro(id, updates) {
-  const { data, fallback } = await trySupabase(() => supabase.from('retiros').update(updates).eq('id', id).select().maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  const retiro = (store.retiros || []).find(r => r.id === id);
-  if (retiro) Object.assign(retiro, updates);
-  return retiro;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('retiros').update(updates).eq('id', id).select().maybeSingle());
+  if (fallback || error) {
+    console.error('[Queries] Error al actualizar retiro:', error);
+    throw new Error('No se pudo actualizar el retiro en la base de datos');
+  }
+  return data;
+}
+
+export async function getRetirosByUser(userId) {
+  const { data, error, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('usuario_id', userId).order('created_at', { ascending: false }));
+  if (fallback || error) throw new Error('No se pudo recuperar el historial de retiros');
+  return data || [];
+}
+
+export async function getRetiroById(id) {
+  const { data, error, fallback } = await trySupabase(() => supabase.from('retiros').select('*').eq('id', id).maybeSingle());
+  if (fallback || error) throw new Error('No se pudo encontrar el retiro especificado');
+  return data;
 }
 
 export async function getTarjetasByUser(userId) {
-  const { data, fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').select('*').eq('usuario_id', userId));
-  if (!fallback && data && data.length > 0) return data;
-  const store = await getStore();
-  return (store.tarjetas || []).filter(t => t.usuario_id === userId);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').select('*').eq('usuario_id', userId));
+  if (fallback || error) throw new Error('No se pudo recuperar las tarjetas bancarias');
+  return data || [];
 }
 
 export async function createTarjeta(tarjetaData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').insert([tarjetaData]).select().maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  if (!store.tarjetas) store.tarjetas = [];
-  store.tarjetas.push(tarjetaData);
-  return tarjetaData;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').insert([tarjetaData]).select().maybeSingle());
+  if (fallback || error) {
+    console.error('[Queries] Error al crear tarjeta:', error);
+    throw new Error('No se pudo guardar la tarjeta bancaria de forma persistente');
+  }
+  return data;
 }
 
 export async function deleteTarjeta(id, userId) {
-  const { fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').delete().eq('id', id).eq('usuario_id', userId));
-  if (!fallback) return true;
-  const store = await getStore();
-  if (store.tarjetas) {
-    store.tarjetas = store.tarjetas.filter(t => t.id !== id || t.usuario_id !== userId);
+  const { error, fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').delete().eq('id', id).eq('usuario_id', userId));
+  if (fallback || error) {
+    console.error('[Queries] Error al eliminar tarjeta:', error);
+    throw new Error('No se pudo eliminar la tarjeta de la base de datos');
   }
   return true;
 }
 
 export async function getPublicContent() {
-  const { data, fallback } = await trySupabase(() => supabase.from('configuraciones').select('*'));
-  if (!fallback && data && data.length > 0) return data.reduce((acc, curr) => ({ ...acc, [curr.clave]: curr.valor }), {});
-  const store = await getStore();
-  return store.publicContent || {};
+  const { data, error, fallback } = await trySupabase(() => supabase.from('configuraciones').select('*'));
+  if (fallback || error) throw new Error('No se pudo recuperar la configuración del sistema');
+  return (data || []).reduce((acc, curr) => ({ ...acc, [curr.clave]: curr.valor }), {});
 }
 
 export async function getBanners() {
   const { data, fallback } = await trySupabase(() => supabase.from('banners_carrusel').select('*').eq('activo', true).order('orden', { ascending: true }));
   
-  // Siempre incluir los banners por defecto de la carpeta /imag/
   const defaultBanners = [
     { id: 'def-1', imagen_url: '/imag/carrusel1.jpeg', titulo: 'SAV 1', orden: 0, activo: true },
     { id: 'def-2', imagen_url: '/imag/carrusel2.jpeg', titulo: 'SAV 2', orden: 1, activo: true },
@@ -229,25 +207,19 @@ export async function getBanners() {
     { id: 'def-4', imagen_url: '/imag/carrusel4.jpeg', titulo: 'SAV 4', orden: 3, activo: true },
   ];
 
-  // Si Supabase responde correctamente (fallback: false)
   if (!fallback && data && data.length > 0) {
-    // Si hay datos en la DB, combinamos o priorizamos los de la DB
-    // Por ahora, devolvemos los de la DB pero corregimos URLs si es necesario
     return data.map(b => ({
       ...b,
       imagen_url: b.imagen_url === '/imag/carusel1.jpeg' ? '/imag/carrusel1.jpeg' : b.imagen_url
     }));
   }
-
-  // Si no hay datos en la DB o Supabase falló, devolvemos siempre los de la carpeta /imag/
   return defaultBanners;
 }
 
 export async function getAllTasks() {
-  const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').order('created_at', { ascending: false }));
-  if (!fallback && data && data.length > 0) return data;
-  const store = await getStore();
-  return store.tasks || [];
+  const { data, error, fallback } = await trySupabase(() => supabase.from('tareas').select('*').order('created_at', { ascending: false }));
+  if (fallback || error) throw new Error('No se pudo recuperar la lista de tareas');
+  return data || [];
 }
 
 export async function getTasks(nivelId) {
@@ -292,58 +264,78 @@ export async function getTasks(nivelId) {
 }
 
 export async function getPremiosRuleta() {
-  const { data, fallback } = await trySupabase(() => supabase.from('premios_ruleta').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (!fallback) return data || [];
-  const store = await getStore();
-  return (store.premiosRuleta || []).filter(p => p.activo !== false).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+  const { data, error, fallback } = await trySupabase(() => supabase.from('premios_ruleta').select('*').eq('activo', true).order('orden', { ascending: true }));
+  if (fallback || error) throw new Error('No se pudo recuperar los premios de la ruleta');
+  return data || [];
+}
+
+export async function getPremiosRuletaEspecial() {
+  const { data, error, fallback } = await trySupabase(() => supabase.from('premios_ruleta_especial').select('*').order('orden', { ascending: true }));
+  if (fallback || error) throw new Error('No se pudo recuperar los premios de la ruleta especial');
+  return data || [];
+}
+
+export async function getSorteosGanadoresEspecial() {
+  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores_especial').select('*, usuario:usuarios(nombre_usuario, telefono)').order('created_at', { ascending: false }).limit(20));
+  if (fallback || error) throw new Error('No se pudo recuperar el historial de sorteos especiales');
+  return data || [];
+}
+
+export async function createSorteoGanadorEspecial(ganador) {
+  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores_especial').insert([ganador]).select().maybeSingle());
+  if (fallback || error) throw new Error('No se pudo guardar el resultado del sorteo especial');
+  return data;
 }
 
 export async function getSorteosGanadores() {
-  const { data, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').select('*, usuario:usuarios!usuario_id(telefono)').order('created_at', { ascending: false }).limit(50));
-  if (!fallback && data && data.length > 0) return data;
-  const store = await getStore();
-  return (store.sorteosGanadores || []).slice(-50).reverse();
+  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').select('*, usuario:usuarios!usuario_id(telefono)').order('created_at', { ascending: false }).limit(50));
+  
+  if (fallback || error) {
+    console.error('[Queries] Error al obtener ganadores de sorteo:', error);
+    throw new Error('No se pudo recuperar el historial de sorteos de la base de datos');
+  }
+  
+  return data || [];
 }
 
 
 export async function createSorteoGanador(ganadorData) {
-  const { data, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').insert([ganadorData]).select().maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  if (!store.sorteosGanadores) store.sorteosGanadores = [];
-  store.sorteosGanadores.push(ganadorData);
-  return ganadorData;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').insert([ganadorData]).select().maybeSingle());
+  
+  if (fallback || error) {
+    console.error('[Queries] Error al registrar ganador de sorteo:', error);
+    throw new Error('No se pudo guardar el resultado del sorteo de forma persistente');
+  }
+  
+  return data;
 }
 
 export async function getTaskById(id) {
-  const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  return (store.tasks || []).find(t => t.id === id);
+  const { data, error, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
+  if (fallback || error) throw new Error('No se pudo recuperar la tarea de la base de datos');
+  return data;
 }
 
 export async function getTaskActivity(userId) {
-  const { data, fallback } = await trySupabase(() => supabase.from('actividad_tareas').select('*').eq('usuario_id', userId));
-  const store = await getStore();
-  const localActivity = (store.actividadTareas || []).filter(a => a.usuario_id === userId);
-
-  if (!fallback && data) {
-    // Combinar datos de Supabase con locales para no perder nada durante la sesión
-    const supabaseIds = new Set(data.map(d => d.id));
-    const combined = [...data, ...localActivity.filter(la => !supabaseIds.has(la.id))];
-    return combined;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('actividad_tareas').select('*').eq('usuario_id', userId));
+  
+  if (fallback || error) {
+    console.error(`[Queries] Error al obtener actividad de tareas para ${userId}:`, error);
+    throw new Error('No se pudo recuperar la actividad de la base de datos');
   }
   
-  return localActivity;
+  return data || [];
 }
 
 export async function createTaskActivity(activity) {
-  const { data, fallback } = await trySupabase(() => supabase.from('actividad_tareas').insert([activity]).select().maybeSingle());
-  if (!fallback && data) return data;
-  const store = await getStore();
-  if (!store.actividadTareas) store.actividadTareas = [];
-  store.actividadTareas.push(activity);
-  return activity;
+  const { data, error, fallback } = await trySupabase(() => supabase.from('actividad_tareas').insert([activity]).select().maybeSingle());
+  
+  if (fallback || error) {
+    console.error('[Queries] Error crítico al insertar actividad en Supabase:', error);
+    throw new Error('No se pudo guardar la actividad de la tarea de forma persistente');
+  }
+  
+  return data;
 }
 
 /**

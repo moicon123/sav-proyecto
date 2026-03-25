@@ -15,7 +15,8 @@ import {
   X, 
   LogOut,
   ChevronRight,
-  Layers
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import Logo from '../../components/Logo.jsx';
 
@@ -33,9 +34,10 @@ export default function AdminLayout() {
     { to: '/admin/retiros', icon: Wallet, label: 'Retiros' },
     { to: '/admin/tareas', icon: Play, label: 'Tareas' },
     { to: '/admin/metodos-qr', icon: QrCode, label: 'Imágenes Recarga' },
-    { to: '/admin/banners', icon: Image, label: 'Banners' },
-    { to: '/admin/premios-ruleta', icon: Gift, label: 'Premios Ruleta' },
-    { to: '/admin/contenido-home', icon: Bell, label: 'Contenido y horarios' },
+    {to: '/admin/banners', icon: Image, label: 'Banners' },
+    {to: '/admin/premios-ruleta', icon: Gift, label: 'Ruleta Estándar' },
+    {to: '/admin/premios-ruleta-especial', icon: Sparkles, label: 'Ruleta Especial' },
+    {to: '/admin/contenido-home', icon: Bell, label: 'Contenido y horarios' },
   ];
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);

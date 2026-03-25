@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Save } from 'lucide-react';
 
 export default function AdminPremiosRuleta() {
   const [premios, setPremios] = useState([]);
@@ -97,10 +97,27 @@ export default function AdminPremiosRuleta() {
         </div>
         <div className="flex flex-wrap gap-3">
           <button 
+            onClick={guardarTodo}
+            disabled={saving || loading}
+            className={`px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg ${saving ? 'bg-gray-400' : 'bg-[#1a1f36] text-white hover:scale-105 active:scale-95 shadow-indigo-200'}`}
+          >
+            {saving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              <>
+                <Save size={14} strokeWidth={3} />
+                Guardar Cambios
+              </>
+            )}
+          </button>
+          <button 
             onClick={agregar}
             className="px-6 py-4 rounded-2xl bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
           >
-            Agregar Segmento
+            <Plus size={14} className="inline mr-2" /> Agregar Segmento
           </button>
           <button 
             onClick={sync10}
@@ -110,27 +127,6 @@ export default function AdminPremiosRuleta() {
             Sincronizar 10 Segmentos
           </button>
         </div>
-      </div>
-
-      {/* Botón Flotante de Guardar */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-xs px-4">
-        <button 
-          onClick={guardarTodo}
-          disabled={saving || loading}
-          className={`w-full py-5 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all flex items-center justify-center gap-3 ${saving ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#1a1f36] text-white hover:scale-105 active:scale-95 shadow-indigo-200'}`}
-        >
-          {saving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Guardando...
-            </>
-          ) : (
-            <>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Guardar Cambios
-            </>
-          )}
-        </button>
       </div>
 
       {/* Indicador de Probabilidad Total */}

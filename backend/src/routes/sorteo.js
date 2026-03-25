@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getPremiosRuleta, getSorteosGanadores, createSorteoGanador, findUserById, updateUser } from '../lib/queries.js';
+import { getPremiosRuleta, getSorteosGanadores, createSorteoGanador, findUserById, updateUser, getPremiosRuletaEspecial, getSorteosGanadoresEspecial, createSorteoGanadorEspecial } from '../lib/queries.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
@@ -76,6 +76,61 @@ router.post('/girar', authenticate, async (req, res) => {
     created_at: new Date().toISOString(),
   };
   await createSorteoGanador(ganador);
+  
+  const idx = premios.findIndex(p => p.id === premio.id);
+  res.json({ 
+    premio: { ...premio, premio_nombre: premio.nombre, premio_valor: premio.valor }, 
+    indice: idx, 
+    ganador, 
+    oportunidades_restantes: nuevasOps 
+  });
+});
+
+// --- RUTAS PARA RULETA ESPECIAL ---
+
+router.get('/premios-especial', async (req, res) => {
+  const premios = await getPremiosRuletaEspecial();
+  res.json(premios);
+});
+
+router.get('/historial-especial', async (req, res) => {
+  const raw = await getSorteosGanadoresEspecial();
+  const historial = raw.map((h) => {
+    const telefono = h.usuario?.telefono || '';
+    const masked = telefono ? '****' + telefono.slice(-4) : '****' + Math.floor(1000 + Math.random() * 9000);
+    return { ...h, usuario_masked: masked };
+  });
+  res.json(historial);
+});
+
+router.get('/oportunidades-especial', authenticate, async (req, res) => {
+  const user = await findUserById(req.user.id);
+  res.json({ oportunidades: user?.oportunidades_sorteo_especial ?? 0 });
+});
+
+router.post('/girar-especial', authenticate, async (req, res) => {
+  const user = await findUserById(req.user.id);
+  const ops = user?.oportunidades_sorteo_especial ?? 0;
+  if (ops <= 0) return res.status(400).json({ error: 'No tienes oportunidades de sorteo especial' });
+  const premios = await getPremiosRuletaEspecial();
+  if (premios.length === 0) return res.status(400).json({ error: 'No hay premios configurados' });
+  
+  const premio = pickByProbability(premios);
+  const nuevasOps = Math.max(0, ops - 1);
+  
+  await updateUser(user.id, { 
+    saldo_comisiones: (user.saldo_comisiones || 0) + (premio.valor || 0),
+    oportunidades_sorteo_especial: nuevasOps
+  });
+  
+  const ganador = {
+    id: uuidv4(),
+    usuario_id: req.user.id,
+    premio_id: premio.id,
+    monto: premio.valor,
+    created_at: new Date().toISOString(),
+  };
+  await createSorteoGanadorEspecial(ganador);
   
   const idx = premios.findIndex(p => p.id === premio.id);
   res.json({ 

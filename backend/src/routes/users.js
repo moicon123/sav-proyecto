@@ -86,83 +86,110 @@ router.post('/change-fund-password', authenticate, async (req, res) => {
 });
 
 router.get('/stats', authenticate, async (req, res) => {
-  const user = await findUserById(req.user.id);
-  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-  const activity = await getTaskActivity(user.id);
-  
-  // Helper para manejar fechas en la zona horaria de Bolivia (UTC-4)
-  const getBoliviaDate = (date = new Date()) => {
-    const d = new Date(date.toLocaleString('en-US', { timeZone: 'America/La_Paz' }));
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  };
-
-  const startOfToday = getBoliviaDate();
-  
-  // Inicio de ayer
-  const startOfYesterday = new Date(startOfToday);
-  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-  
-  // Inicio de la semana (Lunes como primer día)
-  const startOfWeek = new Date(startOfToday);
-  const day = startOfToday.getDay(); // 0 (Dom) a 6 (Sab)
-  const diff = startOfToday.getDate() - day + (day === 0 ? -6 : 1); // Ajustar a Lunes
-  startOfWeek.setDate(diff);
-  
-  // Inicio del mes
-  const startOfMonth = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), 1);
-
-  const filterByDate = (list, start, end = null) => {
-    const startTime = start.getTime();
-    const endTime = end ? end.getTime() : null;
+  try {
+    const user = await findUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     
-    return list.filter(item => {
-      // Convertir el created_at a la fecha correspondiente en Bolivia para comparar
-      const boliviaItemDate = getBoliviaDate(new Date(item.created_at)).getTime();
+    // Obtener toda la actividad relacionada con ingresos
+    const activity = await getTaskActivity(user.id);
+    const { data: wheelWins } = await trySupabase(() => supabase.from('sorteos_ganadores').select('*').eq('usuario_id', user.id));
+    const { data: specialWheelWins } = await trySupabase(() => supabase.from('sorteos_ganadores_especial').select('*').eq('usuario_id', user.id));
+    
+    // Helper para manejar fechas en la zona horaria de Bolivia (UTC-4)
+    const getBoliviaDate = (date = new Date()) => {
+      const d = new Date(date.toLocaleString('en-US', { timeZone: 'America/La_Paz' }));
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    };
+
+    const startOfToday = getBoliviaDate();
+    
+    // Inicio de ayer
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+    
+    // Inicio de la semana (Lunes como primer día)
+    const startOfWeek = new Date(startOfToday);
+    const day = startOfToday.getDay(); // 0 (Dom) a 6 (Sab)
+    const diff = startOfToday.getDate() - day + (day === 0 ? -6 : 1); // Ajustar a Lunes
+    startOfWeek.setDate(diff);
+    
+    // Inicio del mes
+    const startOfMonth = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), 1);
+
+    const filterByDate = (list, start, end = null) => {
+      if (!list) return [];
+      const startTime = start.getTime();
+      const endTime = end ? end.getTime() : null;
       
-      if (endTime) return boliviaItemDate >= startTime && boliviaItemDate < endTime;
-      return boliviaItemDate >= startTime;
+      return list.filter(item => {
+        const boliviaItemDate = getBoliviaDate(new Date(item.created_at)).getTime();
+        if (endTime) return boliviaItemDate >= startTime && boliviaItemDate < endTime;
+        return boliviaItemDate >= startTime;
+      });
+    };
+
+    const sumMonto = (list, montoKey = 'monto') => {
+      if (!list) return 0;
+      return list.reduce((total, item) => {
+        // Para actividad_tareas usamos recompensa_otorgada o recompensa
+        if (item.recompensa_otorgada !== undefined || item.recompensa !== undefined) {
+          return total + (Number(item.recompensa_otorgada) || Number(item.recompensa) || 0);
+        }
+        // Para sorteos usamos el campo monto
+        return total + (Number(item[montoKey]) || 0);
+      }, 0);
+    };
+
+    // 1. Tareas exitosas
+    const successfulTasks = activity.filter(a => a.respuesta_correcta === true);
+    
+    // 2. Ganadores de ruleta (combinados)
+    const allWheelWins = [...(wheelWins || []), ...(specialWheelWins || [])];
+
+    // Filtrar por periodos para TAREAS
+    const hoyTasks = filterByDate(successfulTasks, startOfToday);
+    const ayerTasks = filterByDate(successfulTasks, startOfYesterday, startOfToday);
+    const semanaTasks = filterByDate(successfulTasks, startOfWeek);
+    const mesTasks = filterByDate(successfulTasks, startOfMonth);
+
+    // Filtrar por periodos para RULETA
+    const hoyWheel = filterByDate(allWheelWins, startOfToday);
+    const ayerWheel = filterByDate(allWheelWins, startOfYesterday, startOfToday);
+    const semanaWheel = filterByDate(allWheelWins, startOfWeek);
+    const mesWheel = filterByDate(allWheelWins, startOfMonth);
+
+    // Redondear a 2 decimales
+    const round = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
+
+    // Totales acumulados reales de la tabla usuarios (Persistencia definitiva)
+    const comisionesSubordinados = Number(user.saldo_comisiones) || 0;
+    const recompensaInvitacion = Number(user.recompensa_invitacion) || 0;
+
+    // Los ingresos de hoy/ayer/etc incluyen: Tareas + Ruleta
+    // (Las comisiones de red no se guardan con fecha individual por ahora, se muestran en el total acumulado)
+    const ingresos_hoy = sumMonto(hoyTasks) + sumMonto(hoyWheel);
+    const ingresos_ayer = sumMonto(ayerTasks) + sumMonto(ayerWheel);
+    const ingresos_semana = sumMonto(semanaTasks) + sumMonto(semanaWheel);
+    const ingresos_mes = sumMonto(mesTasks) + sumMonto(mesWheel);
+
+    // El total de ingresos absoluto
+    const ingresosTotales = sumMonto(successfulTasks) + sumMonto(allWheelWins) + comisionesSubordinados + recompensaInvitacion;
+
+    res.json({
+      ingresos_ayer: round(ingresos_ayer),
+      ingresos_hoy: round(ingresos_hoy),
+      ingresos_semana: round(ingresos_semana),
+      ingresos_mes: round(ingresos_mes),
+      ingresos_totales: round(ingresosTotales),
+      comision_subordinados: round(comisionesSubordinados),
+      recompensa_invitacion: round(recompensaInvitacion),
+      total_completadas: successfulTasks.length,
+      pasante_limit_reached: false,
     });
-  };
-
-  const sumMonto = (list) => {
-    return list.reduce((total, item) => {
-      // Usar recompensa_otorgada si existe (datos reales de la DB), sino recompensa
-      const monto = Number(item.recompensa_otorgada) || Number(item.recompensa) || 0;
-      return total + monto;
-    }, 0);
-  };
-
-  // 1. Ganancias por tareas propias
-  const successfulTasks = activity.filter(a => a.respuesta_correcta === true);
-
-  // 2. Ganancias por comisiones de referidos (Acumulado real)
-  const comisionesSubordinados = Number(user.saldo_comisiones) || 0;
-
-  // 3. Recompensas por invitaciones directas
-  const recompensaInvitacion = Number(user.recompensa_invitacion) || 0;
-
-  const hoy = filterByDate(successfulTasks, startOfToday);
-  const ayer = filterByDate(successfulTasks, startOfYesterday, startOfToday);
-  const semana = filterByDate(successfulTasks, startOfWeek);
-  const mes = filterByDate(successfulTasks, startOfMonth);
-
-  // Redondear a 2 decimales
-  const round = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
-
-  // El total de ingresos ahora incluye: Tareas + Comisiones + Invitaciones
-  const ingresosTotales = sumMonto(successfulTasks) + comisionesSubordinados + recompensaInvitacion;
-
-  res.json({
-    ingresos_ayer: round(sumMonto(ayer)),
-    ingresos_hoy: round(sumMonto(hoy)),
-    ingresos_semana: round(sumMonto(semana)),
-    ingresos_mes: round(sumMonto(mes)),
-    ingresos_totales: round(ingresosTotales),
-    comision_subordinados: round(comisionesSubordinados),
-    recompensa_invitacion: round(recompensaInvitacion),
-    total_completadas: successfulTasks.length,
-    pasante_limit_reached: false,
-  });
+  } catch (err) {
+    console.error('[Stats] Error crítico:', err);
+    res.status(500).json({ error: 'Error al calcular estadísticas' });
+  }
 });
 
 router.get('/tarjetas', authenticate, async (req, res) => {

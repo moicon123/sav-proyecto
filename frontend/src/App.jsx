@@ -30,6 +30,8 @@ import AdminContenidoHome from './pages/admin/AdminContenidoHome.jsx';
 import AdminTareas from './pages/admin/AdminTareas.jsx';
 import AdminBanners from './pages/admin/AdminBanners.jsx';
 import AdminNiveles from './pages/admin/AdminNiveles.jsx';
+import AdminPremiosRuletaEspecial from './pages/admin/AdminPremiosRuletaEspecial.jsx';
+import RaffleSpecial from './pages/RaffleSpecial.jsx';
 
 function PrivateRoute({ children, adminOnly }) {
   const { user, loading } = useAuth();
@@ -52,8 +54,9 @@ function AppRoutes() {
         <Route path="retiros" element={<AdminRetiros />} />
         <Route path="tareas" element={<AdminTareas />} />
         <Route path="banners" element={<AdminBanners />} />
-        <Route path="metodos-qr" element={<AdminMetodosQr />} />
+        <Route <path="metodos-qr" element={<AdminMetodosQr />} />
         <Route path="premios-ruleta" element={<AdminPremiosRuleta />} />
+        <Route path="premios-ruleta-especial" element={<AdminPremiosRuletaEspecial />} />
         <Route path="contenido-home" element={<AdminContenidoHome />} />
       </Route>
       <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
@@ -68,6 +71,7 @@ function AppRoutes() {
       <Route path="/retiro" element={<PrivateRoute><Withdrawal /></PrivateRoute>} />
       <Route path="/recargar" element={<PrivateRoute><Recharge /></PrivateRoute>} />
       <Route path="/sorteo" element={<PrivateRoute><Raffle /></PrivateRoute>} />
+      <Route path="/sorteo-especial" element={<PrivateRoute><RaffleSpecial /></PrivateRoute>} />
       <Route path="/seguridad" element={<PrivateRoute><Security /></PrivateRoute>} />
       <Route path="/vincular-tarjeta" element={<PrivateRoute><VincularTarjeta /></PrivateRoute>} />
       <Route path="/cambiar-contrasena" element={<PrivateRoute><CambiarContrasena /></PrivateRoute>} />

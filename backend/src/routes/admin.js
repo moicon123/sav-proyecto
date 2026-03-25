@@ -91,7 +91,7 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
   
   const recarga = await getRecargaById(id);
   if (!recarga) {
-    return res.status(404).json({ error: 'Recarga no encontrada en el sistema (Verifica si está en la DB o memoria local)' });
+    return res.status(404).json({ error: 'Recarga no encontrada en el sistema' });
   }
   
   if (recarga.estado === 'aprobada') return res.status(400).json({ error: 'Esta recarga ya fue aprobada previamente' });
@@ -213,13 +213,9 @@ router.post('/tareas', async (req, res) => {
     created_at: new Date().toISOString()
   };
   
-  const { data, fallback } = await trySupabase(() => supabase.from('tareas').insert([tarea]).select().maybeSingle());
-  if (!fallback) return res.json(data);
-  
-  const store = await getStore();
-  if (!store.tasks) store.tasks = [];
-  store.tasks.push(tarea);
-  res.json(tarea);
+  const { data, error } = await trySupabase(() => supabase.from('tareas').insert([tarea]).select().maybeSingle());
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 router.put('/tareas/:id', async (req, res) => {
@@ -233,22 +229,14 @@ router.put('/tareas/:id', async (req, res) => {
   if (recompensa !== undefined) updates.recompensa = parseFloat(recompensa) || 0;
   if (activa !== undefined) updates.activa = activa;
 
-  const { data, fallback } = await trySupabase(() => supabase.from('tareas').update(updates).eq('id', req.params.id).select().maybeSingle());
-  if (!fallback) return res.json(data);
-  
-  const store = await getStore();
-  const t = (store.tasks || []).find(x => x.id === req.params.id);
-  if (t) Object.assign(t, updates);
-  res.json(t || { error: 'Not found' });
+  const { data, error } = await trySupabase(() => supabase.from('tareas').update(updates).eq('id', req.params.id).select().maybeSingle());
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 router.delete('/tareas/:id', async (req, res) => {
-  const { fallback } = await trySupabase(() => supabase.from('tareas').delete().eq('id', req.params.id));
-  if (!fallback) return res.json({ ok: true });
-  
-  const store = await getStore();
-  const idx = (store.tasks || []).findIndex(x => x.id === req.params.id);
-  if (idx !== -1) store.tasks.splice(idx, 1);
+  const { error } = await trySupabase(() => supabase.from('tareas').delete().eq('id', req.params.id));
+  if (error) return res.status(500).json({ error: error.message });
   res.json({ ok: true });
 });
 
@@ -260,7 +248,6 @@ router.get('/metodos-qr', async (req, res) => {
 
 router.post('/metodos-qr', async (req, res) => {
   const { nombre_titular, imagen_base64 } = req.body;
-  const store = await getStore();
   
   const metodo = {
     id: uuidv4(),
@@ -271,43 +258,19 @@ router.post('/metodos-qr', async (req, res) => {
     created_at: new Date().toISOString()
   };
 
-  const { data, error, fallback } = await trySupabase(() => 
+  const { data, error } = await trySupabase(() => 
     supabase.from('metodos_qr').insert([metodo]).select().maybeSingle()
   );
   
-  if (!fallback) {
-    if (!data) return res.status(500).json({ error: 'Error al insertar en la base de datos real' });
-    return res.json(data);
-  }
-
-  if (error) console.error('[Admin] Fallback a local por error en Supabase:', error.message);
-
-  if (!store.metodosQr) store.metodosQr = [];
-  const localMetodo = { ...metodo, imagen_base64 };
-  store.metodosQr.push(localMetodo);
-  res.json(localMetodo);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 router.delete('/metodos-qr/:id', async (req, res) => {
   const { id } = req.params;
-  const { error, fallback } = await trySupabase(() => supabase.from('metodos_qr').delete().eq('id', id));
-  
-  if (!fallback) return res.json({ ok: true });
-  
-  if (error) {
-    console.error('[Admin] Error al eliminar método QR en Supabase:', error);
-    // Solo si el error es de conexión o algo que amerite fallback seguimos, 
-    // pero si es un error de la DB (como ID no encontrado), informamos.
-  }
-
-  const store = await getStore();
-  const idx = (store.metodosQr || []).findIndex(x => x.id === id);
-  if (idx !== -1) {
-    store.metodosQr.splice(idx, 1);
-    return res.json({ ok: true });
-  }
-  
-  res.status(error ? 500 : 404).json({ error: error?.message || 'Método no encontrado' });
+  const { error } = await trySupabase(() => supabase.from('metodos_qr').delete().eq('id', id));
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
 });
 
 router.get('/banners', async (req, res) => {
@@ -325,40 +288,19 @@ router.post('/banners', async (req, res) => {
     created_at: new Date().toISOString()
   };
 
-  const { data, error, fallback } = await trySupabase(() => 
+  const { data, error } = await trySupabase(() => 
     supabase.from('banners_carrusel').insert([banner]).select().maybeSingle()
   );
   
-  if (!fallback) {
-    if (!data) return res.status(500).json({ error: 'Error al insertar banner en la base de datos real' });
-    return res.json(data);
-  }
-
-  if (error) console.error('[Admin] Fallback a local por error en banners Supabase:', error.message);
-
-  const store = await getStore();
-  if (!store.banners) store.banners = [];
-  const localBanner = { ...banner, imagen_base64 };
-  store.banners.push(localBanner);
-  res.json(localBanner);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 router.delete('/banners/:id', async (req, res) => {
   const { id } = req.params;
-  const { error, fallback } = await trySupabase(() => supabase.from('banners_carrusel').delete().eq('id', id));
-  
-  if (!fallback) return res.json({ ok: true });
-  
-  if (error) console.error('[Admin] Error al eliminar banner en Supabase:', error.message);
-
-  const store = await getStore();
-  const idx = (store.banners || []).findIndex(x => x.id === id);
-  if (idx !== -1) {
-    store.banners.splice(idx, 1);
-    return res.json({ ok: true });
-  }
-  
-  res.status(error ? 500 : 404).json({ error: error?.message || 'Banner no encontrado' });
+  const { error } = await trySupabase(() => supabase.from('banners_carrusel').delete().eq('id', id));
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
 });
 
 router.get('/premios-ruleta', async (req, res) => {
@@ -396,6 +338,66 @@ router.post('/premios-ruleta/sync-10', async (req, res) => {
   res.json(data);
 });
 
+// --- NUEVAS RUTAS PARA RULETA ESPECIAL ---
+
+router.get('/premios-ruleta-especial', async (req, res) => {
+  const { data } = await supabase.from('premios_ruleta_especial').select('*').order('orden', { ascending: true });
+  res.json(data || []);
+});
+
+router.post('/premios-ruleta-especial', async (req, res) => {
+  const { nombre, valor, probabilidad, color, activo, orden } = req.body;
+  const premio = {
+    id: uuidv4(),
+    nombre: nombre || 'Nuevo Premio Especial',
+    valor: parseFloat(valor) || 0,
+    probabilidad: parseFloat(probabilidad) || 0,
+    color: color || '#1a1f36',
+    activo: activo !== undefined ? activo : true,
+    orden: parseInt(orden) || 0,
+    created_at: new Date().toISOString()
+  };
+  const { data, error } = await supabase.from('premios_ruleta_especial').insert([premio]).select().maybeSingle();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+router.put('/premios-ruleta-especial/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  if (updates.valor !== undefined) updates.valor = parseFloat(updates.valor) || 0;
+  if (updates.probabilidad !== undefined) updates.probabilidad = parseFloat(updates.probabilidad) || 0;
+  const { data, error } = await supabase.from('premios_ruleta_especial').update(updates).eq('id', id).select().maybeSingle();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+router.delete('/premios-ruleta-especial/:id', async (req, res) => {
+  const { id } = req.params;
+  const { error } = await supabase.from('premios_ruleta_especial').delete().eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+router.post('/premios-ruleta-especial/sync-10', async (req, res) => {
+  const { data: existing } = await supabase.from('premios_ruleta_especial').select('*').order('orden', { ascending: true });
+  const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#1e293b'];
+  const defaultPremios = Array.from({ length: 10 }, (_, i) => ({
+    id: uuidv4(),
+    nombre: existing?.[i]?.nombre || `Especial ${i + 1}`,
+    valor: existing?.[i]?.valor || 0,
+    probabilidad: existing?.[i]?.probabilidad || 10,
+    color: existing?.[i]?.color || colors[i],
+    activo: existing?.[i]?.activo !== undefined ? existing?.[i]?.activo : true,
+    orden: i,
+    created_at: new Date().toISOString()
+  }));
+  await supabase.from('premios_ruleta_especial').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { data, error } = await supabase.from('premios_ruleta_especial').insert(defaultPremios).select();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 router.post('/premios-ruleta', async (req, res) => {
   const { nombre, valor, probabilidad, imagen_url, activa, orden } = req.body;
   const premio = {
@@ -409,19 +411,12 @@ router.post('/premios-ruleta', async (req, res) => {
     created_at: new Date().toISOString()
   };
 
-  const { data, error, fallback } = await trySupabase(() => 
+  const { data, error } = await trySupabase(() => 
     supabase.from('premios_ruleta').insert([premio]).select().maybeSingle()
   );
   
-  if (!fallback) {
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json(data);
-  }
-
-  const store = await getStore();
-  if (!store.premiosRuleta) store.premiosRuleta = [];
-  store.premiosRuleta.push(premio);
-  res.json(premio);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 router.put('/premios-ruleta/:id', async (req, res) => {
@@ -432,37 +427,19 @@ router.put('/premios-ruleta/:id', async (req, res) => {
   if (updates.probabilidad !== undefined) updates.probabilidad = parseFloat(updates.probabilidad) || 0;
   if (updates.orden !== undefined) updates.orden = parseInt(updates.orden) || 0;
 
-  const { data, error, fallback } = await trySupabase(() => 
+  const { data, error } = await trySupabase(() => 
     supabase.from('premios_ruleta').update(updates).eq('id', id).select().maybeSingle()
   );
   
-  if (!fallback) {
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json(data);
-  }
-
-  const store = await getStore();
-  const premio = (store.premiosRuleta || []).find(p => p.id === id);
-  if (premio) Object.assign(premio, updates);
-  res.json(premio || { error: 'No encontrado' });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 router.delete('/premios-ruleta/:id', async (req, res) => {
   const { id } = req.params;
-  const { error, fallback } = await trySupabase(() => supabase.from('premios_ruleta').delete().eq('id', id));
-  
-  if (!fallback) {
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json({ ok: true });
-  }
-
-  const store = await getStore();
-  const idx = (store.premiosRuleta || []).findIndex(p => p.id === id);
-  if (idx !== -1) {
-    store.premiosRuleta.splice(idx, 1);
-    return res.json({ ok: true });
-  }
-  res.status(404).json({ error: 'No encontrado' });
+  const { error } = await trySupabase(() => supabase.from('premios_ruleta').delete().eq('id', id));
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
 });
 
 router.post('/niveles/sync-s1-s9', async (req, res) => {
