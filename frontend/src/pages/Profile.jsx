@@ -15,6 +15,7 @@ import {
   ChevronRight, 
   UploadCloud,
   TrendingUp,
+  Trophy,
   Copy,
   Check,
   Lock,
