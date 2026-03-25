@@ -95,15 +95,21 @@ export default function AdminPremiosRuleta() {
           <h1 className="text-3xl font-black text-[#1a1f36] uppercase tracking-tighter">Configuración Avanzada de Ruleta</h1>
           <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] mt-2">Gestiona los 10 segmentos, premios y probabilidades en tiempo real</p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 items-center">
+          <button 
+            onClick={agregar}
+            className="px-4 py-3 rounded-xl bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 flex items-center gap-2"
+          >
+            <Plus size={14} /> Agregar Segmento
+          </button>
           <button 
             onClick={guardarTodo}
             disabled={saving || loading}
-            className={`px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg ${saving ? 'bg-gray-400' : 'bg-[#1a1f36] text-white hover:scale-105 active:scale-95 shadow-indigo-200'}`}
+            className={`px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg ${saving ? 'bg-gray-400' : 'bg-[#1a1f36] text-white hover:scale-105 active:scale-95 shadow-indigo-200'}`}
           >
             {saving ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Guardando...
               </>
             ) : (
@@ -114,17 +120,11 @@ export default function AdminPremiosRuleta() {
             )}
           </button>
           <button 
-            onClick={agregar}
-            className="px-6 py-4 rounded-2xl bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
-          >
-            <Plus size={14} className="inline mr-2" /> Agregar Segmento
-          </button>
-          <button 
             onClick={sync10}
             disabled={loading}
-            className="px-6 py-4 rounded-2xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
+            className="px-4 py-3 rounded-xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 flex items-center gap-2"
           >
-            Sincronizar 10 Segmentos
+            Sincronizar 10
           </button>
         </div>
       </div>
