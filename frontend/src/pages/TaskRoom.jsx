@@ -89,7 +89,7 @@ export default function TaskRoom() {
       {/* Pre-carga de videos para mejorar la velocidad de carga al entrar en detalles */}
       <div className="hidden">
         {data.tareas.map(t => (
-          <video key={t.id} src={api.getMediaUrl(t.video_url)} preload="auto" muted />
+          <video key={t.id} src={api.getMediaUrl(t.video_url)} preload="auto" />
         ))}
       </div>
       <div className="p-4 space-y-4 bg-white min-h-screen">

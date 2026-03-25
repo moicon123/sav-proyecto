@@ -190,12 +190,12 @@ router.post('/:id/responder', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Ya completaste esta tarea con éxito hoy' });
     }
 
-    // Normalización robusta: eliminar acentos, espacios y convertir a mayúsculas
+    // Normalización robusta: eliminar acentos, convertir a mayúsculas y limpiar espacios
     const normalizar = (str) => {
-      return (String(str || ''))
+      if (!str) return '';
+      return String(str)
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^A-Z0-9]/gi, "")
+        .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
         .toUpperCase()
         .trim();
     };
@@ -206,14 +206,14 @@ router.post('/:id/responder', authenticate, async (req, res) => {
     const correctaLimpia = normalizar(correctaReal);
     
     console.log(`[Tasks] Validando Tarea: ${task.id}`);
-    console.log(`[Tasks] Respuesta Usuario Original: "${respuesta}" -> Normalizada: "${respuestaLimpia}"`);
-    console.log(`[Tasks] Respuesta Correcta Original: "${correctaReal}" -> Normalizada: "${correctaLimpia}"`);
+    console.log(`[Tasks] Respuesta Usuario: "${respuesta}" -> "${respuestaLimpia}"`);
+    console.log(`[Tasks] Respuesta Correcta: "${correctaReal}" -> "${correctaLimpia}"`);
     
-    // Comparación flexible: coincidencia exacta, o que una contenga a la otra
+    // Comparación robusta: coincidencia exacta después de normalizar espacios
+    // Eliminamos todos los espacios solo para la comparación final para evitar errores de tipeo
+    const sinEspacios = (s) => s.replace(/\s+/g, '');
     const esCorrectaReal = respuestaLimpia !== '' && correctaLimpia !== '' && (
-      respuestaLimpia === correctaLimpia || 
-      respuestaLimpia.includes(correctaLimpia) || 
-      correctaLimpia.includes(respuestaLimpia)
+      sinEspacios(respuestaLimpia) === sinEspacios(correctaLimpia)
     );
     
     console.log(`[Tasks] Resultado Validación: ${esCorrectaReal ? 'CORRECTA ✅' : 'INCORRECTA ❌'}`);

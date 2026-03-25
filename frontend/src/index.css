@@ -77,3 +77,20 @@
     100% { transform: translateX(100%); }
   }
 }
+
+/* Ocultar menú de descarga y puntos en video */
+video::-webkit-media-controls-enclosure {
+  overflow: hidden !important;
+}
+
+video::-webkit-media-controls-panel {
+  width: calc(100% + 40px) !important; /* Mueve el menú de puntos fuera del área visible */
+}
+
+/* Ocultar específicamente botones de descarga */
+video::-internal-media-controls-download-button {
+  display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+  overflow: hidden !important;
+}

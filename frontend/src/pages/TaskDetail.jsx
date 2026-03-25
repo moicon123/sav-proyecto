@@ -66,6 +66,26 @@ export default function TaskDetail() {
     }
   };
 
+  useEffect(() => {
+    // Intentar activar sonido al interactuar con el documento
+    const handleFirstInteraction = () => {
+      const v = document.querySelector('video');
+      if (v) {
+        v.muted = false;
+        v.volume = 1.0;
+        v.play().catch(() => {});
+      }
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('touchstart', handleFirstInteraction);
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+  }, []);
+
   if (loading) {
     return (
       <Layout>
@@ -138,8 +158,9 @@ export default function TaskDetail() {
             className="w-full h-full object-cover"
             src={api.getMediaUrl(url)}
             controls
-            controlsList="nodownload noplaybackrate"
+            controlsList="nodownload noplaybackrate nopictureinpicture noremoteplayback"
             disablePictureInPicture
+            disableRemotePlayback
             autoPlay
             playsInline
             preload="auto"
@@ -150,10 +171,10 @@ export default function TaskDetail() {
             onCanPlay={(e) => {
               const loader = e.target.parentElement.querySelector('.video-loader');
               if (loader) loader.style.display = 'none';
-              e.target.play().catch(() => {
-                console.log("Autoplay con sonido bloqueado por el navegador, intentando muted...");
-                e.target.muted = true;
-                e.target.play().catch(err => console.error("Error reproduciendo video:", err));
+              // Intentamos reproducir con sonido directamente. 
+              // La mayoría de los navegadores modernos permiten autoplay con sonido si el usuario ha interactuado previamente.
+              e.target.play().catch(err => {
+                console.warn("Autoplay con sonido bloqueado. El usuario deberá presionar play.", err);
               });
             }}
             onError={(e) => {
@@ -269,8 +290,17 @@ export default function TaskDetail() {
               <h3 className="text-sm font-black text-[#1a1f36] uppercase tracking-tighter">Responde para ganar</h3>
             </div>
             
+            <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 mb-6">
+              <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1 flex items-center gap-1">
+                <Info size={12} /> Pista del contenido
+              </p>
+              <p className="text-xs font-bold text-gray-700 leading-relaxed italic">
+                "{task.descripcion || 'Contenido publicitario verificado'}"
+              </p>
+            </div>
+
             <p className="text-sm font-bold text-gray-600 mb-6 leading-relaxed bg-gray-50 p-4 rounded-2xl border border-gray-100">
-              {task.pregunta || '¿Qué te pareció el contenido del video publicitario?'}
+              {task.pregunta || '¿A qué marca o contenido se refiere el video publicitario?'}
             </p>
             
             <div className="grid grid-cols-1 gap-3 mb-8">
