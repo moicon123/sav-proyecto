@@ -15,7 +15,7 @@ import telegramWebhookRoutes from './routes/telegram_webhook.js';
 import { getPublicContent, getBanners } from './lib/queries.js';
 import { mergePublicContent } from './data/publicContentDefaults.js';
 
-console.log('\n[SERVER] Proceso de servidor iniciado.');
+console.log('\n[SERVER] Proceso de servidor iniciado. Versión: 1.0.5 - Fix Tareas y Cache');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -55,10 +55,18 @@ console.log('[SERVER] Configurando parsers y archivos estáticos...');
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Middleware para servir videos con cabeceras que eviten errores de caché
+const videoHeaderMiddleware = (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+};
+
 // Servir archivos estáticos del frontend y carpetas de medios
 app.use('/imag', express.static(path.join(__dirname, '../../frontend/public/imag')));
-app.use('/video', express.static(path.join(__dirname, '../../frontend/public/video')));
-app.use('/videos', express.static(path.join(__dirname, '../../frontend/public/video')));
+app.use('/video', videoHeaderMiddleware, express.static(path.join(__dirname, '../../frontend/public/video')));
+app.use('/videos', videoHeaderMiddleware, express.static(path.join(__dirname, '../../frontend/public/video')));
 console.log('[SERVER] Rutas estáticas configuradas.');
 
 console.log('[SERVER] Configurando rutas de API...');

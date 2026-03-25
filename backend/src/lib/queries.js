@@ -312,6 +312,7 @@ export async function createSorteoGanador(ganador) {
 }
 
 export async function getTaskById(id) {
+  console.log(`[Queries] Buscando tarea con ID: ${id}`);
   // Verificar si el ID es un UUID válido para evitar errores de sintaxis en PostgreSQL (Supabase)
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   
@@ -320,13 +321,14 @@ export async function getTaskById(id) {
     if (!fallback && !error && data) return data;
   }
 
+  console.log(`[Queries] ID no es UUID o no encontrado en DB, buscando en local store: ${id}`);
   // Si no es UUID o no se encontró en Supabase (ej: tareas semilla del seed.js), buscar en el store local
   const store = await getStore();
   const task = (store.tasks || []).find(t => String(t.id) === String(id));
   
   if (!task) {
     console.error(`[Queries] Tarea no encontrada con ID: ${id}`);
-    throw new Error('No se pudo recuperar la tarea de la base de datos ni del almacenamiento local');
+    throw new Error(`No se pudo recuperar la tarea con ID ${id} de la base de datos ni del almacenamiento local`);
   }
   
   return task;
