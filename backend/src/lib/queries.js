@@ -58,15 +58,28 @@ export async function createUser(userData) {
 }
 
 export async function updateUser(id, updates) {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('usuarios').update(updates).eq('id', id).select().maybeSingle());
-  
-  if (fallback || error) {
-    console.error(`[Queries] Error al actualizar usuario ${id}:`, error);
-    // Si es un error de conexión o columna inexistente, lo reportamos para no perder datos en memoria
-    throw new Error(`Error de persistencia en base de datos: ${error?.message || 'Conexión fallida'}`);
+  // Verificamos si Supabase existe
+  if (!supabase || !hasDb()) return null;
+
+  try {
+    const { data, error } = await supabase.from('usuarios').update(updates).eq('id', id).select().maybeSingle();
+    
+    if (error) {
+      console.error(`[Queries] Error al actualizar usuario ${id}:`, error.message);
+      
+      // Si el error es por columna inexistente, devolvemos un error amigable
+      if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+        throw new Error(`Error de base de datos: La columna solicitada no existe. Por favor, revisa tu esquema de Supabase.`);
+      }
+      
+      throw new Error(`Error de persistencia: ${error.message}`);
+    }
+    
+    return data;
+  } catch (err) {
+    console.error(`[Queries] Error crítico en updateUser:`, err.message);
+    throw err;
   }
-  
-  return data;
 }
 
 export async function getLevels() {

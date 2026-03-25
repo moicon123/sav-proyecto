@@ -10,6 +10,10 @@ const router = Router();
 
 function sanitizeUser(u, levels) {
   const level = levels.find(l => String(l.id) === String(u.nivel_id));
+  
+  // Manejo ultra-seguro de tickets si la columna no existe en la DB
+  const tickets = u.hasOwnProperty('tickets_ruleta') ? (Number(u.tickets_ruleta) || 0) : 0;
+
   return {
     id: u.id,
     telefono: u.telefono,
@@ -23,7 +27,7 @@ function sanitizeUser(u, levels) {
     saldo_comisiones: u.saldo_comisiones || 0,
     rol: u.rol,
     avatar_url: u.avatar_url,
-    tickets_ruleta: u.tickets_ruleta || 0,
+    tickets_ruleta: tickets,
     tiene_password_fondo: !!u.password_fondo_hash,
     last_device_id: u.last_device_id,
   };

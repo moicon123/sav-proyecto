@@ -351,14 +351,12 @@ router.post('/regalar-tickets', async (req, res) => {
       return res.status(400).json({ error: 'Cantidad de tickets inválida' });
     }
 
-    let query = supabase.from('usuarios').select('id, tickets_ruleta').eq('rol', 'usuario');
+    let query = supabase.from('usuarios').select('id, nombre_usuario').eq('rol', 'usuario');
 
     if (tipo === 'nivel' && targetId) {
       query = query.eq('nivel_id', targetId);
     } else if (tipo === 'usuario' && targetId) {
       query = query.eq('id', targetId);
-    } else if (tipo !== 'todos') {
-      return res.status(400).json({ error: 'Parámetros de destino inválidos' });
     }
 
     const { data: users, error: fetchError } = await trySupabase(() => query);
@@ -372,21 +370,30 @@ router.post('/regalar-tickets', async (req, res) => {
     const CHUNK_SIZE = 5;
     console.log(`[Admin] Iniciando regalo de ${numTickets} tickets a ${users.length} usuarios en bloques de ${CHUNK_SIZE}`);
     
-    // Si la columna no existe, esto fallará en Supabase.
-    // Vamos a manejar el error de forma que el admin sepa qué pasa.
     for (let i = 0; i < users.length; i += CHUNK_SIZE) {
       const chunk = users.slice(i, i + CHUNK_SIZE);
       console.log(`[Admin] Procesando bloque ${Math.floor(i/CHUNK_SIZE) + 1}...`);
       
-      const results = await Promise.all(chunk.map(async (user) => {
+      await Promise.all(chunk.map(async (user) => {
         try {
-          const currentTickets = Number(user.tickets_ruleta) || 0;
-          return await updateUser(user.id, {
+          // Intentamos actualizar. Si la columna no existe, fallará aquí.
+          // Obtenemos el usuario fresco para tener su saldo actual de tickets si existe
+          const { data: freshUser } = await supabase.from('usuarios').select('*').eq('id', user.id).maybeSingle();
+          const currentTickets = freshUser ? (Number(freshUser.tickets_ruleta) || 0) : 0;
+          
+          const { error: updError } = await supabase.from('usuarios').update({
             tickets_ruleta: currentTickets + numTickets
-          });
+          }).eq('id', user.id);
+
+          if (updError) {
+            if (updError.message?.includes('column "tickets_ruleta" does not exist')) {
+              throw new Error('LA COLUMNA "tickets_ruleta" NO EXISTE EN SUPABASE. Por favor, ejecuta el SQL que te envié en el panel de Supabase.');
+            }
+            throw updError;
+          }
         } catch (e) {
           console.error(`[Admin] Falló actualización de usuario ${user.id}:`, e.message);
-          throw e; // Relanzar para que el Promise.all falle
+          throw e;
         }
       }));
     }
