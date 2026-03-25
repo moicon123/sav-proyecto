@@ -342,6 +342,45 @@ router.delete('/premios-ruleta/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+router.post('/regalar-tickets', async (req, res) => {
+  try {
+    const { tipo, targetId, cantidad } = req.body; // tipo: 'todos', 'nivel', 'usuario'
+    const numTickets = parseInt(cantidad);
+    
+    if (isNaN(numTickets) || numTickets <= 0) {
+      return res.status(400).json({ error: 'Cantidad de tickets inválida' });
+    }
+
+    let query = supabase.from('usuarios').select('id, tickets_ruleta');
+
+    if (tipo === 'nivel') {
+      query = query.eq('nivel_id', targetId);
+    } else if (tipo === 'usuario') {
+      query = query.eq('id', targetId);
+    }
+    // Si tipo === 'todos', no añadimos filtros
+
+    const { data: users, error: fetchError } = await trySupabase(() => query);
+    if (fetchError) throw fetchError;
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: 'No se encontraron usuarios para esta selección' });
+    }
+
+    // Realizar la actualización
+    for (const user of users) {
+      await updateUser(user.id, {
+        tickets_ruleta: (Number(user.tickets_ruleta) || 0) + numTickets
+      });
+    }
+
+    res.json({ ok: true, message: `Se han regalado ${numTickets} tickets a ${users.length} usuario(s).` });
+  } catch (err) {
+    console.error('[Admin] Error al regalar tickets:', err);
+    res.status(500).json({ error: 'Error al procesar el regalo de tickets' });
+  }
+});
+
 router.post('/niveles/sync-s1-s9', async (req, res) => {
   const defaultNiveles = [
     { codigo: 'pasante', nombre: 'Pasante', costo: 0, deposito: 0, tareas_diarias: 3, ganancia_tarea: 2, orden: 0 },

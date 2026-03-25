@@ -11,15 +11,23 @@ import {
   Sparkles,
   RefreshCw,
   Percent,
-  DollarSign
+  DollarSign,
+  Ticket,
+  Users,
+  User as UserIcon,
+  ChevronRight
 } from 'lucide-react';
 
 export default function AdminRecompensas() {
   const [premios, setPremios] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
+  const [niveles, setNiveles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showGiftModal, setShowGiftModal] = useState(false);
   const [editingPremio, setEditingPremio] = useState(null);
+  
   const [form, setForm] = useState({
     nombre: '',
     valor: '',
@@ -29,14 +37,26 @@ export default function AdminRecompensas() {
     orden: 0
   });
 
+  const [giftForm, setGiftGiftForm] = useState({
+    tipo: 'todos', // todos, nivel, usuario
+    targetId: '',
+    cantidad: 1
+  });
+
   useEffect(() => {
-    fetchPremios();
+    fetchData();
   }, []);
 
-  const fetchPremios = async () => {
+  const fetchData = async () => {
     try {
-      const data = await api.admin.premiosRuleta();
-      setPremios(data);
+      const [p, u, n] = await Promise.all([
+        api.admin.premiosRuleta(),
+        api.admin.usuarios(),
+        api.admin.niveles()
+      ]);
+      setPremios(p);
+      setUsuarios(u);
+      setNiveles(n);
       setLoading(false);
     } catch (err) {
       console.error(err);
@@ -55,9 +75,21 @@ export default function AdminRecompensas() {
       setShowModal(false);
       setEditingPremio(null);
       setForm({ nombre: '', valor: '', probabilidad: '', color: '#1a1f36', activo: true, orden: 0 });
-      fetchPremios();
+      fetchData();
     } catch (err) {
       alert('Error al guardar: ' + err.message);
+    }
+  };
+
+  const handleGiftSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.admin.regalarTickets(giftForm);
+      alert(res.message || 'Tickets regalados con éxito');
+      setShowGiftModal(false);
+      setGiftGiftForm({ tipo: 'todos', targetId: '', cantidad: 1 });
+    } catch (err) {
+      alert('Error al regalar tickets: ' + err.message);
     }
   };
 
@@ -65,7 +97,7 @@ export default function AdminRecompensas() {
     if (!confirm('¿Eliminar este premio?')) return;
     try {
       await api.admin.eliminarPremioRuleta(id);
-      fetchPremios();
+      fetchData();
     } catch (err) {
       alert('Error al eliminar');
     }
@@ -95,21 +127,30 @@ export default function AdminRecompensas() {
   const totalProb = premios.reduce((acc, p) => acc + Number(p.probabilidad), 0);
 
   return (
-    <div className="p-4 md:p-8 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-8 space-y-6 bg-gray-50 min-h-screen pb-24">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none mb-2">
             Gestión de <span className="text-indigo-600">Ruleta</span>
           </h1>
-          <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Configura los premios y probabilidades del sorteo</p>
+          <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Configura los premios y gestiona tickets para usuarios</p>
         </div>
-        <button 
-          onClick={() => { setEditingPremio(null); setForm({ nombre: '', valor: '', probabilidad: '', color: '#1a1f36', activo: true, orden: 0 }); setShowModal(true); }}
-          className="flex items-center justify-center gap-2 bg-[#1a1f36] text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-600/10 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95"
-        >
-          <Plus size={18} />
-          Nuevo Premio
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setShowGiftModal(true)}
+            className="flex items-center justify-center gap-2 bg-indigo-50 text-indigo-600 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest border-2 border-indigo-100 hover:bg-indigo-100 transition-all active:scale-95"
+          >
+            <Ticket size={18} />
+            Regalar Tickets
+          </button>
+          <button 
+            onClick={() => { setEditingPremio(null); setForm({ nombre: '', valor: '', probabilidad: '', color: '#1a1f36', activo: true, orden: 0 }); setShowModal(true); }}
+            className="flex items-center justify-center gap-2 bg-[#1a1f36] text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-600/10 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95"
+          >
+            <Plus size={18} />
+            Nuevo Premio
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -234,7 +275,110 @@ export default function AdminRecompensas() {
         </div>
       </div>
 
-      {/* Modal Form */}
+      {/* Gift Tickets Modal */}
+      {showGiftModal && (
+        <div className="fixed inset-0 z-50 bg-[#1a1f36]/80 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl animate-scale-in">
+            <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                  <Ticket size={20} />
+                </div>
+                <h3 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Regalar Tickets</h3>
+              </div>
+              <button onClick={() => setShowGiftModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <Plus size={24} className="rotate-45" />
+              </button>
+            </div>
+
+            <form onSubmit={handleGiftSubmit} className="p-8 space-y-6">
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Destinatarios</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { id: 'todos', label: 'Todos', icon: Users },
+                    { id: 'nivel', label: 'Nivel', icon: Trophy },
+                    { id: 'usuario', label: 'Usuario', icon: UserIcon },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setGiftGiftForm({ ...giftForm, tipo: t.id, targetId: '' })}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                        giftForm.tipo === t.id 
+                          ? 'bg-indigo-50 border-indigo-600 text-indigo-600' 
+                          : 'bg-gray-50 border-gray-50 text-gray-400 hover:bg-white hover:border-gray-200'
+                      }`}
+                    >
+                      <t.icon size={20} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">{t.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {giftForm.tipo === 'nivel' && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Seleccionar Nivel</label>
+                  <select
+                    required
+                    value={giftForm.targetId}
+                    onChange={(e) => setGiftGiftForm({ ...giftForm, targetId: e.target.value })}
+                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-indigo-100 transition-all outline-none text-sm font-bold appearance-none cursor-pointer"
+                  >
+                    <option value="">Selecciona un nivel...</option>
+                    {niveles.map(n => (
+                      <option key={n.id} value={n.id}>{n.nombre} ({n.codigo})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {giftForm.tipo === 'usuario' && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Seleccionar Usuario</label>
+                  <select
+                    required
+                    value={giftForm.targetId}
+                    onChange={(e) => setGiftGiftForm({ ...giftForm, targetId: e.target.value })}
+                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-indigo-100 transition-all outline-none text-sm font-bold appearance-none cursor-pointer"
+                  >
+                    <option value="">Busca un usuario...</option>
+                    {usuarios.filter(u => u.rol === 'usuario').map(u => (
+                      <option key={u.id} value={u.id}>{u.nombre_usuario} - {u.telefono}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Cantidad de Tickets</label>
+                <div className="relative">
+                  <Ticket size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input 
+                    required
+                    type="number"
+                    min="1"
+                    value={giftForm.cantidad}
+                    onChange={e => setGiftGiftForm({...giftForm, cantidad: e.target.value})}
+                    className="w-full pl-10 pr-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-indigo-100 transition-all outline-none text-sm font-bold"
+                    placeholder="1"
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-5 rounded-2xl bg-indigo-600 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all active:scale-95"
+              >
+                Confirmar Regalo
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Prize Modal Form */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-[#1a1f36]/80 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl animate-scale-in">
