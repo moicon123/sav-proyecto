@@ -25,6 +25,7 @@ function sanitizeUser(u, levels) {
     saldo_comisiones: u.saldo_comisiones,
     rol: u.rol,
     bloqueado: u.bloqueado,
+    tickets_ruleta: Number(u.tickets_ruleta) || 0,
     created_at: u.created_at,
   };
 }

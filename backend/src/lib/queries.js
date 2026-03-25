@@ -85,16 +85,23 @@ export async function updateUser(id, updates) {
 export async function getLevels() {
   const { data, fallback } = await trySupabase(() => supabase.from('niveles').select('*').order('orden', { ascending: true }));
   
-  // Si tenemos datos de la DB, los mapeamos con el estado de bloqueo manual
+  // Si tenemos datos de la DB, los mapeamos con el estado de bloqueo manual y eliminamos duplicados
   if (!fallback && data && data.length > 0) {
-    return data.map(dbLevel => {
-      const seedLevel = seedLevels.find(s => s.codigo === dbLevel.codigo);
-      return {
-        ...dbLevel,
-        // Si el nivel está marcado como inactivo en el código (S4+), forzar bloqueo
-        activo: seedLevel ? (seedLevel.activo !== false) : (dbLevel.activo !== false)
-      };
-    });
+    const uniqueLevels = [];
+    const codes = new Set();
+
+    for (const dbLevel of data) {
+      const code = String(dbLevel.codigo).toLowerCase();
+      if (!codes.has(code)) {
+        codes.add(code);
+        const seedLevel = seedLevels.find(s => String(s.codigo).toLowerCase() === code);
+        uniqueLevels.push({
+          ...dbLevel,
+          activo: seedLevel ? (seedLevel.activo !== false) : (dbLevel.activo !== false)
+        });
+      }
+    }
+    return uniqueLevels;
   }
   
   console.log('[Queries] getLevels fallback to seedLevels');
@@ -277,9 +284,19 @@ export async function getTasks(nivelId) {
 }
 
 export async function getPremiosRuleta() {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('premios_ruleta').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (fallback || error) return [];
-  return data || [];
+  try {
+    const { data, error, fallback } = await trySupabase(() => supabase.from('premios_ruleta').select('*').order('orden', { ascending: true }));
+    if (fallback || error) {
+      console.warn('[Queries] No se pudo obtener premios_ruleta, devolviendo vacío:', error?.message);
+      return [];
+    }
+    
+    // Filtrar manualmente por activo para ser compatibles si la columna no existe o es NULL
+    return (data || []).filter(p => p.activo !== false);
+  } catch (err) {
+    console.error('[Queries] Error crítico en getPremiosRuleta:', err);
+    return [];
+  }
 }
 
 export async function getSorteosGanadores() {
@@ -295,9 +312,24 @@ export async function createSorteoGanador(ganador) {
 }
 
 export async function getTaskById(id) {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
-  if (fallback || error) throw new Error('No se pudo recuperar la tarea de la base de datos');
-  return data;
+  // Verificar si el ID es un UUID válido para evitar errores de sintaxis en PostgreSQL (Supabase)
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  
+  if (isUUID) {
+    const { data, error, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
+    if (!fallback && !error && data) return data;
+  }
+
+  // Si no es UUID o no se encontró en Supabase (ej: tareas semilla del seed.js), buscar en el store local
+  const store = await getStore();
+  const task = (store.tasks || []).find(t => String(t.id) === String(id));
+  
+  if (!task) {
+    console.error(`[Queries] Tarea no encontrada con ID: ${id}`);
+    throw new Error('No se pudo recuperar la tarea de la base de datos ni del almacenamiento local');
+  }
+  
+  return task;
 }
 
 export async function getTaskActivity(userId) {
@@ -407,6 +439,9 @@ export async function distributeCommissions(userId, baseAmount) {
           await updateUser(upline.id, {
             saldo_comisiones: (Number(upline.saldo_comisiones) || 0) + commission
           });
+          
+          // Registrar en estadísticas persistentes del invitador
+          await addUserEarnings(upline.id, commission);
         }
       } else {
         console.log(`[Comisiones] Red Nivel ${config.key}: No se paga a ${upline.nombre_usuario} (Rango ${uplineRank} < Subordinado ${userRank})`);
@@ -416,5 +451,52 @@ export async function distributeCommissions(userId, baseAmount) {
     }
   } catch (err) {
     console.error('[Comisiones] Error:', err);
+  }
+}
+
+/**
+ * Registra ganancias en las estadísticas persistentes del usuario
+ */
+export async function addUserEarnings(userId, amount) {
+  if (!amount || amount <= 0) return;
+  try {
+    const user = await findUserById(userId);
+    if (!user) return;
+
+    const updates = {
+      ganancias_hoy: Number((Number(user.ganancias_hoy) || 0) + amount).toFixed(2),
+      ganancias_semana: Number((Number(user.ganancias_semana) || 0) + amount).toFixed(2),
+      ganancias_mes: Number((Number(user.ganancias_mes) || 0) + amount).toFixed(2),
+      ganancias_totales: Number((Number(user.ganancias_totales) || 0) + amount).toFixed(2)
+    };
+
+    await updateUser(userId, updates);
+    console.log(`[Earnings] +${amount} registrado para ${user.nombre_usuario} (Hoy: ${updates.ganancias_hoy})`);
+  } catch (err) {
+    console.error('[Earnings] Error al registrar ganancias:', err);
+  }
+}
+
+/**
+ * Reinicia las ganancias diarias y actualiza ayer/semana/mes
+ * Esta función debería ser llamada por un cron job a medianoche
+ */
+export async function resetDailyEarnings() {
+  console.log('[Cron] Iniciando reset de ganancias diarias...');
+  try {
+    const users = await getUsers();
+    for (const user of users) {
+      const updates = {
+        ganancias_ayer: user.ganancias_hoy || 0,
+        ganancias_hoy: 0
+      };
+      
+      // Aquí se podría añadir lógica para reset semanal/mensual si es necesario
+      // Pero por ahora solo hoy -> ayer
+      await updateUser(user.id, updates);
+    }
+    console.log('[Cron] Reset de ganancias completado.');
+  } catch (err) {
+    console.error('[Cron] Error en resetDailyEarnings:', err);
   }
 }

@@ -51,6 +51,13 @@ async function migrate() {
       -- Corregir tipo de dato de probabilidad para evitar "numeric field overflow"
       -- Cambiamos de DECIMAL(5,4) a DECIMAL(12,2) para permitir porcentajes (0-100)
       ALTER TABLE premios_ruleta ALTER COLUMN probabilidad TYPE DECIMAL(12,2);
+
+      -- 5. Agregar columnas para seguimiento de ganancias persistentes
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ganancias_hoy DECIMAL(12,2) DEFAULT 0;
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ganancias_ayer DECIMAL(12,2) DEFAULT 0;
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ganancias_semana DECIMAL(12,2) DEFAULT 0;
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ganancias_mes DECIMAL(12,2) DEFAULT 0;
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ganancias_totales DECIMAL(12,2) DEFAULT 0;
     `;
 
     console.log('⏳ Ejecutando migración...');

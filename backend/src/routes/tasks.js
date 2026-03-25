@@ -116,31 +116,36 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 router.get('/:id', authenticate, async (req, res) => {
-  const task = await getTaskById(req.params.id);
-  if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
-  
-  const levels = await getLevels();
-  const level = levels.find(l => l.id === task.nivel_id);
-  
-  const activity = await getTaskActivity(req.user.id);
-  
-  // Helper para comparar fechas en la zona horaria de Bolivia (UTC-4)
-  const getBoliviaDateString = (date) => {
-    return new Date(date).toLocaleDateString('en-US', { timeZone: 'America/La_Paz' });
-  };
-  
-  const todayStr = getBoliviaDateString(new Date());
-  const yaCompletadaExitosamente = activity.some(
-    a => String(a.tarea_id) === String(task.id) && 
-         getBoliviaDateString(a.created_at) === todayStr && 
-         a.respuesta_correcta === true
-  );
+  try {
+    const task = await getTaskById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+    
+    const levels = await getLevels();
+    const level = levels.find(l => String(l.id) === String(task.nivel_id));
+    
+    const activity = await getTaskActivity(req.user.id);
+    
+    // Helper para comparar fechas en la zona horaria de Bolivia (UTC-4)
+    const getBoliviaDateString = (date) => {
+      return new Date(date).toLocaleDateString('en-US', { timeZone: 'America/La_Paz' });
+    };
+    
+    const todayStr = getBoliviaDateString(new Date());
+    const yaCompletadaExitosamente = activity.some(
+      a => String(a.tarea_id) === String(task.id) && 
+           getBoliviaDateString(a.created_at) === todayStr && 
+           a.respuesta_correcta === true
+    );
 
-  res.json({
-    ...task,
-    nivel: level?.nombre,
-    completada_hoy: yaCompletadaExitosamente,
-  });
+    res.json({
+      ...task,
+      nivel: level?.nombre,
+      completada_hoy: yaCompletadaExitosamente,
+    });
+  } catch (err) {
+    console.error(`[Tasks] Error en GET /api/tasks/${req.params.id}:`, err.message);
+    res.status(500).json({ error: 'Error al cargar detalles de la tarea' });
+  }
 });
 
 router.post('/:id/responder', authenticate, async (req, res) => {
@@ -198,6 +203,10 @@ router.post('/:id/responder', authenticate, async (req, res) => {
         saldo_principal: (Number(user.saldo_principal) || 0) + Number(recompensa),
       });
       
+      // Registrar en estadísticas persistentes del usuario
+      const { addUserEarnings, distributeCommissions } = await import('../lib/queries.js');
+      await addUserEarnings(user.id, Number(recompensa));
+      
       // Distribuir comisiones a la red (A, B, C)
       await distributeCommissions(user.id, recompensa);
     }
@@ -211,10 +220,15 @@ router.post('/:id/responder', authenticate, async (req, res) => {
       created_at: new Date().toISOString(),
     });
 
-    res.json({ correcta: esCorrectaReal, recompensa });
+    res.json({
+      success: true,
+      correcta: esCorrectaReal,
+      monto: esCorrectaReal ? recompensa : 0,
+      mensaje: esCorrectaReal ? '¡Tarea completada con éxito!' : 'Respuesta incorrecta, inténtalo de nuevo.',
+    });
   } catch (err) {
-    console.error('[Tasks] Error crítico al procesar respuesta:', err);
-    res.status(500).json({ error: 'Error al procesar la respuesta' });
+    console.error(`[Tasks] Error en POST /api/tasks/${req.params.id}/responder:`, err.message);
+    res.status(500).json({ error: 'Error al procesar la respuesta de la tarea' });
   }
 });
 

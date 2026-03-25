@@ -67,6 +67,10 @@ router.post('/girar', authenticate, async (req, res) => {
 
     await updateUser(user.id, updates);
 
+    // Registrar ganancia de ruleta en estadísticas persistentes
+    const { addUserEarnings } = await import('../lib/queries.js');
+    await addUserEarnings(user.id, Number(premioGanado.valor));
+
     // Registrar ganador
     const registro = {
       id: uuidv4(),

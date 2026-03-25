@@ -197,8 +197,13 @@ export default function Recompensas() {
               </div>
               
               {premios.length === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center text-center p-10">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Configura premios en el panel para ver la ruleta</p>
+                <div className="absolute inset-0 flex items-center justify-center text-center p-10 bg-white/80 backdrop-blur-sm z-20">
+                  <div className="max-w-[200px]">
+                    <AlertCircle className="text-gray-300 mx-auto mb-4" size={48} />
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight">
+                      Ruleta en mantenimiento. Contacta con soporte.
+                    </p>
+                  </div>
                 </div>
               )}
               
@@ -209,16 +214,40 @@ export default function Recompensas() {
               </div>
             </div>
 
-            <button
-              onClick={spinWheel}
-              disabled={spinning || (Number(user?.tickets_ruleta) || 0) < 1}
-              className={`mt-10 group relative px-12 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.3em] transition-all duration-300 ${
-                spinning || (Number(user?.tickets_ruleta) || 0) < 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#1a1f36] text-white hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(26,31,54,0.3)]'
-              }`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-rose-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl -z-10" />
-              {spinning ? 'Girando...' : `Girar (1 Ticket)`}
-            </button>
+            {/* Spin Button */}
+            <div className="mt-12 text-center w-full max-w-xs">
+              <button
+                onClick={spinWheel}
+                disabled={spinning || premios.length === 0 || (Number(user?.tickets_ruleta) || 0) < 1}
+                className={`
+                  w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all duration-300
+                  ${spinning || premios.length === 0 || (Number(user?.tickets_ruleta) || 0) < 1
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-[#1a1f36] text-white shadow-[0_20px_40px_rgba(26,31,54,0.3)] hover:scale-[1.02] active:scale-[0.98]'
+                  }
+                `}
+              >
+                {spinning ? 'Girando...' : 'Girar Ahora'}
+              </button>
+
+              <div className="mt-6 flex items-center justify-center gap-6">
+                <div className="text-center">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Costo</p>
+                  <div className="flex items-center gap-1.5 justify-center">
+                    <Trophy size={14} className="text-amber-500" />
+                    <span className="text-sm font-black text-[#1a1f36]">1 Ticket</span>
+                  </div>
+                </div>
+                <div className="w-px h-8 bg-gray-200" />
+                <div className="text-center">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tus Tickets</p>
+                  <div className="flex items-center gap-1.5 justify-center">
+                    <Sparkles size={14} className="text-indigo-500" />
+                    <span className="text-sm font-black text-[#1a1f36]">{user?.tickets_ruleta || 0}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {error && (
               <div className="mt-6 flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 text-rose-500 border border-rose-100 animate-shake">

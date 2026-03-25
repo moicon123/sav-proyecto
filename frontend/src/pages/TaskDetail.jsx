@@ -136,7 +136,7 @@ export default function TaskDetail() {
         <div className="relative w-full aspect-video bg-black">
           <video
             className="w-full h-full object-cover"
-            src={url}
+            src={api.getMediaUrl(url)}
             controls
             autoPlay
             muted

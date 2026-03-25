@@ -40,6 +40,8 @@ router.post('/register', async (req, res) => {
       saldo_comisiones: 0,
       rol: 'usuario',
       bloqueado: false,
+      tickets_ruleta: 0,
+      primer_ascenso_completado: false
     };
     
     // Solo agregar campos extra si no estamos seguros de que causen error en Supabase
@@ -94,6 +96,7 @@ function sanitizeUser(u, levels) {
     saldo_comisiones: u.saldo_comisiones || 0,
     rol: u.rol,
     avatar_url: u.avatar_url,
+    tickets_ruleta: Number(u.tickets_ruleta) || 0,
     tiene_password_fondo: !!u.password_fondo_hash,
     last_device_id: u.last_device_id,
   };

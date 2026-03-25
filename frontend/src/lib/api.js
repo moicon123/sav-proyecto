@@ -15,7 +15,8 @@ async function request(url, options = {}, retries = 3) {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos para Render cold start
+    // Aumentamos a 120s para dar margen a los cold starts de Render
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     const res = await fetch(finalUrl, { 
       ...options, 
@@ -27,16 +28,19 @@ async function request(url, options = {}, retries = 3) {
 
     // 304 Not Modified es un éxito (usando caché del navegador)
     if (res.status === 304) {
-      // Intentamos recuperar del cache local si existe, sino devolvemos objeto vacío
-      // Nota: Fetch suele manejar esto automáticamente, pero si llega aquí como 304,
-      // significa que no hay cuerpo. Devolvemos el usuario guardado en localStorage como fallback.
+      console.log(`[API Cache] 304 Not Modified para ${url}. Recuperando de local...`);
       const cachedUser = localStorage.getItem('user');
       return cachedUser ? JSON.parse(cachedUser) : {};
     }
 
-    const data = await res.json().catch(() => ({}));
-    
     if (!res.ok) {
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (e) {
+        // No hay JSON en la respuesta, lo ignoramos
+      }
+      
       console.error(`[API Error] ${res.status} ${finalUrl}`, data);
       
       if (res.status === 401) {
@@ -45,23 +49,24 @@ async function request(url, options = {}, retries = 3) {
           console.warn('Sesión expirada o inválida. Limpiando credenciales...');
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          // No redirigir inmediatamente para no interrumpir otros procesos, 
-          // pero lanzar error para que el UI reaccione.
         }
       }
 
-      const error = new Error(data.error || 'Error de red');
+      const error = new Error(data.error || `Error ${res.status}: ${res.statusText}`);
       error.status = res.status;
       throw error;
     }
-    return data;
+
+    return await res.json().catch(() => ({}));
   } catch (err) {
     if (err.name === 'AbortError') {
-      console.warn(`[API Timeout] La petición a ${url} tardó demasiado.`);
+      console.error(`[API Timeout] La petición a ${url} tardó más de 60 segundos y fue cancelada.`);
+      // No reintentar en caso de timeout, es probable que el servidor esté caído o saturado
+      throw new Error('El servidor está tardando demasiado en responder. Por favor, intenta de nuevo más tarde.');
     }
 
-    // No reintentar en errores de cliente (4xx) excepto si es 404/401 y queremos reintentar conexión
-    if (err.status >= 400 && err.status < 500 && err.status !== 404) {
+    // No reintentar en errores de cliente (4xx)
+    if (err.status >= 400 && err.status < 500) {
       throw err;
     }
 
@@ -77,6 +82,15 @@ async function request(url, options = {}, retries = 3) {
 }
 
 export const api = {
+  // Helper para obtener la URL completa de medios (videos/imágenes)
+  getMediaUrl: (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    // Usamos el dominio de Render para los archivos estáticos
+    const renderUrl = 'https://sav-proyecto.onrender.com';
+    return renderUrl + normalizedPath;
+  },
   post: (url, data) => request(url, { method: 'POST', body: JSON.stringify(data) }),
   auth: {
     login: (telefono, password, deviceId) => request('/auth/login', { method: 'POST', body: JSON.stringify({ telefono, password, deviceId }) }),

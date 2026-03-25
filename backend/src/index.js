@@ -15,24 +15,43 @@ import telegramWebhookRoutes from './routes/telegram_webhook.js';
 import { getPublicContent, getBanners } from './lib/queries.js';
 import { mergePublicContent } from './data/publicContentDefaults.js';
 
+console.log('\n[SERVER] Proceso de servidor iniciado.');
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Logger simple para ver peticiones en Render
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+  console.log(`[REQUEST] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
   next();
 });
 
-// Configuración de CORS simplificada pero compatible con credentials
-app.use(cors({
-  origin: true, // Refleja el origen de la petición automáticamente
+// Configuración de CORS estricta para producción
+console.log('[SERVER] Configurando CORS...');
+const whitelist = [
+  'https://sav-proyecto.vercel.app', // Dominio de producción en Vercel
+  'http://localhost:5173',          // Entorno de desarrollo local
+  'http://127.0.0.1:5173'
+];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.error(`[CORS] Petición bloqueada desde origen no permitido: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true,
   maxAge: 86400
-}));
+};
+app.use(cors(corsOptions));
+console.log('[SERVER] CORS configurado.');
+
+console.log('[SERVER] Configurando parsers y archivos estáticos...');
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -40,7 +59,9 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use('/imag', express.static(path.join(__dirname, '../../frontend/public/imag')));
 app.use('/video', express.static(path.join(__dirname, '../../frontend/public/video')));
 app.use('/videos', express.static(path.join(__dirname, '../../frontend/public/video')));
+console.log('[SERVER] Rutas estáticas configuradas.');
 
+console.log('[SERVER] Configurando rutas de API...');
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
@@ -50,9 +71,10 @@ app.use('/api/withdrawals', withdrawalRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sorteo', sorteoRoutes);
 app.use('/api/telegram-webhook', telegramWebhookRoutes);
+console.log('[SERVER] Rutas de API configuradas.');
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, message: 'SAV API' });
+  res.json({ ok: true, message: 'SAV API is alive!' });
 });
 
 app.get('/api/banners', async (req, res) => {
@@ -66,5 +88,26 @@ app.get('/api/public-content', async (req, res) => {
 });
 
 app.listen(PORT, async () => {
-  console.log(`SAV API running on http://localhost:${PORT}`);
+  console.log(`\n[SUCCESS] ¡Servidor SAV API escuchando en http://localhost:${PORT}!\n`);
+  
+  // Tarea de mantenimiento: Reset de ganancias diarias a las 00:00 Bolivia (UTC-4)
+  const setupCron = async () => {
+    const { resetDailyEarnings } = await import('./lib/queries.js');
+    
+    const checkReset = () => {
+      const now = new Date();
+      const boliviaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/La_Paz' }));
+      
+      // Si son entre las 00:00 y las 00:05 AM, ejecutar reset
+      if (boliviaTime.getHours() === 0 && boliviaTime.getMinutes() < 5) {
+        resetDailyEarnings();
+      }
+    };
+    
+    // Revisar cada 5 minutos
+    setInterval(checkReset, 5 * 60 * 1000);
+    console.log('[CRON] Sistema de reset diario iniciado.');
+  };
+  
+  setupCron().catch(err => console.error('[CRON] Error al iniciar:', err));
 });

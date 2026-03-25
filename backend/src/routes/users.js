@@ -35,6 +35,11 @@ function sanitizeUser(u, levels) {
 
 router.get('/me', authenticate, async (req, res) => {
   try {
+    // Forzar que no se use cache para evitar problemas de 304 o net::ERR_ABORTED en algunos navegadores/proxies
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     const user = await findUserById(req.user.id);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     const levels = await getLevels();
@@ -189,21 +194,26 @@ router.get('/stats', authenticate, async (req, res) => {
     const comisionesSubordinados = Number(user.saldo_comisiones) || 0;
     const recompensaInvitacion = Number(user.recompensa_invitacion || 0);
 
-    // Los ingresos de hoy/ayer/etc incluyen: Tareas
-    const ingresos_hoy = sumMonto(hoyTasks);
-    const ingresos_ayer = sumMonto(ayerTasks);
-    const ingresos_semana = sumMonto(semanaTasks);
-    const ingresos_mes = sumMonto(mesTasks);
+    // Los ingresos de hoy/ayer/etc ahora se leen directamente de la base de datos (Persistencia definitiva)
+    const ingresos_hoy = Number(user.ganancias_hoy) || 0;
+    const ingresos_ayer = Number(user.ganancias_ayer) || 0;
+    const ingresos_semana = Number(user.ganancias_semana) || 0;
+    const ingresos_mes = Number(user.ganancias_mes) || 0;
+    const ingresos_totales = Number(user.ganancias_totales) || 0;
 
-    // El total de ingresos absoluto
-    const ingresosTotales = sumMonto(successfulTasks) + comisionesSubordinados + recompensaInvitacion;
+    // Otros datos adicionales
+    const comisionesSubordinados = Number(user.saldo_comisiones) || 0;
+    const recompensaInvitacion = Number(user.recompensa_invitacion || 0);
+
+    // Redondear a 2 decimales
+    const round = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
 
     res.json({
       ingresos_ayer: round(ingresos_ayer),
       ingresos_hoy: round(ingresos_hoy),
       ingresos_semana: round(ingresos_semana),
       ingresos_mes: round(ingresos_mes),
-      ingresos_totales: round(ingresosTotales),
+      ingresos_totales: round(ingresos_totales),
       comision_subordinados: round(comisionesSubordinados),
       recompensa_invitacion: round(recompensaInvitacion),
       total_completadas: successfulTasks.length,

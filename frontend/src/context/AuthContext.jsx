@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../lib/api';
 
 const AuthContext = createContext(null);
@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const isUpdatingRef = useRef(false);
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
@@ -24,10 +24,19 @@ export function AuthProvider({ children }) {
   }, []);
 
   const loadUser = useCallback(async (force = false) => {
-    // Evitar múltiples llamadas simultáneas
-    if (isUpdating && !force) return;
-    setIsUpdating(true);
+    // Evitar múltiples llamadas simultáneas usando un ref
+    if (isUpdatingRef.current && !force) return;
+    
+    // Si no es forzado, evitar llamadas demasiado frecuentes (ej: render loops)
+    const lastUpdate = localStorage.getItem('lastUserUpdate');
+    const now = Date.now();
+    if (!force && lastUpdate && now - parseInt(lastUpdate) < 2000) {
+      return;
+    }
 
+    isUpdatingRef.current = true;
+    localStorage.setItem('lastUserUpdate', now.toString());
+    
     const token = localStorage.getItem('token');
     const deviceId = getDeviceId();
     
@@ -35,7 +44,10 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem('user');
     if (savedUser && !user) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        if (parsed && typeof parsed === 'object') {
+          setUser(parsed);
+        }
       } catch (e) {
         localStorage.removeItem('user');
       }
@@ -45,14 +57,18 @@ export function AuthProvider({ children }) {
       setUser(null);
       localStorage.removeItem('user');
       setLoading(false);
-      setIsUpdating(false);
+      isUpdatingRef.current = false;
       return;
     }
+
     try {
+      console.log(`[Auth] Solicitando /me... (Forzado: ${force})`);
       const u = await api.users.me();
       
-      setUser(u);
-      localStorage.setItem('user', JSON.stringify(u));
+      if (u && typeof u === 'object') {
+        setUser(u);
+        localStorage.setItem('user', JSON.stringify(u));
+      }
     } catch (err) {
       if (err.status === 401 || err.status === 404) {
         console.warn('Sesión inválida o usuario no encontrado, cerrando sesión...', err.message);
@@ -62,12 +78,17 @@ export function AuthProvider({ children }) {
       }
     } finally {
       setLoading(false);
-      setIsUpdating(false);
+      isUpdatingRef.current = false;
     }
-  }, [getDeviceId, logout, isUpdating, user]);
+  }, [getDeviceId, logout, user]);
 
   useEffect(() => {
-    loadUser(true); // Carga inicial forzada
+    // Carga inicial solo si no tenemos usuario o ha pasado tiempo
+    const lastUpdate = localStorage.getItem('lastUserUpdate');
+    const now = Date.now();
+    if (!user || !lastUpdate || now - parseInt(lastUpdate) > 5000) {
+      loadUser(true);
+    }
     
     // Polling inteligente: usar setTimeout en lugar de setInterval para evitar solapamientos
     let timeoutId;
@@ -75,7 +96,7 @@ export function AuthProvider({ children }) {
       if (localStorage.getItem('token') && document.visibilityState === 'visible') {
         await loadUser();
       }
-      timeoutId = setTimeout(poll, 30000); // Aumentado a 30s para dar margen a Render
+      timeoutId = setTimeout(poll, 30000); // 30s es suficiente para polling
     };
 
     timeoutId = setTimeout(poll, 30000);
@@ -91,7 +112,7 @@ export function AuthProvider({ children }) {
       clearTimeout(timeoutId);
       window.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [loadUser]);
+  }, [loadUser, user]);
 
   const login = useCallback(async (telefono, password) => {
     const deviceId = getDeviceId();
