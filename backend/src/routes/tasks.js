@@ -201,20 +201,31 @@ router.post('/:id/responder', authenticate, async (req, res) => {
     };
 
     const respuestaLimpia = normalizar(respuesta);
-    // Aceptamos tanto respuesta_correcta como pregunta_real por compatibilidad con diferentes esquemas
-    const correctaReal = task.respuesta_correcta || task.pregunta_real || '';
-    const correctaLimpia = normalizar(correctaReal);
+    
+    // Lista de posibles respuestas correctas basadas en la tarea
+    const posiblesCorrectas = [
+      task.respuesta_correcta,
+      task.pregunta_real,
+      task.nombre,
+      task.descripcion
+    ].filter(Boolean).map(val => normalizar(val));
     
     console.log(`[Tasks] Validando Tarea: ${task.id}`);
     console.log(`[Tasks] Respuesta Usuario: "${respuesta}" -> "${respuestaLimpia}"`);
-    console.log(`[Tasks] Respuesta Correcta: "${correctaReal}" -> "${correctaLimpia}"`);
+    console.log(`[Tasks] Posibles Respuestas Correctas:`, posiblesCorrectas);
     
-    // Comparación robusta: coincidencia exacta después de normalizar espacios
-    // Eliminamos todos los espacios solo para la comparación final para evitar errores de tipeo
+    // Comparación robusta: eliminamos todos los espacios solo para la comparación final
     const sinEspacios = (s) => s.replace(/\s+/g, '');
-    const esCorrectaReal = respuestaLimpia !== '' && correctaLimpia !== '' && (
-      sinEspacios(respuestaLimpia) === sinEspacios(correctaLimpia)
-    );
+    const respuestaSinEspacios = sinEspacios(respuestaLimpia);
+    
+    // Es correcta si coincide exactamente con alguna de las opciones normalizadas
+    // o si la respuesta del usuario está contenida en el nombre o descripción (o viceversa)
+    const esCorrectaReal = respuestaSinEspacios !== '' && posiblesCorrectas.some(correcta => {
+      const correctaSinEspacios = sinEspacios(correcta);
+      return respuestaSinEspacios === correctaSinEspacios || 
+             correctaSinEspacios.includes(respuestaSinEspacios) || 
+             respuestaSinEspacios.includes(correctaSinEspacios);
+    });
     
     console.log(`[Tasks] Resultado Validación: ${esCorrectaReal ? 'CORRECTA ✅' : 'INCORRECTA ❌'}`);
     

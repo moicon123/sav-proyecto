@@ -16,7 +16,7 @@ import { getPublicContent, getBanners } from './lib/queries.js';
 import { mergePublicContent } from './data/publicContentDefaults.js';
 
 console.log('\n[SERVER] Proceso de servidor iniciado. BUILD_ID: ' + Date.now());
-console.log('[SERVER] Versión: 1.2.0 - Task Overlay & Auto-Redirect (Final Version)');
+console.log('[SERVER] Versión: 1.3.0 - Improved Answer Validation & UI Overlay');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
