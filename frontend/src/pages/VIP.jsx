@@ -4,12 +4,24 @@ import Layout from '../components/Layout.jsx';
 import Header from '../components/Header.jsx';
 import { api } from '../lib/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Crown, CheckCircle2, Lock } from 'lucide-react';
+import { Crown, CheckCircle2, Lock, TrendingUp, Users, Info, Sparkles, Award } from 'lucide-react';
 
 export default function VIP() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [niveles, setNiveles] = useState([]);
+
+  const commissionStructure = [
+    { level: 'S1', req: '150 BOB', a: '18', b: '4.5', c: '1.5' },
+    { level: 'S2', req: '400 BOB', a: '48', b: '12', c: '4' },
+    { level: 'S3', req: '1000 BOB', a: '120', b: '30', c: '10' },
+    { level: 'S4', req: '2500 BOB', a: '300', b: '75', c: '25' },
+    { level: 'S5', req: '6000 BOB', a: '720', b: '180', c: '60' },
+    { level: 'S6', req: '12000 BOB', a: '1440', b: '360', c: '120' },
+    { level: 'S7', req: '25000 BOB', a: '3000', b: '750', c: '250' },
+    { level: 'S8', req: '50000 BOB', a: '6000', b: '1500', c: '500' },
+    { level: 'S9', req: '100000 BOB', a: '12000', b: '3000', c: '1000' },
+  ];
 
   useEffect(() => {
     api.levels.list().then(setNiveles).catch(() => []);
@@ -135,6 +147,128 @@ export default function VIP() {
               </div>
             );
           })}
+        </div>
+
+        {/* --- NUEVA SECCIÓN: GANANCIAS, RECOMPENSAS Y BENEFICIOS --- */}
+        <div className="space-y-6 pt-10 relative z-10">
+          <div className="flex items-center gap-3 mb-4 px-1">
+            <div className="w-1.5 bg-[#1a1f36] h-5 rounded-full shadow-[0_0_10px_rgba(26,31,54,0.3)]" />
+            <h3 className="text-xs font-black text-[#1a1f36] uppercase tracking-[0.2em]">Ganancias y Recompensas</h3>
+          </div>
+
+          {/* Tarjeta de Beneficios de Recomendación */}
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-gray-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 blur-2xl" />
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#00C853] flex items-center justify-center shadow-inner">
+                <Users size={24} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-black text-[#1a1f36] uppercase tracking-widest text-xs">Beneficios de Recomendación</h4>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Gana por invitar amigos</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { level: 'A', percent: '12%', color: 'bg-emerald-500' },
+                { level: 'B', percent: '3%', color: 'bg-emerald-400' },
+                { level: 'C', percent: '1%', color: 'bg-emerald-300' },
+              ].map((item) => (
+                <div key={item.level} className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Nivel {item.level}</p>
+                  <p className={`text-xl font-black ${item.color.replace('bg-', 'text-')} tracking-tighter`}>{item.percent}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-[10px] text-gray-500 font-medium leading-relaxed italic text-center px-4">
+              "Recibe comisiones directas sobre el valor de las tareas realizadas por tus subordinados en tres niveles."
+            </p>
+          </div>
+
+          {/* Tabla Detallada S1 - S9 */}
+          <div className="bg-[#1a1f36] rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 relative">
+            <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+            
+            <div className="p-8 pb-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Sparkles className="text-yellow-400" size={18} />
+                <h4 className="text-white font-black uppercase tracking-widest text-xs">Detalle de Recompensas por Nivel</h4>
+              </div>
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Relación de ingresos por invitación</p>
+            </div>
+
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-white/5 border-y border-white/5">
+                    <th className="py-5 px-6 text-[9px] font-black text-white/40 uppercase tracking-widest">Nivel</th>
+                    <th className="py-5 px-4 text-[9px] font-black text-white/40 uppercase tracking-widest">Inversión</th>
+                    <th className="py-5 px-4 text-[9px] font-black text-white/40 uppercase tracking-widest">Rec. A</th>
+                    <th className="py-5 px-4 text-[9px] font-black text-white/40 uppercase tracking-widest">Rec. B</th>
+                    <th className="py-5 px-4 text-[9px] font-black text-white/40 uppercase tracking-widest">Rec. C</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {commissionStructure.map((row) => (
+                    <tr key={row.level} className="hover:bg-white/5 transition-colors">
+                      <td className="py-5 px-6">
+                        <span className="flex items-center gap-2">
+                          <Crown size={12} className="text-yellow-500/50" />
+                          <span className="text-xs font-black text-white">{row.level}</span>
+                        </span>
+                      </td>
+                      <td className="py-5 px-4">
+                        <span className="text-[10px] font-black text-gray-300">{row.req}</span>
+                      </td>
+                      <td className="py-5 px-4">
+                        <span className="text-xs font-black text-emerald-400">+{row.a}</span>
+                      </td>
+                      <td className="py-5 px-4">
+                        <span className="text-xs font-black text-blue-400">+{row.b}</span>
+                      </td>
+                      <td className="py-5 px-4">
+                        <span className="text-xs font-black text-indigo-400">+{row.c}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="p-6 bg-white/5 text-center">
+              <div className="flex items-center justify-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Nivel A 12%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-400" />
+                  <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Nivel B 3%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-indigo-400" />
+                  <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Nivel C 1%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tarjeta de Información Adicional */}
+          <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2.5rem] p-8 text-white shadow-xl shadow-blue-200/50 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+            <div className="flex items-start gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                <Info size={24} />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-black uppercase tracking-widest text-xs mb-2">Seguridad y Transparencia</h4>
+                <p className="text-[10px] font-medium leading-relaxed opacity-80">
+                  Todas las comisiones se calculan en tiempo real basándose en la actividad de tus referidos. Las ganancias se depositan directamente en tu saldo de comisiones y son retirables bajo las condiciones del sistema.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Layout>

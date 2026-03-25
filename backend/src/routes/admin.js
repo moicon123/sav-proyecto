@@ -465,6 +465,30 @@ router.delete('/premios-ruleta/:id', async (req, res) => {
   res.status(404).json({ error: 'No encontrado' });
 });
 
+router.post('/niveles/sync-s1-s9', async (req, res) => {
+  const defaultNiveles = [
+    { codigo: 'pasante', nombre: 'Pasante', costo: 0, deposito: 0, tareas_diarias: 3, ganancia_tarea: 2, orden: 0 },
+    { codigo: 'S1', nombre: 'Nivel S1', costo: 150, deposito: 150, tareas_diarias: 5, ganancia_tarea: 3, orden: 1 },
+    { codigo: 'S2', nombre: 'Nivel S2', costo: 400, deposito: 400, tareas_diarias: 10, ganancia_tarea: 4, orden: 2 },
+    { codigo: 'S3', nombre: 'Nivel S3', costo: 1000, deposito: 1000, tareas_diarias: 20, ganancia_tarea: 5, orden: 3 },
+    { codigo: 'S4', nombre: 'Nivel S4', costo: 2500, deposito: 2500, tareas_diarias: 40, ganancia_tarea: 6.25, orden: 4 },
+    { codigo: 'S5', nombre: 'Nivel S5', costo: 6000, deposito: 6000, tareas_diarias: 60, ganancia_tarea: 10, orden: 5 },
+    { codigo: 'S6', nombre: 'Nivel S6', costo: 12000, deposito: 12000, tareas_diarias: 80, ganancia_tarea: 15, orden: 6 },
+    { codigo: 'S7', nombre: 'Nivel S7', costo: 25000, deposito: 25000, tareas_diarias: 100, ganancia_tarea: 25, orden: 7 },
+    { codigo: 'S8', nombre: 'Nivel S8', costo: 50000, deposito: 50000, tareas_diarias: 150, ganancia_tarea: 33.33, orden: 8 },
+    { codigo: 'S9', nombre: 'Nivel S9', costo: 100000, deposito: 100000, tareas_diarias: 200, ganancia_tarea: 50, orden: 9 },
+  ];
+
+  try {
+    for (const n of defaultNiveles) {
+      await trySupabase(() => supabase.from('niveles').upsert(n, { onConflict: 'codigo' }));
+    }
+    res.json({ ok: true, message: 'Niveles S1-S9 sincronizados correctamente.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/niveles', async (req, res) => {
   const niveles = await getLevels();
   res.json(niveles);

@@ -409,11 +409,11 @@ export async function distributeCommissions(userId, baseAmount) {
       }
     }
 
-    // 2. Comisiones por niveles (A: 15%, B: 5%, C: 2%)
+    // 2. Comisiones por niveles (A: 12%, B: 3%, C: 1%)
     const levels = [
-      { key: 'A', percent: 0.15 },
-      { key: 'B', percent: 0.05 },
-      { key: 'C', percent: 0.02 }
+      { key: 'A', percent: 0.12 },
+      { key: 'B', percent: 0.03 },
+      { key: 'C', percent: 0.01 }
     ];
 
     let currentUplineId = user.invitado_por;
