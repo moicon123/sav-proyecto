@@ -16,7 +16,7 @@ import { getPublicContent, getBanners } from './lib/queries.js';
 import { mergePublicContent } from './data/publicContentDefaults.js';
 
 console.log('\n[SERVER] Proceso de servidor iniciado. BUILD_ID: ' + Date.now());
-console.log('[SERVER] Versión: 1.0.7 - Definitive UUID & Fetch Fix');
+console.log('[SERVER] Versión: 1.0.8 - Syntax Fix & Stable Income');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();

@@ -190,23 +190,16 @@ router.get('/stats', authenticate, async (req, res) => {
     // Redondear a 2 decimales
     const round = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
 
-    // Totales acumulados reales de la tabla usuarios (Persistencia definitiva)
-    const comisionesSubordinados = Number(user.saldo_comisiones) || 0;
-    const recompensaInvitacion = Number(user.recompensa_invitacion || 0);
-
-    // Los ingresos de hoy/ayer/etc ahora se leen directamente de la base de datos (Persistencia definitiva)
+    // Los ingresos ahora se leen directamente de las nuevas columnas de la base de datos (Persistencia definitiva)
     const ingresos_hoy = Number(user.ganancias_hoy) || 0;
     const ingresos_ayer = Number(user.ganancias_ayer) || 0;
     const ingresos_semana = Number(user.ganancias_semana) || 0;
     const ingresos_mes = Number(user.ganancias_mes) || 0;
     const ingresos_totales = Number(user.ganancias_totales) || 0;
 
-    // Otros datos adicionales
+    // Otros datos adicionales de saldo
     const comisionesSubordinados = Number(user.saldo_comisiones) || 0;
     const recompensaInvitacion = Number(user.recompensa_invitacion || 0);
-
-    // Redondear a 2 decimales
-    const round = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
 
     res.json({
       ingresos_ayer: round(ingresos_ayer),
