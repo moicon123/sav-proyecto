@@ -145,9 +145,9 @@ export default function Team() {
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-[#1a1f36] text-white flex items-center justify-center text-xs font-black shadow-lg group-hover:rotate-[360deg] transition-transform duration-700">
-                      L{n.nivel}
+                      {n.nivel}
                     </div>
-                    <span className="text-sm font-black text-gray-700 uppercase tracking-tighter group-hover:text-[#1a1f36] transition-colors">Nivel de Red {n.nivel}</span>
+                    <span className="text-sm font-black text-gray-700 uppercase tracking-tighter group-hover:text-[#1a1f36] transition-colors">Nivel {n.nivel}</span>
                   </div>
                   <div className="px-4 py-1.5 rounded-full bg-[#00C853]/10 text-[#00C853] text-[10px] font-black tracking-[0.2em] uppercase border border-[#00C853]/20">
                     +{n.porcentaje}%
