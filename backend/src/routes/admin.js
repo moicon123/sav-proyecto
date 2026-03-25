@@ -351,14 +351,15 @@ router.post('/regalar-tickets', async (req, res) => {
       return res.status(400).json({ error: 'Cantidad de tickets inválida' });
     }
 
-    let query = supabase.from('usuarios').select('id, tickets_ruleta');
+    let query = supabase.from('usuarios').select('id, tickets_ruleta').eq('rol', 'usuario');
 
-    if (tipo === 'nivel') {
+    if (tipo === 'nivel' && targetId) {
       query = query.eq('nivel_id', targetId);
-    } else if (tipo === 'usuario') {
+    } else if (tipo === 'usuario' && targetId) {
       query = query.eq('id', targetId);
+    } else if (tipo !== 'todos') {
+      return res.status(400).json({ error: 'Parámetros de destino inválidos' });
     }
-    // Si tipo === 'todos', no añadimos filtros
 
     const { data: users, error: fetchError } = await trySupabase(() => query);
     if (fetchError) throw fetchError;
@@ -367,17 +368,20 @@ router.post('/regalar-tickets', async (req, res) => {
       return res.status(404).json({ error: 'No se encontraron usuarios para esta selección' });
     }
 
-    // Realizar la actualización
-    for (const user of users) {
-      await updateUser(user.id, {
-        tickets_ruleta: (Number(user.tickets_ruleta) || 0) + numTickets
+    // Realizar la actualización por lotes o individualmente
+    const updates = users.map(user => {
+      const currentTickets = Number(user.tickets_ruleta) || 0;
+      return updateUser(user.id, {
+        tickets_ruleta: currentTickets + numTickets
       });
-    }
+    });
+
+    await Promise.all(updates);
 
     res.json({ ok: true, message: `Se han regalado ${numTickets} tickets a ${users.length} usuario(s).` });
   } catch (err) {
     console.error('[Admin] Error al regalar tickets:', err);
-    res.status(500).json({ error: 'Error al procesar el regalo de tickets' });
+    res.status(500).json({ error: 'Error al procesar el regalo de tickets: ' + err.message });
   }
 });
 
