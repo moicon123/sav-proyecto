@@ -329,18 +329,23 @@ export default function TaskDetail() {
             className="fallback-img absolute inset-0 w-full h-full object-cover hidden"
           />
           
-          {/* Overlay de Pregunta Integrado sobre el Video */}
+          {/* Overlay de Pregunta Integrado sobre el Video - Rediseñado para no tapar el centro */}
           {!task.completada_hoy && canAnswer && !result && (
-            <div className="absolute inset-0 z-40 bg-[#1a1f36]/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-              <div className="w-full max-w-sm space-y-4 text-center">
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/20">
-                    <Play size={16} fill="currentColor" />
+            <div className="absolute inset-0 z-40 bg-black/20 flex items-end justify-center p-4 animate-fade-in pointer-events-none">
+              <div className="w-full max-w-sm bg-[#1a1f36]/90 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 shadow-2xl mb-4 animate-slideUp pointer-events-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/20">
+                      <Play size={12} fill="currentColor" />
+                    </div>
+                    <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Verificación</h3>
                   </div>
-                  <h3 className="text-xs font-black text-white uppercase tracking-widest">Responde para ganar</h3>
+                  <div className="px-2 py-0.5 rounded-full bg-[#00C853]/20 border border-[#00C853]/30 text-[#00C853] text-[8px] font-black uppercase tracking-widest">
+                    v1.3.2
+                  </div>
                 </div>
                 
-                <p className="text-sm font-bold text-white leading-relaxed mb-4">
+                <p className="text-xs font-bold text-white leading-relaxed mb-6 text-left">
                   {task.pregunta || '¿A qué marca se refiere este video?'}
                 </p>
                 
@@ -350,10 +355,10 @@ export default function TaskDetail() {
                       key={i}
                       onClick={() => setSelected(opc)}
                       className={`
-                        w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-center
+                        w-full py-3 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-center border
                         ${selected === opc 
-                          ? 'bg-white text-[#1a1f36] shadow-xl scale-105' 
-                          : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'}
+                          ? 'bg-white text-[#1a1f36] border-white shadow-xl scale-[1.02]' 
+                          : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'}
                       `}
                     >
                       {opc}
@@ -364,9 +369,9 @@ export default function TaskDetail() {
                 <button
                   onClick={handleSubmit}
                   disabled={!selected || submitting}
-                  className="w-full mt-4 py-4 rounded-xl bg-white text-[#1a1f36] font-black uppercase tracking-widest text-[10px] shadow-xl disabled:opacity-50 active:scale-95 transition-all"
+                  className="w-full mt-6 py-4 rounded-xl bg-white text-[#1a1f36] font-black uppercase tracking-widest text-[10px] shadow-xl disabled:opacity-50 active:scale-95 transition-all"
                 >
-                  {submitting ? 'Enviando...' : 'Confirmar Respuesta'}
+                  {submitting ? 'Verificando...' : 'Confirmar Respuesta'}
                 </button>
               </div>
             </div>
@@ -375,7 +380,7 @@ export default function TaskDetail() {
           {/* Overlay de Temporizador sobre el Video */}
           {!task.completada_hoy && !canAnswer && (
             <div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-none">
-              <div className="bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-[#00C853] rounded-full animate-pulse" />
                   <span className="text-[10px] text-white/90 font-black uppercase tracking-widest">Publicidad Activa</span>
