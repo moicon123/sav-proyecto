@@ -5,50 +5,64 @@ function getToken() {
   return localStorage.getItem('token');
 }
 
-async function request(url, options = {}, retries = 1) {
+async function request(url, options = {}, retries = 3) {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   
   const normalizedUrl = url.startsWith('/') ? url : `/${url}`;
-  
+  const finalUrl = API + normalizedUrl;
+
   try {
-    const finalUrl = API + normalizedUrl;
-    const res = await fetch(finalUrl, { ...options, headers });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos para Render cold start
+
+    const res = await fetch(finalUrl, { 
+      ...options, 
+      headers,
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+
     const data = await res.json().catch(() => ({}));
     
     if (!res.ok) {
       console.error(`[API Error] ${res.status} ${finalUrl}`, data);
-      const error = new Error(data.error || 'Error de red');
-      error.status = res.status;
-
-      // Manejador global de errores de autenticación
-      if (error.status === 401 || error.status === 404) {
+      
+      if (res.status === 401) {
         const isAuthRoute = normalizedUrl.includes('/auth/');
         if (!isAuthRoute) {
-          console.warn('Redirigiendo al login por error de autenticación...');
+          console.warn('Sesión expirada o inválida. Limpiando credenciales...');
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          window.location.href = '/login';
-          // Detener la ejecución para evitar más errores
-          return new Promise(() => {}); 
+          // No redirigir inmediatamente para no interrumpir otros procesos, 
+          // pero lanzar error para que el UI reaccione.
         }
       }
 
+      const error = new Error(data.error || 'Error de red');
+      error.status = res.status;
       throw error;
     }
     return data;
   } catch (err) {
-    // No reintentar en errores de cliente (4xx)
-    if (err.status >= 400 && err.status < 500) {
+    if (err.name === 'AbortError') {
+      console.warn(`[API Timeout] La petición a ${url} tardó demasiado.`);
+    }
+
+    // No reintentar en errores de cliente (4xx) excepto si es 404/401 y queremos reintentar conexión
+    if (err.status >= 400 && err.status < 500 && err.status !== 404) {
       throw err;
     }
 
-    if (retries > 0 && (options.method === 'GET' || !options.method)) {
-      console.warn(`Error en ${url}, reintentando... (${retries} restantes)`);
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    if (retries > 0) {
+      const delay = 2000 * (4 - retries); // Delay incremental: 2s, 4s, 6s
+      console.warn(`Error en ${url}, reintentando en ${delay}ms... (${retries} restantes)`, err.message);
+      await new Promise(resolve => setTimeout(resolve, delay));
       return request(url, options, retries - 1);
     }
+    
     throw err;
   }
 }

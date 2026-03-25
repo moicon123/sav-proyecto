@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
@@ -22,12 +23,15 @@ export function AuthProvider({ children }) {
     return id;
   }, []);
 
-  const loadUser = useCallback(async () => {
+  const loadUser = useCallback(async (force = false) => {
+    // Evitar múltiples llamadas simultáneas
+    if (isUpdating && !force) return;
+    setIsUpdating(true);
+
     const token = localStorage.getItem('token');
     const deviceId = getDeviceId();
     
     // Al cargar por primera vez, intentar recuperar del localStorage para evitar el flicker
-    // pero de forma segura para la hidratación
     const savedUser = localStorage.getItem('user');
     if (savedUser && !user) {
       try {
@@ -41,24 +45,15 @@ export function AuthProvider({ children }) {
       setUser(null);
       localStorage.removeItem('user');
       setLoading(false);
+      setIsUpdating(false);
       return;
     }
     try {
       const u = await api.users.me();
       
-      // Verificación de dispositivo único (Solo si el dispositivo está registrado)
-      if (u.last_device_id && deviceId && u.last_device_id !== deviceId) {
-        console.warn('Dispositivo detectado:', deviceId, 'vs', u.last_device_id);
-        // alert('Se ha iniciado sesión en otro dispositivo. Tu sesión se cerrará en este equipo.');
-        // logout();
-        // return;
-      }
-
       setUser(u);
       localStorage.setItem('user', JSON.stringify(u));
     } catch (err) {
-      // Cerramos sesión si el servidor nos dice que el token no vale (401) 
-      // O si el usuario ya no existe en el sistema (404), esto ocurre al reiniciar el seed del servidor
       if (err.status === 401 || err.status === 404) {
         console.warn('Sesión inválida o usuario no encontrado, cerrando sesión...', err.message);
         logout();
@@ -67,19 +62,23 @@ export function AuthProvider({ children }) {
       }
     } finally {
       setLoading(false);
+      setIsUpdating(false);
     }
-  }, [getDeviceId, logout]);
+  }, [getDeviceId, logout, isUpdating, user]);
 
   useEffect(() => {
-    loadUser();
+    loadUser(true); // Carga inicial forzada
     
-    // Polling inteligente para actualizar datos en tiempo real cada 15 segundos
-    // solo si el usuario está logueado y la pestaña está activa
-    const interval = setInterval(() => {
+    // Polling inteligente: usar setTimeout en lugar de setInterval para evitar solapamientos
+    let timeoutId;
+    const poll = async () => {
       if (localStorage.getItem('token') && document.visibilityState === 'visible') {
-        loadUser();
+        await loadUser();
       }
-    }, 15000);
+      timeoutId = setTimeout(poll, 30000); // Aumentado a 30s para dar margen a Render
+    };
+
+    timeoutId = setTimeout(poll, 30000);
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible' && localStorage.getItem('token')) {
@@ -89,7 +88,7 @@ export function AuthProvider({ children }) {
 
     window.addEventListener('visibilitychange', handleVisibility);
     return () => {
-      clearInterval(interval);
+      clearTimeout(timeoutId);
       window.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [loadUser]);
