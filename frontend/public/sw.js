@@ -6,6 +6,15 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener('fetch', () => {
-  // Demo SW for PWA installability.
+// Manejador de peticiones para evitar errores con videos en Chrome (ERR_CACHE_OPERATION_NOT_SUPPORTED)
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // NUNCA cachear videos ni usar el SW para peticiones de video (Range requests)
+  if (url.pathname.endsWith('.mp4') || url.pathname.includes('/video/')) {
+    return; // Dejar que el navegador maneje la petición normalmente
+  }
+
+  // Para otras peticiones, por ahora no hacemos nada (estrategia network-only por defecto)
+  // Pero permitimos que el navegador maneje las peticiones de forma estándar.
 });
