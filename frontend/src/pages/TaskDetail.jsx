@@ -50,6 +50,15 @@ export default function TaskDetail() {
     }
   }, [timeLeft, timerActive]);
 
+  const [videoEnded, setVideoEnded] = useState(false);
+
+  useEffect(() => {
+    if (videoEnded && result?.correcta) {
+      const timer = setTimeout(() => navigate('/tareas'), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [videoEnded, result, navigate]);
+
   const handleSubmit = async () => {
     if (!selected) return;
     setSubmitting(true);
@@ -64,6 +73,12 @@ export default function TaskDetail() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleVideoEnded = () => {
+    setVideoEnded(true);
+    // Redirigir siempre al finalizar el video para asegurar el flujo
+    setTimeout(() => navigate('/tareas'), 2500);
   };
 
   useEffect(() => {
@@ -114,7 +129,7 @@ export default function TaskDetail() {
       const fileId = url.split('/d/')[1]?.split('/')[0] || url.split('id=')[1]?.split('&')[0];
       if (fileId) {
         return (
-          <div className="relative w-full aspect-video bg-black overflow-hidden rounded-2xl shadow-inner">
+          <div className="relative w-full aspect-video bg-black overflow-hidden rounded-2xl shadow-inner group">
             <iframe
               className="absolute top-[-10%] left-0 w-full h-[120%]"
               src={`https://drive.google.com/file/d/${fileId}/preview`}
@@ -122,10 +137,64 @@ export default function TaskDetail() {
               loading="lazy"
             ></iframe>
             <div className="absolute inset-0 z-10 bg-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 flex items-center gap-2 z-20 pointer-events-none">
-              <div className="w-2 h-2 bg-[#00C853] rounded-full animate-pulse" />
-              <span className="text-[10px] text-white/70 font-black uppercase tracking-widest">Optimized Stream</span>
-            </div>
+            
+            {/* Overlay de Pregunta Integrado sobre el Video */}
+            {!task.completada_hoy && canAnswer && !result && (
+              <div className="absolute inset-0 z-40 bg-[#1a1f36]/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+                <div className="w-full max-w-sm space-y-4 text-center">
+                  <div className="flex items-center justify-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/20">
+                      <Play size={16} fill="currentColor" />
+                    </div>
+                    <h3 className="text-xs font-black text-white uppercase tracking-widest">Responde para ganar</h3>
+                  </div>
+                  
+                  <p className="text-sm font-bold text-white leading-relaxed mb-4">
+                    {task.pregunta || '¿A qué marca se refiere este video?'}
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    {opciones.map((opc, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setSelected(opc)}
+                        className={`
+                          w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-center
+                          ${selected === opc 
+                            ? 'bg-white text-[#1a1f36] shadow-xl scale-105' 
+                            : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'}
+                        `}
+                      >
+                        {opc}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!selected || submitting}
+                    className="w-full mt-4 py-4 rounded-xl bg-white text-[#1a1f36] font-black uppercase tracking-widest text-[10px] shadow-xl disabled:opacity-50 active:scale-95 transition-all"
+                  >
+                    {submitting ? 'Enviando...' : 'Confirmar Respuesta'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Overlay de Temporizador sobre el Video */}
+            {!task.completada_hoy && !canAnswer && (
+              <div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-none">
+                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-[#00C853] rounded-full animate-pulse" />
+                    <span className="text-[10px] text-white/90 font-black uppercase tracking-widest">Publicidad Activa</span>
+                  </div>
+                  <p className="text-[10px] text-white/70 font-black uppercase tracking-widest">
+                    Pregunta en <span className="text-white text-xs ml-1">{timeLeft}s</span>
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         );
       }
@@ -143,17 +212,71 @@ export default function TaskDetail() {
             loading="lazy"
           ></iframe>
           <div className="absolute inset-0 z-10" />
-          <div className="absolute bottom-4 left-4 flex items-center gap-2 z-20">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-[10px] text-white/70 font-black uppercase tracking-widest">Global HD Stream</span>
-          </div>
+          
+          {/* Overlay de Pregunta Integrado sobre el Video */}
+          {!task.completada_hoy && canAnswer && !result && (
+            <div className="absolute inset-0 z-40 bg-[#1a1f36]/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+              <div className="w-full max-w-sm space-y-4 text-center">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/20">
+                    <Play size={16} fill="currentColor" />
+                  </div>
+                  <h3 className="text-xs font-black text-white uppercase tracking-widest">Responde para ganar</h3>
+                </div>
+                
+                <p className="text-sm font-bold text-white leading-relaxed mb-4">
+                  {task.pregunta || '¿A qué marca se refiere este video?'}
+                </p>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  {opciones.map((opc, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelected(opc)}
+                      className={`
+                        w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-center
+                        ${selected === opc 
+                          ? 'bg-white text-[#1a1f36] shadow-xl scale-105' 
+                          : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'}
+                      `}
+                    >
+                      {opc}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleSubmit}
+                  disabled={!selected || submitting}
+                  className="w-full mt-4 py-4 rounded-xl bg-white text-[#1a1f36] font-black uppercase tracking-widest text-[10px] shadow-xl disabled:opacity-50 active:scale-95 transition-all"
+                >
+                  {submitting ? 'Enviando...' : 'Confirmar Respuesta'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Overlay de Temporizador sobre el Video */}
+          {!task.completada_hoy && !canAnswer && (
+            <div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-none">
+              <div className="bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[#00C853] rounded-full animate-pulse" />
+                  <span className="text-[10px] text-white/90 font-black uppercase tracking-widest">Publicidad Activa</span>
+                </div>
+                <p className="text-[10px] text-white/70 font-black uppercase tracking-widest">
+                  Pregunta en <span className="text-white text-xs ml-1">{timeLeft}s</span>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
 
     if (isVideoFile) {
       return (
-        <div className="relative w-full aspect-video bg-black">
+        <div className="relative w-full aspect-video bg-black group">
           <video
             className="w-full h-full object-cover"
             src={api.getMediaUrl(url)}
@@ -164,6 +287,7 @@ export default function TaskDetail() {
             autoPlay
             playsInline
             preload="auto"
+            onEnded={handleVideoEnded}
             onLoadStart={(e) => {
               const loader = e.target.parentElement.querySelector('.video-loader');
               if (loader) loader.style.display = 'flex';
@@ -194,6 +318,64 @@ export default function TaskDetail() {
             alt=""
             className="fallback-img absolute inset-0 w-full h-full object-cover hidden"
           />
+          
+          {/* Overlay de Pregunta Integrado sobre el Video */}
+          {!task.completada_hoy && canAnswer && !result && (
+            <div className="absolute inset-0 z-40 bg-[#1a1f36]/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+              <div className="w-full max-w-sm space-y-4 text-center">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/20">
+                    <Play size={16} fill="currentColor" />
+                  </div>
+                  <h3 className="text-xs font-black text-white uppercase tracking-widest">Responde para ganar</h3>
+                </div>
+                
+                <p className="text-sm font-bold text-white leading-relaxed mb-4">
+                  {task.pregunta || '¿A qué marca se refiere este video?'}
+                </p>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  {opciones.map((opc, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelected(opc)}
+                      className={`
+                        w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-center
+                        ${selected === opc 
+                          ? 'bg-white text-[#1a1f36] shadow-xl scale-105' 
+                          : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'}
+                      `}
+                    >
+                      {opc}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleSubmit}
+                  disabled={!selected || submitting}
+                  className="w-full mt-4 py-4 rounded-xl bg-white text-[#1a1f36] font-black uppercase tracking-widest text-[10px] shadow-xl disabled:opacity-50 active:scale-95 transition-all"
+                >
+                  {submitting ? 'Enviando...' : 'Confirmar Respuesta'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Overlay de Temporizador sobre el Video */}
+          {!task.completada_hoy && !canAnswer && (
+            <div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-none">
+              <div className="bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[#00C853] rounded-full animate-pulse" />
+                  <span className="text-[10px] text-white/90 font-black uppercase tracking-widest">Publicidad Activa</span>
+                </div>
+                <p className="text-[10px] text-white/70 font-black uppercase tracking-widest">
+                  Pregunta en <span className="text-white text-xs ml-1">{timeLeft}s</span>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -274,65 +456,6 @@ export default function TaskDetail() {
           </div>
         )}
 
-        {!task.completada_hoy && !canAnswer && (
-          <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 mb-4 text-center shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-[#1a1f36]/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
-            <p className="font-black text-[#1a1f36] text-xs uppercase tracking-widest relative z-10">Mira el video por <span className="text-[#1a1f36] text-lg mx-1">{timeLeft}</span> segundos más...</p>
-          </div>
-        )}
-
-        {!task.completada_hoy && canAnswer && !showResult && (
-          <div className="bg-white rounded-[2rem] p-8 shadow-2xl border border-gray-100 animate-slideUp">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-[#1a1f36]/5 flex items-center justify-center text-[#1a1f36] border border-gray-100">
-                <Play size={20} fill="currentColor" />
-              </div>
-              <h3 className="text-sm font-black text-[#1a1f36] uppercase tracking-tighter">Responde para ganar</h3>
-            </div>
-            
-            <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 mb-6">
-              <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1 flex items-center gap-1">
-                <Info size={12} /> Pista del contenido
-              </p>
-              <p className="text-xs font-bold text-gray-700 leading-relaxed italic">
-                "{task.descripcion || 'Contenido publicitario verificado'}"
-              </p>
-            </div>
-
-            <p className="text-sm font-bold text-gray-600 mb-6 leading-relaxed bg-gray-50 p-4 rounded-2xl border border-gray-100">
-              {task.pregunta || '¿A qué marca o contenido se refiere el video publicitario?'}
-            </p>
-            
-            <div className="grid grid-cols-1 gap-3 mb-8">
-              {opciones.map((opc, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelected(opc)}
-                  className={`
-                    w-full py-4 px-6 rounded-2xl text-xs font-black uppercase tracking-widest transition-all text-left flex items-center justify-between group
-                    ${selected === opc 
-                      ? 'bg-[#1a1f36] text-white shadow-xl translate-x-2' 
-                      : 'bg-gray-50 text-gray-400 hover:bg-gray-100 border border-gray-100 hover:border-[#1a1f36]/30 hover:text-gray-600'}
-                  `}
-                >
-                  <span>{opc}</span>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selected === opc ? 'border-white bg-white/20' : 'border-gray-200'}`}>
-                    {selected === opc && <div className="w-2 h-2 bg-white rounded-full animate-pulse" />}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selected || submitting}
-              className="w-full py-5 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-[#1a1f36]/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale"
-            >
-              {submitting ? 'Enviando...' : 'Confirmar Respuesta'}
-            </button>
-          </div>
-        )}
-
         {showResult && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-md bg-[#1a1f36]/40 animate-fade-in">
             <div className={`
@@ -375,13 +498,20 @@ export default function TaskDetail() {
               )}
               
               <button
-                onClick={() => navigate('/tareas')}
+                onClick={() => {
+                  if (result.correcta) {
+                    navigate('/tareas');
+                  } else {
+                    setResult(null);
+                    setSelected('');
+                  }
+                }}
                 className={`
                   w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl active:scale-95 transition-all
                   ${result.correcta ? 'bg-[#1a1f36] text-white shadow-[#1a1f36]/20' : 'bg-gray-100 text-gray-500 border border-gray-200'}
                 `}
               >
-                Volver a la sala
+                {result.correcta ? 'Volver a la sala' : 'Intentar de nuevo'}
               </button>
             </div>
           </div>
