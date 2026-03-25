@@ -303,6 +303,45 @@ router.delete('/banners/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+router.get('/premios-ruleta', async (req, res) => {
+  const { data } = await trySupabase(() => supabase.from('premios_ruleta').select('*').order('orden', { ascending: true }));
+  res.json(data || []);
+});
+
+router.post('/premios-ruleta', async (req, res) => {
+  const { nombre, valor, probabilidad, color, activo, orden } = req.body;
+  const premio = {
+    id: uuidv4(),
+    nombre: nombre || 'Nuevo Premio',
+    valor: parseFloat(valor) || 0,
+    probabilidad: parseFloat(probabilidad) || 0,
+    color: color || '#1a1f36',
+    activo: activo !== undefined ? activo : true,
+    orden: parseInt(orden) || 0,
+    created_at: new Date().toISOString()
+  };
+  const { data, error } = await trySupabase(() => supabase.from('premios_ruleta').insert([premio]).select().maybeSingle());
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+router.put('/premios-ruleta/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  if (updates.valor !== undefined) updates.valor = parseFloat(updates.valor) || 0;
+  if (updates.probabilidad !== undefined) updates.probabilidad = parseFloat(updates.probabilidad) || 0;
+  const { data, error } = await trySupabase(() => supabase.from('premios_ruleta').update(updates).eq('id', id).select().maybeSingle());
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+router.delete('/premios-ruleta/:id', async (req, res) => {
+  const { id } = req.params;
+  const { error } = await trySupabase(() => supabase.from('premios_ruleta').delete().eq('id', id));
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
 router.post('/niveles/sync-s1-s9', async (req, res) => {
   const defaultNiveles = [
     { codigo: 'pasante', nombre: 'Pasante', costo: 0, deposito: 0, tareas_diarias: 3, ganancia_tarea: 2, orden: 0 },

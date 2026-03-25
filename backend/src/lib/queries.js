@@ -263,6 +263,24 @@ export async function getTasks(nivelId) {
   return localTasks;
 }
 
+export async function getPremiosRuleta() {
+  const { data, error, fallback } = await trySupabase(() => supabase.from('premios_ruleta').select('*').eq('activo', true).order('orden', { ascending: true }));
+  if (fallback || error) return [];
+  return data || [];
+}
+
+export async function getSorteosGanadores() {
+  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').select('*, usuario:usuarios(nombre_usuario, telefono)').order('created_at', { ascending: false }).limit(20));
+  if (fallback || error) return [];
+  return data || [];
+}
+
+export async function createSorteoGanador(ganador) {
+  const { data, error } = await trySupabase(() => supabase.from('sorteos_ganadores').insert([ganador]).select().maybeSingle());
+  if (error) throw error;
+  return data;
+}
+
 export async function getTaskById(id) {
   const { data, error, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
   if (fallback || error) throw new Error('No se pudo recuperar la tarea de la base de datos');

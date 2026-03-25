@@ -106,6 +106,11 @@ export const api = {
   },
   banners: () => request('/banners'),
   publicContent: () => request('/public-content'),
+  sorteo: {
+    premios: () => request('/sorteo/premios'),
+    historial: () => request('/sorteo/historial'),
+    girar: () => request('/sorteo/girar', { method: 'POST' }),
+  },
   admin: {
     dashboard: () => request('/admin/dashboard'),
     usuarios: () => request('/admin/usuarios'),
@@ -130,6 +135,10 @@ export const api = {
     crearMetodoQr: (data) => request('/admin/metodos-qr', { method: 'POST', body: JSON.stringify(data) }),
     actualizarMetodoQr: (id, data) => request(`/admin/metodos-qr/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     eliminarMetodoQr: (id) => request(`/admin/metodos-qr/${id}`, { method: 'DELETE' }),
+    premiosRuleta: () => request('/admin/premios-ruleta'),
+    crearPremioRuleta: (data) => request('/admin/premios-ruleta', { method: 'POST', body: JSON.stringify(data) }),
+    actualizarPremioRuleta: (id, data) => request(`/admin/premios-ruleta/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    eliminarPremioRuleta: (id) => request(`/admin/premios-ruleta/${id}`, { method: 'DELETE' }),
     publicContent: () => request('/admin/public-content'),
     updatePublicContent: (data) => request('/admin/public-content', { method: 'PUT', body: JSON.stringify(data) }),
   },
