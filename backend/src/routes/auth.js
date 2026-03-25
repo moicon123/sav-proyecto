@@ -46,7 +46,6 @@ router.post('/register', async (req, res) => {
     // (A futuro se deberían agregar estas columnas a la DB)
     const fullUser = {
       ...user,
-      oportunidades_sorteo: 1,
       last_device_id: deviceId || null,
     };
 
@@ -95,7 +94,6 @@ function sanitizeUser(u, levels) {
     saldo_comisiones: u.saldo_comisiones || 0,
     rol: u.rol,
     avatar_url: u.avatar_url,
-    oportunidades_sorteo: u.oportunidades_sorteo ?? 0,
     tiene_password_fondo: !!u.password_fondo_hash,
     last_device_id: u.last_device_id,
   };

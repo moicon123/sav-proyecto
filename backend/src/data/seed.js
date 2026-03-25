@@ -37,7 +37,6 @@ export async function initStore() {
     saldo_principal: 0,
     saldo_comisiones: 0,
     bloqueado: false,
-    oportunidades_sorteo: 10,
   };
 
   const user1 = {
@@ -54,7 +53,6 @@ export async function initStore() {
     saldo_comisiones: 28.80,
     rol: 'usuario',
     bloqueado: false,
-    oportunidades_sorteo: 3,
   };
 
   const userA1 = {
@@ -71,7 +69,6 @@ export async function initStore() {
     saldo_comisiones: 40,
     rol: 'usuario',
     bloqueado: false,
-    oportunidades_sorteo: 1,
   };
 
   const userA2 = {
@@ -88,7 +85,6 @@ export async function initStore() {
     saldo_comisiones: 30,
     rol: 'usuario',
     bloqueado: false,
-    oportunidades_sorteo: 1,
   };
 
   const userB1 = {
@@ -105,7 +101,6 @@ export async function initStore() {
     saldo_comisiones: 15,
     rol: 'usuario',
     bloqueado: false,
-    oportunidades_sorteo: 0,
   };
 
   const testUser = {
@@ -122,7 +117,6 @@ export async function initStore() {
     saldo_comisiones: 0,
     rol: 'usuario',
     bloqueado: false,
-    oportunidades_sorteo: 1,
   };
 
   const tasks = [
@@ -190,23 +184,6 @@ export async function initStore() {
     transacciones: [],
     notificaciones: [
       { id: uuidv4(), usuario_id: user1Id, titulo: 'Bienvenido', mensaje: '¡Bienvenido a SAV!', leida: false },
-    ],
-    premiosRuleta: [
-      { id: uuidv4(), nombre: '0.01 BOB', valor: 0.01, color: '#f59e0b', probabilidad: 0.40, orden: 0, activo: true },
-      { id: uuidv4(), nombre: '0.05 BOB', valor: 0.05, color: '#ea580c', probabilidad: 0.30, orden: 1, activo: true },
-      { id: uuidv4(), nombre: '1 BOB', valor: 1, color: '#e11d48', probabilidad: 0.15, orden: 2, activo: true },
-      { id: uuidv4(), nombre: '5 BOB', valor: 5, color: '#db2777', probabilidad: 0.08, orden: 3, activo: true },
-      { id: uuidv4(), nombre: '10 BOB', valor: 10, color: '#c026d3', probabilidad: 0.04, orden: 4, activo: true },
-      { id: uuidv4(), nombre: '50 BOB', valor: 50, color: '#7c3aed', probabilidad: 0.02, orden: 5, activo: true },
-      { id: uuidv4(), nombre: '100 BOB', valor: 100, color: '#4f46e5', probabilidad: 0.008, orden: 6, activo: true },
-      { id: uuidv4(), nombre: '1000 BOB', valor: 1000, color: '#059669', probabilidad: 0.002, orden: 7, activo: true },
-    ],
-    sorteosGanadores: [
-      { id: uuidv4(), usuario_id: user1Id, premio_nombre: '1 BOB', premio_valor: 1, premio_color: '#e11d48', created_at: new Date(Date.now() - 86400000).toISOString() },
-      { id: uuidv4(), usuario_id: null, premio_nombre: '0.02 BOB', premio_valor: 0.02, premio_color: '#ea580c', created_at: new Date(Date.now() - 172800000).toISOString() },
-      { id: uuidv4(), usuario_id: null, premio_nombre: '10000 BOB', premio_valor: 10000, premio_color: '#059669', created_at: new Date(Date.now() - 259200000).toISOString() },
-      { id: uuidv4(), usuario_id: null, premio_nombre: '5 BOB', premio_valor: 5, premio_color: '#db2777', created_at: new Date(Date.now() - 345600000).toISOString() },
-      { id: uuidv4(), usuario_id: null, premio_nombre: '0.01 BOB', premio_valor: 0.01, premio_color: '#f59e0b', created_at: new Date(Date.now() - 432000000).toISOString() },
     ],
     publicContent: {
       home_guide: 'GUIA PARA PRINCIPIANTES. LIDERANDO EL FUTURO. ALCANZA TUS SUENOS.',

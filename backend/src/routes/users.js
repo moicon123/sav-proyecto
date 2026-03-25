@@ -23,7 +23,6 @@ function sanitizeUser(u, levels) {
     saldo_comisiones: u.saldo_comisiones || 0,
     rol: u.rol,
     avatar_url: u.avatar_url,
-    oportunidades_sorteo: u.oportunidades_sorteo ?? 0,
     tiene_password_fondo: !!u.password_fondo_hash,
     last_device_id: u.last_device_id,
   };
@@ -92,8 +91,6 @@ router.get('/stats', authenticate, async (req, res) => {
     
     // Obtener toda la actividad relacionada con ingresos
     const activity = await getTaskActivity(user.id);
-    const { data: wheelWins } = await trySupabase(() => supabase.from('sorteos_ganadores').select('*').eq('usuario_id', user.id));
-    const { data: specialWheelWins } = await trySupabase(() => supabase.from('sorteos_ganadores_especial').select('*').eq('usuario_id', user.id));
     
     // Helper para manejar fechas en la zona horaria de Bolivia (UTC-4)
     const getBoliviaDate = (date = new Date()) => {
@@ -128,35 +125,22 @@ router.get('/stats', authenticate, async (req, res) => {
       });
     };
 
-    const sumMonto = (list, montoKey = 'monto') => {
+    const sumMonto = (list) => {
       if (!list) return 0;
       return list.reduce((total, item) => {
         // Para actividad_tareas usamos recompensa_otorgada o recompensa
-        if (item.recompensa_otorgada !== undefined || item.recompensa !== undefined) {
-          return total + (Number(item.recompensa_otorgada) || Number(item.recompensa) || 0);
-        }
-        // Para sorteos usamos el campo monto
-        return total + (Number(item[montoKey]) || 0);
+        return total + (Number(item.recompensa_otorgada) || Number(item.recompensa) || 0);
       }, 0);
     };
 
     // 1. Tareas exitosas
     const successfulTasks = activity.filter(a => a.respuesta_correcta === true);
     
-    // 2. Ganadores de ruleta (combinados)
-    const allWheelWins = [...(wheelWins || []), ...(specialWheelWins || [])];
-
     // Filtrar por periodos para TAREAS
     const hoyTasks = filterByDate(successfulTasks, startOfToday);
     const ayerTasks = filterByDate(successfulTasks, startOfYesterday, startOfToday);
     const semanaTasks = filterByDate(successfulTasks, startOfWeek);
     const mesTasks = filterByDate(successfulTasks, startOfMonth);
-
-    // Filtrar por periodos para RULETA
-    const hoyWheel = filterByDate(allWheelWins, startOfToday);
-    const ayerWheel = filterByDate(allWheelWins, startOfYesterday, startOfToday);
-    const semanaWheel = filterByDate(allWheelWins, startOfWeek);
-    const mesWheel = filterByDate(allWheelWins, startOfMonth);
 
     // Redondear a 2 decimales
     const round = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
@@ -165,15 +149,14 @@ router.get('/stats', authenticate, async (req, res) => {
     const comisionesSubordinados = Number(user.saldo_comisiones) || 0;
     const recompensaInvitacion = Number(user.recompensa_invitacion) || 0;
 
-    // Los ingresos de hoy/ayer/etc incluyen: Tareas + Ruleta
-    // (Las comisiones de red no se guardan con fecha individual por ahora, se muestran en el total acumulado)
-    const ingresos_hoy = sumMonto(hoyTasks) + sumMonto(hoyWheel);
-    const ingresos_ayer = sumMonto(ayerTasks) + sumMonto(ayerWheel);
-    const ingresos_semana = sumMonto(semanaTasks) + sumMonto(semanaWheel);
-    const ingresos_mes = sumMonto(mesTasks) + sumMonto(mesWheel);
+    // Los ingresos de hoy/ayer/etc incluyen: Tareas
+    const ingresos_hoy = sumMonto(hoyTasks);
+    const ingresos_ayer = sumMonto(ayerTasks);
+    const ingresos_semana = sumMonto(semanaTasks);
+    const ingresos_mes = sumMonto(mesTasks);
 
     // El total de ingresos absoluto
-    const ingresosTotales = sumMonto(successfulTasks) + sumMonto(allWheelWins) + comisionesSubordinados + recompensaInvitacion;
+    const ingresosTotales = sumMonto(successfulTasks) + comisionesSubordinados + recompensaInvitacion;
 
     res.json({
       ingresos_ayer: round(ingresos_ayer),

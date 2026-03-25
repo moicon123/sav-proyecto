@@ -17,6 +17,7 @@ const gridItems = [
   { to: '/noticias-conferencia', icon: Bell, label: 'Noticias', color: 'text-purple-500', bg: 'bg-purple-50' },
   { to: '/equipo', icon: Users, label: 'Mi Equipo', color: 'text-emerald-500', bg: 'bg-emerald-50' },
   { to: '/invitar', icon: UserPlus, label: 'Invitar', color: 'text-rose-500', bg: 'bg-rose-50' },
+  { to: '/recompensas', icon: Gift, label: 'Premios', color: 'text-indigo-500', bg: 'bg-indigo-50' },
 ];
 
 export default function Dashboard() {
@@ -298,48 +299,6 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-
-        {/* Dynamic Floating Roulette Button */}
-        {publicConfig?.ruleta_boton_activo !== false && (
-          <div className="fixed right-6 bottom-24 z-50">
-            <Link
-              to={publicConfig?.ruleta_boton_ruta || '/sorteo'}
-              className="group relative flex items-center justify-center p-0.5 rounded-full transition-all duration-500 hover:scale-110 active:scale-95 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.3)]"
-            >
-              {/* Outer Glow Animation */}
-              <div 
-                className="absolute inset-0 rounded-full blur-xl opacity-40 group-hover:opacity-100 animate-pulse transition-opacity"
-                style={{ backgroundColor: publicConfig?.ruleta_boton_color || '#1a1f36' }}
-              />
-              
-              {/* Main Button Body */}
-              <div 
-                className="relative flex items-center gap-3 pl-4 pr-6 py-3.5 rounded-full border-2 border-white/20 backdrop-blur-md overflow-hidden"
-                style={{ backgroundColor: publicConfig?.ruleta_boton_color || '#1a1f36' }}
-              >
-                {/* Shimmer Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-[1500ms]" />
-                
-                {/* Icon Container with Animation */}
-                <div className="relative w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 shadow-inner group-hover:rotate-[360deg] transition-transform duration-700">
-                  {(() => {
-                    const iconMap = { Gift, Sparkles, Trophy, Play };
-                    const IconComp = iconMap[publicConfig?.ruleta_boton_icono] || Gift;
-                    return <IconComp className="text-white animate-bounce" size={24} />;
-                  })()}
-                </div>
-
-                {/* Text */}
-                <span className="text-xs font-black text-white uppercase tracking-[0.2em] drop-shadow-md">
-                  {publicConfig?.ruleta_boton_texto || 'Girar'}
-                </span>
-
-                {/* Notification Badge */}
-                <div className="absolute top-2 right-4 w-2 h-2 bg-rose-500 rounded-full border border-white animate-ping" />
-              </div>
-            </Link>
-          </div>
-        )}
 
         {/* Noticia / Guía Estilo Marquee (Vibrant) */}
         <div className="px-4 mt-8">

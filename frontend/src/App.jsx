@@ -18,20 +18,18 @@ import VincularTarjeta from './pages/VincularTarjeta.jsx';
 import CambiarContrasena from './pages/CambiarContrasena.jsx';
 import CambiarContrasenaFondo from './pages/CambiarContrasenaFondo.jsx';
 import BillingRecord from './pages/BillingRecord.jsx';
-import Raffle from './pages/Raffle.jsx';
+import Recompensas from './pages/Recompensas.jsx';
 import AdminLayout from './pages/admin/AdminLayout.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminUsuarios from './pages/admin/AdminUsuarios.jsx';
 import AdminRecargas from './pages/admin/AdminRecargas.jsx';
 import AdminRetiros from './pages/admin/AdminRetiros.jsx';
 import AdminMetodosQr from './pages/admin/AdminMetodosQr.jsx';
-import AdminPremiosRuleta from './pages/admin/AdminPremiosRuleta.jsx';
 import AdminContenidoHome from './pages/admin/AdminContenidoHome.jsx';
 import AdminTareas from './pages/admin/AdminTareas.jsx';
 import AdminBanners from './pages/admin/AdminBanners.jsx';
 import AdminNiveles from './pages/admin/AdminNiveles.jsx';
-import AdminPremiosRuletaEspecial from './pages/admin/AdminPremiosRuletaEspecial.jsx';
-import RaffleSpecial from './pages/RaffleSpecial.jsx';
+import AdminRecompensas from './pages/admin/AdminRecompensas.jsx';
 
 function PrivateRoute({ children, adminOnly }) {
   const { user, loading } = useAuth();
@@ -54,12 +52,12 @@ function AppRoutes() {
         <Route path="retiros" element={<AdminRetiros />} />
         <Route path="tareas" element={<AdminTareas />} />
         <Route path="banners" element={<AdminBanners />} />
-        <Route <path="metodos-qr" element={<AdminMetodosQr />} />
-        <Route path="premios-ruleta" element={<AdminPremiosRuleta />} />
-        <Route path="premios-ruleta-especial" element={<AdminPremiosRuletaEspecial />} />
+        <Route path="metodos-qr" element={<AdminMetodosQr />} />
+        <Route path="recompensas" element={<AdminRecompensas />} />
         <Route path="contenido-home" element={<AdminContenidoHome />} />
       </Route>
       <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route path="/recompensas" element={<PrivateRoute><Recompensas /></PrivateRoute>} />
       <Route path="/tareas" element={<PrivateRoute><TaskRoom /></PrivateRoute>} />
       <Route path="/tareas/:id" element={<PrivateRoute><TaskDetail /></PrivateRoute>} />
       <Route path="/usuario" element={<PrivateRoute><Profile /></PrivateRoute>} />
@@ -70,8 +68,6 @@ function AppRoutes() {
       <Route path="/noticias-conferencia" element={<PrivateRoute><NoticiasConferencia /></PrivateRoute>} />
       <Route path="/retiro" element={<PrivateRoute><Withdrawal /></PrivateRoute>} />
       <Route path="/recargar" element={<PrivateRoute><Recharge /></PrivateRoute>} />
-      <Route path="/sorteo" element={<PrivateRoute><Raffle /></PrivateRoute>} />
-      <Route path="/sorteo-especial" element={<PrivateRoute><RaffleSpecial /></PrivateRoute>} />
       <Route path="/seguridad" element={<PrivateRoute><Security /></PrivateRoute>} />
       <Route path="/vincular-tarjeta" element={<PrivateRoute><VincularTarjeta /></PrivateRoute>} />
       <Route path="/cambiar-contrasena" element={<PrivateRoute><CambiarContrasena /></PrivateRoute>} />

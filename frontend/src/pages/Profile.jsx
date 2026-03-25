@@ -50,7 +50,7 @@ export default function Profile() {
     { to: '/equipo', icon: Users, label: 'Informe del equipo', color: 'bg-blue-500' },
     { to: '/registro-facturacion', icon: FileText, label: 'Registro de facturación', color: 'bg-emerald-500' },
     { to: '/registro-tareas', icon: ClipboardList, label: 'Registro de tareas', color: 'bg-purple-500' },
-    { to: '/sorteo', icon: Gift, label: 'Sorteo de suerte', color: 'bg-rose-500' },
+    { to: '/recompensas', icon: Gift, label: 'Premios y Recompensas', color: 'bg-rose-500' },
     { to: '/seguridad', icon: ShieldCheck, label: 'Seguridad de la cuenta', color: 'bg-amber-500' },
     { to: '/vincular-tarjeta', icon: CreditCard, label: 'Vincular tarjeta bancaria', color: 'bg-cyan-500' },
   ];

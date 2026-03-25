@@ -263,53 +263,6 @@ export async function getTasks(nivelId) {
   return localTasks;
 }
 
-export async function getPremiosRuleta() {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('premios_ruleta').select('*').eq('activo', true).order('orden', { ascending: true }));
-  if (fallback || error) throw new Error('No se pudo recuperar los premios de la ruleta');
-  return data || [];
-}
-
-export async function getPremiosRuletaEspecial() {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('premios_ruleta_especial').select('*').order('orden', { ascending: true }));
-  if (fallback || error) throw new Error('No se pudo recuperar los premios de la ruleta especial');
-  return data || [];
-}
-
-export async function getSorteosGanadoresEspecial() {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores_especial').select('*, usuario:usuarios(nombre_usuario, telefono)').order('created_at', { ascending: false }).limit(20));
-  if (fallback || error) throw new Error('No se pudo recuperar el historial de sorteos especiales');
-  return data || [];
-}
-
-export async function createSorteoGanadorEspecial(ganador) {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores_especial').insert([ganador]).select().maybeSingle());
-  if (fallback || error) throw new Error('No se pudo guardar el resultado del sorteo especial');
-  return data;
-}
-
-export async function getSorteosGanadores() {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').select('*, usuario:usuarios!usuario_id(telefono)').order('created_at', { ascending: false }).limit(50));
-  
-  if (fallback || error) {
-    console.error('[Queries] Error al obtener ganadores de sorteo:', error);
-    throw new Error('No se pudo recuperar el historial de sorteos de la base de datos');
-  }
-  
-  return data || [];
-}
-
-
-export async function createSorteoGanador(ganadorData) {
-  const { data, error, fallback } = await trySupabase(() => supabase.from('sorteos_ganadores').insert([ganadorData]).select().maybeSingle());
-  
-  if (fallback || error) {
-    console.error('[Queries] Error al registrar ganador de sorteo:', error);
-    throw new Error('No se pudo guardar el resultado del sorteo de forma persistente');
-  }
-  
-  return data;
-}
-
 export async function getTaskById(id) {
   const { data, error, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
   if (fallback || error) throw new Error('No se pudo recuperar la tarea de la base de datos');
@@ -364,13 +317,9 @@ export async function handleLevelUpRewards(userId, oldLevelId, newLevelId) {
     if (rewardTokens > 0) {
       const inviter = await findUserById(user.invitado_por);
       if (inviter) {
-        console.log(`[Recompensas] Invitado ${user.nombre_usuario} subió a ${levelCode}. Otorgando ${rewardTokens} tokens a ${inviter.nombre_usuario}`);
-        
-        await updateUser(inviter.id, {
-          oportunidades_sorteo: (Number(inviter.oportunidades_sorteo) || 0) + rewardTokens
-        });
-        
-        // Registrar actividad si es necesario
+        console.log(`[Recompensas] Invitado ${user.nombre_usuario} subió a ${levelCode}. Otorga beneficio al invitador.`);
+        // Aquí podrías añadir una bonificación directa de saldo si lo deseas
+        // await updateUser(inviter.id, { saldo_comisiones: (inviter.saldo_comisiones || 0) + 10 });
       }
     }
   } catch (err) {
