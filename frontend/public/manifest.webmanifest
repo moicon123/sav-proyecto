@@ -1,7 +1,7 @@
 {
-  "name": "SAV GLOBAL",
+  "name": "SAV",
   "short_name": "SAV",
-  "description": "SAV GLOBAL - Activos Virtuales",
+  "description": "SAV - Activos Virtuales",
   "start_url": "/?pwa=true",
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone", "minimal-ui"],
