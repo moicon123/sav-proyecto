@@ -43,6 +43,8 @@ export default function AdminRecompensas() {
     cantidad: 1
   });
 
+  const [userSearch, setUserSearch] = useState('');
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -337,17 +339,48 @@ export default function AdminRecompensas() {
               {giftForm.tipo === 'usuario' && (
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Seleccionar Usuario</label>
+                  
+                  {/* Buscador de usuario */}
+                  <div className="relative mb-2">
+                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="text"
+                      placeholder="Buscar por nombre o número..."
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border-2 border-gray-50 focus:border-indigo-100 transition-all outline-none text-xs font-bold"
+                    />
+                  </div>
+
                   <select
                     required
                     value={giftForm.targetId}
                     onChange={(e) => setGiftGiftForm({ ...giftForm, targetId: e.target.value })}
                     className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 focus:border-indigo-100 transition-all outline-none text-sm font-bold appearance-none cursor-pointer"
                   >
-                    <option value="">Busca un usuario...</option>
-                    {usuarios.filter(u => u.rol === 'usuario').map(u => (
-                      <option key={u.id} value={u.id}>{u.nombre_usuario} - {u.telefono}</option>
-                    ))}
+                    <option value="">
+                      {userSearch ? 'Resultados de búsqueda...' : 'Selecciona un usuario...'}
+                    </option>
+                    {usuarios
+                      .filter(u => u.rol === 'usuario')
+                      .filter(u => {
+                        const search = userSearch.toLowerCase();
+                        return (
+                          u.nombre_usuario?.toLowerCase().includes(search) || 
+                          u.telefono?.includes(search)
+                        );
+                      })
+                      .map(u => (
+                        <option key={u.id} value={u.id}>{u.nombre_usuario} ({u.telefono})</option>
+                      ))
+                    }
                   </select>
+                  {userSearch && usuarios.filter(u => u.rol === 'usuario').filter(u => {
+                    const search = userSearch.toLowerCase();
+                    return u.nombre_usuario?.toLowerCase().includes(search) || u.telefono?.includes(search);
+                  }).length === 0 && (
+                    <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mt-1 ml-2">No se encontraron usuarios</p>
+                  )}
                 </div>
               )}
 
