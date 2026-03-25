@@ -107,6 +107,7 @@ export const api = {
   banners: () => request('/banners'),
   publicContent: () => request('/public-content'),
   sorteo: {
+    config: () => request('/sorteo/config'),
     premios: () => request('/sorteo/premios'),
     historial: () => request('/sorteo/historial'),
     girar: () => request('/sorteo/girar', { method: 'POST' }),

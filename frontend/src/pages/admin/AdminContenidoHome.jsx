@@ -91,11 +91,10 @@ export default function AdminContenidoHome() {
     horario_recarga: defaultHorario(),
     horario_retiro: defaultHorario(),
     require_s3_subordinates: true,
-    ruleta_boton_activo: true,
-    ruleta_boton_texto: 'Girar Ruleta',
-    ruleta_boton_color: '#1a1f36',
-    ruleta_boton_ruta: '/sorteo',
-    ruleta_boton_icono: 'Gift',
+    recompensas_visibles: true,
+    recompensa_amigos_activa: true,
+    recompensa_amigos_cantidad: 10,
+    recompensa_amigos_nivel_minimo: 'S1',
   });
   const [saving, setSaving] = useState(false);
 
@@ -193,6 +192,41 @@ export default function AdminContenidoHome() {
               <p className="text-[10px] text-gray-400 italic ml-2 font-medium">
                 Si está activado, el sistema verificará automáticamente que el usuario tenga 20 subordinados de nivel S3 antes de permitirle solicitar el ascenso a S4 o S5.
               </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-gray-100 space-y-6">
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Configuración de Recompensas</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Visibilidad Global</label>
+              <label className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={!!form.recompensas_visibles}
+                  onChange={(e) => setForm((f) => ({ ...f, recompensas_visibles: e.target.checked }))}
+                  className="w-5 h-5 rounded-lg border-2 border-gray-300 text-sav-primary focus:ring-0 transition-all"
+                />
+                <span className="text-xs font-black text-gray-500 uppercase tracking-widest group-hover:text-gray-800 transition-colors">
+                  Mostrar sección de recompensas
+                </span>
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Reto de Amigos (S1+)</label>
+              <label className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gray-50 border-2 border-gray-50 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={!!form.recompensa_amigos_activa}
+                  onChange={(e) => setForm((f) => ({ ...f, recompensa_amigos_activa: e.target.checked }))}
+                  className="w-5 h-5 rounded-lg border-2 border-gray-300 text-sav-primary focus:ring-0 transition-all"
+                />
+                <span className="text-xs font-black text-gray-500 uppercase tracking-widest group-hover:text-gray-800 transition-colors">
+                  Activar reto de 10 amigos
+                </span>
+              </label>
             </div>
           </div>
         </div>

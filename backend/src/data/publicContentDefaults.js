@@ -21,6 +21,13 @@ export const publicContentDefaults = {
   },
   /** Requisito de 20 subordinados S3 para ascender a S4/S5 */
   require_s3_subordinates: true,
+  /** Configuración de Recompensas */
+  recompensas_visibles: true,
+  recompensa_bienvenida_activa: true,
+  recompensa_deposito_activa: true,
+  recompensa_amigos_activa: true,
+  recompensa_amigos_cantidad: 10,
+  recompensa_amigos_nivel_minimo: 'S1', // S1 o superior
 };
 
 export function mergePublicContent(pc) {

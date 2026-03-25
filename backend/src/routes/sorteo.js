@@ -5,6 +5,16 @@ import { getPremiosRuleta, createSorteoGanador, findUserById, updateUser, getSor
 
 const router = Router();
 
+router.get('/config', async (req, res) => {
+  try {
+    const { getPublicContent } = await import('../lib/queries.js');
+    const config = await getPublicContent();
+    res.json(config);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener config' });
+  }
+});
+
 router.get('/premios', async (req, res) => {
   try {
     const premios = await getPremiosRuleta();

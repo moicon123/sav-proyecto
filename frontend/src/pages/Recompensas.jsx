@@ -10,13 +10,19 @@ import {
   ChevronRight, 
   Coins,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Lock,
+  UserPlus,
+  Gift,
+  ArrowRight
 } from 'lucide-react';
 
 export default function Recompensas() {
   const { user, setUser } = useAuth();
   const [premios, setPremios] = useState([]);
   const [historial, setHistorial] = useState([]);
+  const [config, setConfig] = useState(null);
+  const [teamStats, setTeamStats] = useState(null);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
   const [rotation, setRotation] = useState(0);
@@ -27,10 +33,14 @@ export default function Recompensas() {
   useEffect(() => {
     Promise.all([
       api.sorteo.premios(),
-      api.sorteo.historial()
-    ]).then(([p, h]) => {
+      api.sorteo.historial(),
+      api.sorteo.config(),
+      api.users.team()
+    ]).then(([p, h, c, t]) => {
       setPremios(p);
       setHistorial(h);
+      setConfig(c);
+      setTeamStats(t);
       setLoading(false);
     }).catch(err => {
       console.error(err);
@@ -49,10 +59,9 @@ export default function Recompensas() {
       if (res.ok) {
         setSpinning(true);
         
-        // Calcular rotación
         const premioIndex = premios.findIndex(p => p.id === res.premio.id);
         const segmentAngle = 360 / premios.length;
-        const extraRounds = 10 * 360; // 10 vueltas completas
+        const extraRounds = 10 * 360; 
         const targetAngle = extraRounds + (360 - (premioIndex * segmentAngle)) - (segmentAngle / 2);
         
         const newRotation = rotation + targetAngle + (360 - (rotation % 360));
@@ -61,13 +70,11 @@ export default function Recompensas() {
         setTimeout(() => {
           setSpinning(false);
           setResult(res.premio);
-          // Actualizar saldo del usuario localmente
           setUser({
             ...user,
             saldo_comisiones: res.nuevo_saldo_comisiones,
             saldo_principal: res.nuevo_saldo_principal
           });
-          // Refrescar historial
           api.sorteo.historial().then(setHistorial);
         }, 5000);
       }
@@ -83,6 +90,34 @@ export default function Recompensas() {
       </div>
     );
   }
+
+  // Si las recompensas no son visibles según el admin
+  if (config && !config.recompensas_visibles) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
+          <div className="max-w-xs">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400">
+              <Lock size={40} />
+            </div>
+            <h2 className="text-xl font-black text-[#1a1f36] uppercase tracking-tighter mb-2">Sección Bloqueada</h2>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+              El administrador ha desactivado temporalmente el centro de recompensas.
+            </p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const amigosRequeridos = config?.recompensa_amigos_cantidad || 10;
+  const nivelMinimoAmigos = config?.recompensa_amigos_nivel_minimo || 'S1';
+  const totalAmigosA = teamStats?.niveles?.[0]?.total_miembros || 0;
+  
+  // Lógica para verificar si cumple requisitos del reto de amigos
+  const cumpleNivel = (user?.nivel_codigo || '').toUpperCase() !== 'INTERNAR'; // Internar es pasante
+  const cumpleAmigos = totalAmigosA >= amigosRequeridos;
+  const retoAmigosHabilitado = cumpleNivel && cumpleAmigos;
 
   return (
     <Layout>
@@ -110,14 +145,12 @@ export default function Recompensas() {
         <div className="px-6 -mt-20 max-w-4xl mx-auto space-y-8">
           {/* Wheel Container */}
           <div className="relative flex flex-col items-center">
-            {/* Pointer */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 z-30">
               <div className="w-8 h-10 bg-white rounded-b-full shadow-2xl flex items-center justify-center border-x-4 border-b-4 border-[#1a1f36]">
                 <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
               </div>
             </div>
 
-            {/* The Wheel */}
             <div className="relative w-80 h-80 md:w-96 md:h-96 rounded-full border-8 border-[#1a1f36] shadow-[0_0_50px_rgba(0,0,0,0.2)] overflow-hidden bg-white">
               <div 
                 ref={wheelRef}
@@ -159,7 +192,6 @@ export default function Recompensas() {
                 </svg>
               </div>
               
-              {/* Center Cap */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-[#1a1f36] border-4 border-white shadow-2xl flex items-center justify-center z-20">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-rose-500 animate-pulse flex items-center justify-center">
                   <Coins className="text-white" size={20} />
@@ -167,7 +199,6 @@ export default function Recompensas() {
               </div>
             </div>
 
-            {/* Action Button */}
             <button
               onClick={spinWheel}
               disabled={spinning}
@@ -179,7 +210,6 @@ export default function Recompensas() {
               {spinning ? 'Girando...' : 'Girar por 5 BOB'}
             </button>
 
-            {/* Error Message */}
             {error && (
               <div className="mt-6 flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 text-rose-500 border border-rose-100 animate-shake">
                 <AlertCircle size={16} />
@@ -205,6 +235,66 @@ export default function Recompensas() {
             <button className="p-4 rounded-2xl bg-gray-50 text-[#1a1f36] hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
               <ChevronRight size={20} />
             </button>
+          </div>
+
+          {/* Desafíos Especiales */}
+          <div className="space-y-4">
+            <h2 className="text-xs font-black text-[#1a1f36] uppercase tracking-[0.2em] px-2">Desafíos Especiales</h2>
+            
+            <div className="grid grid-cols-1 gap-4">
+              {/* Reto de Invitados (Dinámico) */}
+              {config?.recompensa_amigos_activa && (
+                <div className={`group relative overflow-hidden bg-white rounded-[2rem] p-6 border transition-all duration-300 ${retoAmigosHabilitado ? 'border-indigo-100 ring-1 ring-indigo-50 hover:shadow-2xl' : 'opacity-60 grayscale'}`}>
+                  <div className="flex items-start justify-between relative z-10">
+                    <div className="flex gap-4">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border transition-colors ${retoAmigosHabilitado ? 'bg-indigo-50 border-indigo-100 text-indigo-500' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
+                        <UserPlus size={28} />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-[#1a1f36] uppercase tracking-tight text-base mb-1">Invitado Estrella</h3>
+                        <p className="text-xs text-gray-400 font-medium leading-relaxed max-w-[200px] uppercase tracking-wide">
+                          Invita a {amigosRequeridos} amigos (Nivel {nivelMinimoAmigos}+) para un Giro Gratis Especial.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xl font-black block leading-none text-[#1a1f36]">{totalAmigosA}/{amigosRequeridos}</span>
+                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Amigos</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-2">
+                      <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${retoAmigosHabilitado ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                        {retoAmigosHabilitado ? '¡Reclama tu Giro!' : 'En Progreso'}
+                      </div>
+                      {!cumpleNivel && (
+                        <div className="flex items-center gap-1 text-[8px] font-black text-rose-500 uppercase">
+                          <Lock size={10} />
+                          Requiere S1+
+                        </div>
+                      )}
+                    </div>
+                    
+                    {retoAmigosHabilitado ? (
+                      <button 
+                        onClick={spinWheel}
+                        className="flex items-center gap-2 bg-[#1a1f36] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-colors group/btn"
+                      >
+                        Girar Ahora
+                        <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                      </button>
+                    ) : (
+                      <button className="flex items-center gap-2 bg-gray-100 text-gray-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-not-allowed">
+                        Bloqueado
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Otros desafíos pueden ir aquí bajo la misma lógica */}
+            </div>
           </div>
 
           {/* Winners History */}
