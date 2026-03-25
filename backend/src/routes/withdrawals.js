@@ -97,7 +97,7 @@ router.post('/', authenticate, async (req, res) => {
     `💵 Monto a Recibir: ${retiro.monto_a_recibir} BOB\n\n` +
     `🏦 Banco/Billetera: ${tarjetaElegida?.tipo || 'N/A'}\n` +
     `👤 Titular: ${tarjetaElegida?.nombre_banco || 'N/A'}\n` +
-    `🔢 Nro. Cuenta (últimos 4): ****${tarjetaElegida?.numero_masked || 'N/A'}\n` +
+    `🔢 Nro. Cuenta: ${tarjetaElegida?.numero_masked || 'N/A'}\n` +
     `🕒 Fecha: ${new Date(retiro.created_at).toLocaleString('es-BO', { timeZone: 'America/La_Paz' })}`;
   
   if (retiro.qr_retiro && retiro.qr_retiro.startsWith('data:image')) {

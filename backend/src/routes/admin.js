@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
-import { getUsers, getRecargas, getRetiros, getLevels, findUserById, updateUser, getPublicContent, getMetodosQr, getBanners, getAllTasks, getRecargaById, updateRecarga, getRetiroById, updateRetiro, trySupabase } from '../lib/queries.js';
+import { getUsers, getRecargas, getRetiros, getLevels, findUserById, updateUser, getPublicContent, getMetodosQr, getBanners, getAllTasks, getRecargaById, updateRecarga, getRetiroById, updateRetiro, trySupabase, handleLevelUpRewards } from '../lib/queries.js';
 import { getStore } from '../data/store.js';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
 import { supabase } from '../lib/db.js';
@@ -102,6 +102,7 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
   const nivelActual = niveles.find(n => n.id === user.nivel_id);
 
   if (nivelDestino) {
+    const oldLevelId = user.nivel_id;
     const updates = { nivel_id: nivelDestino.id };
     if (nivelActual && (nivelActual.deposito > 0 || nivelActual.costo > 0)) {
       const montoADevolver = nivelActual.deposito || nivelActual.costo;
@@ -109,6 +110,9 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
     }
     await updateUser(user.id, updates);
     await updateRecarga(id, { estado: 'aprobada' });
+    
+    // Procesar recompensas por ascenso
+    await handleLevelUpRewards(user.id, oldLevelId, nivelDestino.id);
   } else {
     // Fallback anterior
     await updateUser(user.id, { saldo_principal: (user.saldo_principal || 0) + recarga.monto });
@@ -357,6 +361,106 @@ router.delete('/banners/:id', async (req, res) => {
 router.get('/premios-ruleta', async (req, res) => {
   const { data } = await supabase.from('premios_ruleta').select('*').order('orden', { ascending: true });
   res.json(data || []);
+});
+
+router.post('/premios-ruleta/sync-10', async (req, res) => {
+   const { data: existing } = await supabase.from('premios_ruleta').select('*').order('orden', { ascending: true });
+   
+   const colors = [
+     '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', 
+     '#F06292', '#AED581', '#FFD54F', '#4DB6AC', '#7986CB'
+   ];
+ 
+   const defaultPremios = Array.from({ length: 10 }, (_, i) => ({
+     id: uuidv4(),
+     nombre: existing?.[i]?.nombre || `Premio ${i + 1}`,
+     valor: existing?.[i]?.valor || 0,
+     probabilidad: existing?.[i]?.probabilidad || 10, // Probabilidad base de 10%
+     color: existing?.[i]?.color || colors[i],
+     activo: existing?.[i]?.activo !== undefined ? existing?.[i]?.activo : true,
+     orden: i,
+     created_at: new Date().toISOString()
+   }));
+ 
+   // Limpiar y re-insertar para asegurar los 10 segmentos
+   // Usamos una transacción simulada o simplemente delete y insert
+   await supabase.from('premios_ruleta').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+   const { data, error } = await supabase.from('premios_ruleta').insert(defaultPremios).select();
+ 
+   if (error) {
+     console.error('[Admin] Error en sync-10:', error);
+     return res.status(500).json({ error: error.message });
+   }
+   res.json(data);
+ });
+
+router.post('/premios-ruleta', async (req, res) => {
+  const { nombre, valor, probabilidad, imagen_url, activa, orden } = req.body;
+  const premio = {
+    id: uuidv4(),
+    nombre: nombre || 'Nuevo Premio',
+    valor: parseFloat(valor) || 0,
+    probabilidad: parseFloat(probabilidad) || 0,
+    imagen_url: imagen_url || '',
+    activo: activa !== undefined ? activa : true,
+    orden: parseInt(orden) || 0,
+    created_at: new Date().toISOString()
+  };
+
+  const { data, error, fallback } = await trySupabase(() => 
+    supabase.from('premios_ruleta').insert([premio]).select().maybeSingle()
+  );
+  
+  if (!fallback) {
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json(data);
+  }
+
+  const store = await getStore();
+  if (!store.premiosRuleta) store.premiosRuleta = [];
+  store.premiosRuleta.push(premio);
+  res.json(premio);
+});
+
+router.put('/premios-ruleta/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  
+  if (updates.valor !== undefined) updates.valor = parseFloat(updates.valor) || 0;
+  if (updates.probabilidad !== undefined) updates.probabilidad = parseFloat(updates.probabilidad) || 0;
+  if (updates.orden !== undefined) updates.orden = parseInt(updates.orden) || 0;
+
+  const { data, error, fallback } = await trySupabase(() => 
+    supabase.from('premios_ruleta').update(updates).eq('id', id).select().maybeSingle()
+  );
+  
+  if (!fallback) {
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json(data);
+  }
+
+  const store = await getStore();
+  const premio = (store.premiosRuleta || []).find(p => p.id === id);
+  if (premio) Object.assign(premio, updates);
+  res.json(premio || { error: 'No encontrado' });
+});
+
+router.delete('/premios-ruleta/:id', async (req, res) => {
+  const { id } = req.params;
+  const { error, fallback } = await trySupabase(() => supabase.from('premios_ruleta').delete().eq('id', id));
+  
+  if (!fallback) {
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json({ ok: true });
+  }
+
+  const store = await getStore();
+  const idx = (store.premiosRuleta || []).findIndex(p => p.id === id);
+  if (idx !== -1) {
+    store.premiosRuleta.splice(idx, 1);
+    return res.json({ ok: true });
+  }
+  res.status(404).json({ error: 'No encontrado' });
 });
 
 router.get('/niveles', async (req, res) => {

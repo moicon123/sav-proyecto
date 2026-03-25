@@ -54,6 +54,7 @@ async function request(url, options = {}, retries = 1) {
 }
 
 export const api = {
+  post: (url, data) => request(url, { method: 'POST', body: JSON.stringify(data) }),
   auth: {
     login: (telefono, password, deviceId) => request('/auth/login', { method: 'POST', body: JSON.stringify({ telefono, password, deviceId }) }),
     register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),

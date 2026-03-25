@@ -6,13 +6,23 @@ import { authenticate } from '../middleware/auth.js';
 const router = Router();
 
 function pickByProbability(premios) {
-  const total = premios.reduce((s, p) => s + (p.probabilidad || 0.1), 0);
-  let r = Math.random() * total;
-  for (const p of premios) {
-    r -= p.probabilidad || 0.1;
+  const activos = premios.filter(p => p.activo !== false);
+  if (activos.length === 0) return null;
+
+  const totalProb = activos.reduce((s, p) => s + (parseFloat(p.probabilidad) || 0), 0);
+  
+  // Si no hay probabilidades configuradas o son 0, elegir uno al azar equitativo
+  if (totalProb <= 0) {
+    return activos[Math.floor(Math.random() * activos.length)];
+  }
+
+  let r = Math.random() * totalProb;
+  for (const p of activos) {
+    const prob = parseFloat(p.probabilidad) || 0;
+    r -= prob;
     if (r <= 0) return p;
   }
-  return premios[premios.length - 1];
+  return activos[activos.length - 1];
 }
 
 router.get('/premios', async (req, res) => {
@@ -23,7 +33,8 @@ router.get('/premios', async (req, res) => {
 router.get('/historial', async (req, res) => {
   const raw = await getSorteosGanadores();
   const historial = raw.map((h) => {
-    const telefono = h.usuarios?.telefono || '';
+    // La relación en queries.js es 'usuario' (singular)
+    const telefono = h.usuario?.telefono || '';
     const masked = telefono ? '****' + telefono.slice(-4) : '****' + Math.floor(1000 + Math.random() * 9000);
     return { ...h, usuario_masked: masked };
   });

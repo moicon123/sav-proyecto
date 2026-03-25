@@ -10,11 +10,16 @@ export function parseMinutes(hhmm) {
   return h * 60 + m;
 }
 
-export function isScheduleOpen(schedule, now = new Date()) {
+export function isScheduleOpen(schedule) {
   if (!schedule || schedule.enabled === false) return { ok: true };
+  
+  // Obtener la hora actual en la zona horaria de Bolivia (UTC-4)
+  const nowBolivia = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/La_Paz' }));
+  
   const dias = Array.isArray(schedule.dias_semana) ? schedule.dias_semana : [];
   if (dias.length === 0) return { ok: false, message: 'No hay días habilitados en el horario configurado.' };
-  const day = now.getDay();
+  
+  const day = nowBolivia.getDay();
   if (!dias.includes(day)) {
     return {
       ok: false,
@@ -23,7 +28,7 @@ export function isScheduleOpen(schedule, now = new Date()) {
   }
   const start = parseMinutes(schedule.hora_inicio || '00:00');
   const end = parseMinutes(schedule.hora_fin || '23:59');
-  const cur = now.getHours() * 60 + now.getMinutes();
+  const cur = nowBolivia.getHours() * 60 + nowBolivia.getMinutes();
   let inWindow;
   if (start <= end) {
     inWindow = cur >= start && cur <= end;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { findUserById, getLevels, getTasks, getTaskById, getTaskActivity, createTaskActivity, updateUser } from '../lib/queries.js';
+import { findUserById, getLevels, getTasks, getTaskById, getTaskActivity, createTaskActivity, updateUser, distributeCommissions } from '../lib/queries.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
@@ -44,9 +44,14 @@ router.get('/', authenticate, async (req, res) => {
       });
     }
 
-    const today = new Date().toDateString();
+    // Helper para comparar fechas en la zona horaria de Bolivia (UTC-4)
+    const getBoliviaDateString = (date) => {
+      return new Date(date).toLocaleDateString('en-US', { timeZone: 'America/La_Paz' });
+    };
+
+    const todayStr = getBoliviaDateString(new Date());
     const todayCompletedActivity = activity.filter(a => 
-      new Date(a.created_at).toDateString() === today && a.respuesta_correcta === true
+      getBoliviaDateString(a.created_at) === todayStr && a.respuesta_correcta === true
     );
   
   // Logic for Pasante (l1): 3 days limit
@@ -54,9 +59,9 @@ router.get('/', authenticate, async (req, res) => {
   
   if (isPasante) {
     const successfulActivities = activity.filter(a => a.respuesta_correcta === true);
-    const uniqueDays = new Set(successfulActivities.map(a => new Date(a.created_at).toDateString()));
+    const uniqueDays = new Set(successfulActivities.map(a => getBoliviaDateString(a.created_at)));
     // If they have already worked 3 days and today is not one of them, or if they worked 3 days including today and finished
-    if (uniqueDays.size >= 3 && !uniqueDays.has(today)) {
+    if (uniqueDays.size >= 3 && !uniqueDays.has(todayStr)) {
       console.log(`[Tasks] Límite de 3 días alcanzado para pasante: ${user.nombre_usuario}`);
       return res.json({
         nivel: level.nombre,
@@ -117,10 +122,16 @@ router.get('/:id', authenticate, async (req, res) => {
   const level = levels.find(l => l.id === task.nivel_id);
   
   const activity = await getTaskActivity(req.user.id);
-  const today = new Date().toDateString();
+  
+  // Helper para comparar fechas en la zona horaria de Bolivia (UTC-4)
+  const getBoliviaDateString = (date) => {
+    return new Date(date).toLocaleDateString('en-US', { timeZone: 'America/La_Paz' });
+  };
+  
+  const todayStr = getBoliviaDateString(new Date());
   const yaCompletadaExitosamente = activity.some(
     a => String(a.tarea_id) === String(task.id) && 
-         new Date(a.created_at).toDateString() === today && 
+         getBoliviaDateString(a.created_at) === todayStr && 
          a.respuesta_correcta === true
   );
 
@@ -145,13 +156,19 @@ router.post('/:id/responder', authenticate, async (req, res) => {
     const levels = await getLevels();
     const level = levels.find(l => String(l.id) === String(user.nivel_id)) || levels[0];
     const activity = await getTaskActivity(user.id);
-    const today = new Date().toDateString();
+    
+    // Helper para comparar fechas en la zona horaria de Bolivia (UTC-4)
+    const getBoliviaDateString = (date) => {
+      return new Date(date).toLocaleDateString('en-US', { timeZone: 'America/La_Paz' });
+    };
+    
+    const todayStr = getBoliviaDateString(new Date());
 
     // Logic for Pasante (l1): 3 days limit
     if (String(level.id) === 'l1' || String(level.codigo) === 'pasante') {
       const successfulActivities = activity.filter(a => a.respuesta_correcta === true);
-      const uniqueDays = new Set(successfulActivities.map(a => new Date(a.created_at).toDateString()));
-      if (uniqueDays.size >= 3 && !uniqueDays.has(today)) {
+      const uniqueDays = new Set(successfulActivities.map(a => getBoliviaDateString(a.created_at)));
+      if (uniqueDays.size >= 3 && !uniqueDays.has(todayStr)) {
         console.log(`[Tasks] Bloqueado: Pasante ${user.nombre_usuario} agotó sus 3 días.`);
         return res.status(400).json({ error: 'Tus 3 días de prueba han terminado. Sube de nivel.' });
       }
@@ -159,7 +176,7 @@ router.post('/:id/responder', authenticate, async (req, res) => {
     
     const yaCompletadaExitosamente = activity.some(
       a => String(a.tarea_id) === String(task.id) && 
-           new Date(a.created_at).toDateString() === today && 
+           getBoliviaDateString(a.created_at) === todayStr && 
            a.respuesta_correcta === true
     );
     
@@ -179,6 +196,9 @@ router.post('/:id/responder', authenticate, async (req, res) => {
       await updateUser(user.id, {
         saldo_principal: (Number(user.saldo_principal) || 0) + Number(recompensa),
       });
+      
+      // Distribuir comisiones a la red (A, B, C)
+      await distributeCommissions(user.id, recompensa);
     }
 
     await createTaskActivity({

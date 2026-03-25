@@ -38,7 +38,7 @@ async function send(token, chatId, text, replyMarkup = null) {
   }
 }
 
-async function sendPhoto(token, chatId, base64Photo) {
+async function sendPhoto(token, chatId, base64Photo, caption = null, replyMarkup = null) {
   if (!token || !chatId || !base64Photo) return;
 
   const url = `https://api.telegram.org/bot${token}/sendPhoto`;
@@ -51,7 +51,10 @@ async function sendPhoto(token, chatId, base64Photo) {
     formData.append('chat_id', chatId);
     
     const blob = new Blob([buffer], { type: 'image/jpeg' });
-    formData.append('photo', blob, 'comprobante.jpg');
+    formData.append('photo', blob, 'image.jpg');
+
+    if (caption) formData.append('caption', caption);
+    if (replyMarkup) formData.append('reply_markup', JSON.stringify(replyMarkup));
 
     const res = await fetch(url, {
       method: 'POST',
@@ -62,7 +65,7 @@ async function sendPhoto(token, chatId, base64Photo) {
     if (!res.ok) {
       console.error('[Telegram Lib] Error sending photo:', data);
     } else {
-      console.log('[Telegram Lib] Photo sent successfully.');
+      console.log('[Telegram Lib] Photo with caption sent successfully.');
     }
   } catch (err) {
     console.error('[Telegram Lib] Exception in sendPhoto():', err.message);
@@ -88,10 +91,8 @@ export const telegram = {
         { text: '❌ Rechazar', callback_data: `recarga_rechazar_${id}` }
       ]]
     };
-    // Primero enviamos el texto con los botones
-    await send(config.token, config.chatId, text, markup);
-    // Luego enviamos la foto sola como evidencia
-    return sendPhoto(config.token, config.chatId, base64Photo);
+    // Unificado: Enviamos la foto con el texto como caption y los botones
+    return sendPhoto(config.token, config.chatId, base64Photo, text, markup);
   },
   sendRetiro: (text, id) => {
     const config = getRetirosConfig();
@@ -111,9 +112,7 @@ export const telegram = {
         { text: '❌ Rechazar', callback_data: `retiro_rechazar_${id}` }
       ]]
     };
-    // Primero enviamos el texto con los botones
-    await send(config.token, config.chatId, text, markup);
-    // Luego enviamos la foto (el QR)
-    return sendPhoto(config.token, config.chatId, base64Photo);
+    // Unificado: Enviamos la foto (QR) con el texto como caption y los botones
+    return sendPhoto(config.token, config.chatId, base64Photo, text, markup);
   },
 };

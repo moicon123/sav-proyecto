@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { findUserById, getLevels, updateUser, getTaskActivity, getTarjetasByUser } from '../lib/queries.js';
+import { findUserById, getLevels, updateUser, getTaskActivity, getTarjetasByUser, createTarjeta, deleteTarjeta, getUsers } from '../lib/queries.js';
 import { authenticate } from '../middleware/auth.js';
 import { getStore } from '../data/store.js';
 import { supabase } from '../lib/db.js';
@@ -90,11 +90,13 @@ router.get('/stats', authenticate, async (req, res) => {
   if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
   const activity = await getTaskActivity(user.id);
   
-  // Usar una referencia de tiempo consistente (UTC para evitar discrepancias de servidor)
-  const now = new Date();
-  
-  // Inicio de hoy (00:00:00 local del servidor, pero comparado con ISO strings)
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // Helper para manejar fechas en la zona horaria de Bolivia (UTC-4)
+  const getBoliviaDate = (date = new Date()) => {
+    const d = new Date(date.toLocaleString('en-US', { timeZone: 'America/La_Paz' }));
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  };
+
+  const startOfToday = getBoliviaDate();
   
   // Inicio de ayer
   const startOfYesterday = new Date(startOfToday);
@@ -107,16 +109,18 @@ router.get('/stats', authenticate, async (req, res) => {
   startOfWeek.setDate(diff);
   
   // Inicio del mes
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfMonth = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), 1);
 
   const filterByDate = (list, start, end = null) => {
     const startTime = start.getTime();
     const endTime = end ? end.getTime() : null;
     
     return list.filter(item => {
-      const d = new Date(item.created_at).getTime();
-      if (endTime) return d >= startTime && d < endTime;
-      return d >= startTime;
+      // Convertir el created_at a la fecha correspondiente en Bolivia para comparar
+      const boliviaItemDate = getBoliviaDate(new Date(item.created_at)).getTime();
+      
+      if (endTime) return boliviaItemDate >= startTime && boliviaItemDate < endTime;
+      return boliviaItemDate >= startTime;
     });
   };
 
@@ -160,43 +164,38 @@ router.post('/tarjetas', authenticate, async (req, res) => {
   const { nombre_banco, tipo, numero_cuenta } = req.body;
   const nombre = String(nombre_banco || '').trim();
   if (!nombre || numero_cuenta === undefined || numero_cuenta === '') {
-    return res.status(400).json({ error: 'Indica banco y número de cuenta' });
+    return res.status(400).json({ error: 'Indica el nombre del propietario y el número de cuenta' });
   }
-  const digits = String(numero_cuenta).replace(/\D/g, '');
-  const last4 = digits.slice(-4);
-  if (last4.length < 4) {
-    return res.status(400).json({ error: 'Ingresa al menos 4 dígitos del número de cuenta' });
-  }
+  
+  // Guardamos el número de cuenta real para que el administrador lo vea
+  // Aunque en el frontend mostremos solo los últimos 4, en la DB es mejor el dato real
+  // Pero respetaremos la lógica de numero_masked para no cambiar el esquema si no es necesario.
+  // El usuario pidió que se guarde en la base de datos.
   
   const tarjeta = {
     id: uuidv4(),
     usuario_id: req.user.id,
     tipo: String(tipo || 'banco').trim() || 'banco',
     nombre_banco: nombre,
-    numero_masked: last4,
+    numero_masked: String(numero_cuenta).trim(), // Cambiamos para guardar el número completo si el usuario lo provee
   };
   
-  const store = await getStore();
-  if (store.tarjetas) {
-    store.tarjetas.push(tarjeta);
-  } else {
-    // If Supabase is connected, we should insert there
-    await supabase.from('tarjetas_bancarias').insert([tarjeta]);
+  try {
+    const nuevaTarjeta = await createTarjeta(tarjeta);
+    res.json(nuevaTarjeta);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al guardar la tarjeta' });
   }
-  
-  res.json({
-    id: tarjeta.id,
-    tipo: tarjeta.tipo,
-    numero_masked: tarjeta.numero_masked,
-    nombre_banco: tarjeta.nombre_banco,
-  });
 });
 
 router.delete('/tarjetas/:id', authenticate, async (req, res) => {
   const { id } = req.params;
-  await supabase.from('tarjetas_bancarias').delete().eq('id', id).eq('usuario_id', req.user.id);
-  // Also handle local store if needed, but let's prioritize Supabase
-  res.json({ ok: true });
+  try {
+    await deleteTarjeta(id, req.user.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar la tarjeta' });
+  }
 });
 
 router.get('/notificaciones', authenticate, async (req, res) => {
@@ -213,10 +212,8 @@ router.get('/team', authenticate, async (req, res) => {
   const root = await findUserById(req.user.id);
   if (!root) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-  // This part is complex for Supabase without a recursive query, 
-  // let's keep it simple for now or use the store if possible
-  const store = await getStore();
-  const allUsers = store.users || [];
+  // Consultar todos los usuarios directamente de Supabase/Persistencia
+  const allUsers = await getUsers();
   
   const byInviter = new Map();
   for (const u of allUsers.filter(u => u.rol === 'usuario')) {

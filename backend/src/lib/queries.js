@@ -10,12 +10,12 @@ export async function trySupabase(operation) {
   try {
     const { data, error } = await operation();
     if (error) {
-      console.error('[Supabase] Error executing query:', error);
+      console.error('[Supabase Error Logged]:', JSON.stringify(error, null, 2));
       return { data: null, error, fallback: true };
     }
     return { data, error: null, fallback: false };
   } catch (err) {
-    console.error('[Supabase] Critical exception:', err);
+    console.error('[Supabase Critical Logged]:', err);
     return { data: null, error: err, fallback: true };
   }
 }
@@ -192,6 +192,25 @@ export async function getTarjetasByUser(userId) {
   return (store.tarjetas || []).filter(t => t.usuario_id === userId);
 }
 
+export async function createTarjeta(tarjetaData) {
+  const { data, fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').insert([tarjetaData]).select().maybeSingle());
+  if (!fallback && data) return data;
+  const store = await getStore();
+  if (!store.tarjetas) store.tarjetas = [];
+  store.tarjetas.push(tarjetaData);
+  return tarjetaData;
+}
+
+export async function deleteTarjeta(id, userId) {
+  const { fallback } = await trySupabase(() => supabase.from('tarjetas_bancarias').delete().eq('id', id).eq('usuario_id', userId));
+  if (!fallback) return true;
+  const store = await getStore();
+  if (store.tarjetas) {
+    store.tarjetas = store.tarjetas.filter(t => t.id !== id || t.usuario_id !== userId);
+  }
+  return true;
+}
+
 export async function getPublicContent() {
   const { data, fallback } = await trySupabase(() => supabase.from('configuraciones').select('*'));
   if (!fallback && data && data.length > 0) return data.reduce((acc, curr) => ({ ...acc, [curr.clave]: curr.valor }), {});
@@ -232,17 +251,18 @@ export async function getAllTasks() {
 }
 
 export async function getTasks(nivelId) {
+  // Intentar obtener tareas de Supabase
   const { data, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('nivel_id', nivelId).eq('activa', true));
   
+  // Si tenemos datos de Supabase, los usamos
+  if (!fallback && data && data.length > 0) return data;
+
+  // Si Supabase falló o no tiene datos, usamos el store local (seed.js)
   const store = await getStore();
   const levels = await getLevels();
   const currentLevel = levels.find(l => String(l.id) === String(nivelId)) || 
                        levels.find(l => String(l.codigo) === 'pasante' && (nivelId === 'l1' || nivelId === 'pasante' || String(nivelId).length > 20));
   
-  // Si tenemos datos de Supabase, los usamos
-  if (!fallback && data && data.length > 0) return data;
-
-  // Si no, usamos el store local
   const localTasks = (store.tasks || []).filter(t => {
     if (String(t.nivel_id) === String(nivelId)) return true;
     
@@ -324,4 +344,87 @@ export async function createTaskActivity(activity) {
   if (!store.actividadTareas) store.actividadTareas = [];
   store.actividadTareas.push(activity);
   return activity;
+}
+
+/**
+ * Procesa el ascenso de nivel de un usuario y otorga recompensas al invitador (Upline)
+ */
+export async function handleLevelUpRewards(userId, oldLevelId, newLevelId) {
+  try {
+    const user = await findUserById(userId);
+    const levels = await getLevels();
+    const newLevel = levels.find(l => l.id === newLevelId);
+    
+    if (!user || !newLevel || !user.invitado_por) return;
+
+    // Lógica de tokens según nivel: S1=1, S2=2, S3=3, etc.
+    const levelCode = String(newLevel.codigo).toUpperCase();
+    let rewardTokens = 0;
+
+    if (levelCode === 'S1') rewardTokens = 1;
+    else if (levelCode === 'S2') rewardTokens = 2;
+    else if (levelCode === 'S3') rewardTokens = 3;
+    else if (levelCode.startsWith('S')) {
+      const num = parseInt(levelCode.substring(1));
+      if (!isNaN(num)) rewardTokens = num;
+    }
+
+    if (rewardTokens > 0) {
+      const inviter = await findUserById(user.invitado_por);
+      if (inviter) {
+        console.log(`[Recompensas] Invitado ${user.nombre_usuario} subió a ${levelCode}. Otorgando ${rewardTokens} tokens a ${inviter.nombre_usuario}`);
+        
+        await updateUser(inviter.id, {
+          oportunidades_sorteo: (Number(inviter.oportunidades_sorteo) || 0) + rewardTokens
+        });
+        
+        // Registrar actividad si es necesario
+      }
+    }
+  } catch (err) {
+    console.error('[Recompensas] Error en handleLevelUpRewards:', err);
+  }
+}
+ * Nivel A: 15%, Nivel B: 5%, Nivel C: 2%
+ */
+export async function distributeCommissions(userId, baseAmount) {
+  console.log(`[Comisiones] Iniciando distribución para usuario ${userId}, monto base: ${baseAmount}`);
+  
+  try {
+    // 1. Obtener el usuario actual para encontrar a su invitador
+    const user = await findUserById(userId);
+    if (!user || !user.invitado_por) return;
+
+    const levels = [
+      { key: 'A', percent: 0.15 },
+      { key: 'B', percent: 0.05 },
+      { key: 'C', percent: 0.02 }
+    ];
+
+    let currentUplineId = user.invitado_por;
+
+    for (const config of levels) {
+      if (!currentUplineId) break;
+
+      const upline = await findUserById(currentUplineId);
+      if (!upline) break;
+
+      const commission = Number((baseAmount * config.percent).toFixed(2));
+      if (commission > 0) {
+        console.log(`[Comisiones] Nivel ${config.key}: Otorgando ${commission} BOB a ${upline.nombre_usuario} (ID: ${upline.id})`);
+        
+        await updateUser(upline.id, {
+          saldo_comisiones: (Number(upline.saldo_comisiones) || 0) + commission
+        });
+
+        // Registrar la transacción si existiera una tabla de transacciones, 
+        // por ahora solo actualizamos el saldo.
+      }
+
+      // Pasar al siguiente nivel ascendente
+      currentUplineId = upline.invitado_por;
+    }
+  } catch (err) {
+    console.error('[Comisiones] Error distribuyendo comisiones:', err);
+  }
 }

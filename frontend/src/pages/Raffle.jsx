@@ -129,12 +129,12 @@ export default function Raffle() {
 
                         return (
                           <g key={s.id}>
-                            <path d={d} fill={i % 2 === 0 ? '#1a1f36' : '#ffffff'} stroke="rgba(255,255,255,0.05)" strokeWidth="0.2" />
+                            <path d={d} fill={s.color || (i % 2 === 0 ? '#1a1f36' : '#ffffff')} stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
                             <text 
                               x={tx} 
                               y={ty} 
-                              fill={i % 2 === 0 ? 'white' : '#1a1f36'} 
-                              fontSize="3.5" 
+                              fill={i % 2 === 0 && !s.color ? 'white' : (s.color ? (parseInt(s.color.replace('#',''), 16) > 0xffffff/2 ? '#1a1f36' : 'white') : '#1a1f36')} 
+                              fontSize="3" 
                               fontWeight="900" 
                               textAnchor="middle" 
                               transform={`rotate(${midAngle + 90}, ${tx}, ${ty})`}
