@@ -80,7 +80,8 @@ router.get('/', authenticate, async (req, res) => {
     // Filtro mejorado para asegurar que desaparezcan incluso con IDs diferentes (uuid vs string)
     const availableTasks = allTasks.filter(t => !completedTaskIdsToday.has(String(t.id)));
     
-    const numTareasDiarias = level.num_tareas_diarias || 0;
+    // CORRECCIÓN: Usar tareas_diarias en lugar de num_tareas_diarias (coincide con esquema real)
+    const numTareasDiarias = Number(level.tareas_diarias) || 0;
     const remaining = Math.max(0, numTareasDiarias - todayCompletedActivity.length);
     
     console.log(`[Tasks] Diarias: ${numTareasDiarias}, Completadas: ${todayCompletedActivity.length}, Restantes: ${remaining}, Disponibles: ${availableTasks.length}`);

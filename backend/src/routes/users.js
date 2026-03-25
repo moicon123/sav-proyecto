@@ -126,32 +126,42 @@ router.get('/stats', authenticate, async (req, res) => {
 
   const sumMonto = (list) => {
     return list.reduce((total, item) => {
+      // Usar recompensa_otorgada si existe (datos reales de la DB), sino recompensa
       const monto = Number(item.recompensa_otorgada) || Number(item.recompensa) || 0;
       return total + monto;
     }, 0);
   };
 
-  // Filtrar solo tareas exitosas
-  const successfulTasks = activity.filter(a => a.tarea_id && a.respuesta_correcta === true);
+  // 1. Ganancias por tareas propias
+  const successfulTasks = activity.filter(a => a.respuesta_correcta === true);
+
+  // 2. Ganancias por comisiones de referidos (Acumulado real)
+  const comisionesSubordinados = Number(user.saldo_comisiones) || 0;
+
+  // 3. Recompensas por invitaciones directas
+  const recompensaInvitacion = Number(user.recompensa_invitacion) || 0;
 
   const hoy = filterByDate(successfulTasks, startOfToday);
   const ayer = filterByDate(successfulTasks, startOfYesterday, startOfToday);
   const semana = filterByDate(successfulTasks, startOfWeek);
   const mes = filterByDate(successfulTasks, startOfMonth);
 
-  // Redondear a 2 decimales para evitar errores de precisión flotante (ej: 3.22 + 3.22 = 6.440000000000001)
+  // Redondear a 2 decimales
   const round = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
+
+  // El total de ingresos ahora incluye: Tareas + Comisiones + Invitaciones
+  const ingresosTotales = sumMonto(successfulTasks) + comisionesSubordinados + recompensaInvitacion;
 
   res.json({
     ingresos_ayer: round(sumMonto(ayer)),
     ingresos_hoy: round(sumMonto(hoy)),
     ingresos_semana: round(sumMonto(semana)),
     ingresos_mes: round(sumMonto(mes)),
-    ingresos_totales: round(sumMonto(successfulTasks)),
-    comision_subordinados: round(user.saldo_comisiones || 0),
-    recompensa_invitacion: round(user.recompensa_invitacion || 0),
+    ingresos_totales: round(ingresosTotales),
+    comision_subordinados: round(comisionesSubordinados),
+    recompensa_invitacion: round(recompensaInvitacion),
     total_completadas: successfulTasks.length,
-    pasante_limit_reached: false, // El límite se maneja en la ruta de tareas
+    pasante_limit_reached: false,
   });
 });
 
