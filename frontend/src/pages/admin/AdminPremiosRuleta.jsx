@@ -5,6 +5,7 @@ import { Plus, Trash2 } from 'lucide-react';
 export default function AdminPremiosRuleta() {
   const [premios, setPremios] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [historial, setHistorial] = useState([]);
 
   useEffect(() => {
@@ -17,7 +18,7 @@ export default function AdminPremiosRuleta() {
       const data = await api.admin.premiosRuleta();
       setPremios(data);
       const h = await api.sorteo.historial();
-      setHistorial(h.slice(0, 10)); // Solo los 10 más recientes
+      setHistorial(h.slice(0, 10));
     } catch (e) {
       console.error(e);
     } finally {
@@ -29,7 +30,6 @@ export default function AdminPremiosRuleta() {
     if (!confirm('Esto restablecerá la ruleta a 10 segmentos predeterminados. ¿Continuar?')) return;
     setLoading(true);
     try {
-      // Necesitamos añadir esta función a la API
       const res = await api.post('/admin/premios-ruleta/sync-10');
       setPremios(res);
       alert('Ruleta sincronizada a 10 segmentos con éxito.');
@@ -40,17 +40,26 @@ export default function AdminPremiosRuleta() {
     }
   };
 
-  const actualizar = async (id, updates) => {
-    try {
-      const p = premios.find((x) => x.id === id);
-      await api.admin.actualizarPremioRuleta(id, { ...p, ...updates });
-      setPremios((prev) => prev.map((x) => (x.id === id ? { ...x, ...updates } : x)));
-    } catch (e) {
-      alert(e.message || 'Error');
-    }
+  // Función para actualizar el estado LOCAL
+  const handleLocalUpdate = (id, updates) => {
+    setPremios((prev) => prev.map((x) => (x.id === id ? { ...x, ...updates } : x)));
   };
 
-  const totalProb = premios.reduce((s, p) => s + (parseFloat(p.probabilidad) || 0), 0);
+  // Función para GUARDAR TODO en la base de datos
+  const guardarTodo = async () => {
+    setSaving(true);
+    try {
+      // Guardamos cada premio secuencialmente (o podríamos hacer un Promise.all)
+      for (const p of premios) {
+        await api.admin.actualizarPremioRuleta(p.id, p);
+      }
+      alert('✅ Todos los cambios se han guardado y ya son visibles para los usuarios.');
+    } catch (e) {
+      alert('❌ Error al guardar: ' + (e.message || 'Error desconocido'));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const agregar = async () => {
     try {
@@ -77,8 +86,10 @@ export default function AdminPremiosRuleta() {
     }
   };
 
+  const totalProb = premios.reduce((s, p) => s + (parseFloat(p.probabilidad) || 0), 0);
+
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto pb-32">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-[#1a1f36] uppercase tracking-tighter">Configuración Avanzada de Ruleta</h1>
@@ -99,6 +110,27 @@ export default function AdminPremiosRuleta() {
             Sincronizar 10 Segmentos
           </button>
         </div>
+      </div>
+
+      {/* Botón Flotante de Guardar */}
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-xs px-4">
+        <button 
+          onClick={guardarTodo}
+          disabled={saving || loading}
+          className={`w-full py-5 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all flex items-center justify-center gap-3 ${saving ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#1a1f36] text-white hover:scale-105 active:scale-95 shadow-indigo-200'}`}
+        >
+          {saving ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Guardar Cambios
+            </>
+          )}
+        </button>
       </div>
 
       {/* Indicador de Probabilidad Total */}
@@ -135,7 +167,7 @@ export default function AdminPremiosRuleta() {
                   <input 
                     type="color" 
                     value={p.color || '#ddd'} 
-                    onChange={(e) => actualizar(p.id, { color: e.target.value })}
+                    onChange={(e) => handleLocalUpdate(p.id, { color: e.target.value })}
                     className="opacity-0 absolute w-20 h-20 cursor-pointer"
                   />
                   <span className="text-white drop-shadow-md">
@@ -145,8 +177,8 @@ export default function AdminPremiosRuleta() {
                 <div className="text-center">
                   <input 
                     type="text" 
-                    defaultValue={p.nombre}
-                    onBlur={(e) => actualizar(p.id, { nombre: e.target.value })}
+                    value={p.nombre}
+                    onChange={(e) => handleLocalUpdate(p.id, { nombre: e.target.value })}
                     className="bg-transparent text-center font-black text-[#1a1f36] uppercase tracking-tighter text-sm w-full outline-none focus:text-indigo-600 transition-colors"
                   />
                   <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Nombre del Premio</p>
@@ -160,8 +192,8 @@ export default function AdminPremiosRuleta() {
                     <input 
                       type="number" 
                       step="0.01" 
-                      defaultValue={p.valor}
-                      onBlur={(e) => actualizar(p.id, { valor: parseFloat(e.target.value) || 0 })}
+                      value={p.valor}
+                      onChange={(e) => handleLocalUpdate(p.id, { valor: parseFloat(e.target.value) || 0 })}
                       className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-black text-indigo-600 outline-none focus:ring-2 ring-indigo-100"
                     />
                   </div>
@@ -170,8 +202,8 @@ export default function AdminPremiosRuleta() {
                     <input 
                       type="number" 
                       step="0.1" 
-                      defaultValue={p.probabilidad}
-                      onBlur={(e) => actualizar(p.id, { probabilidad: parseFloat(e.target.value) || 0 })}
+                      value={p.probabilidad}
+                      onChange={(e) => handleLocalUpdate(p.id, { probabilidad: parseFloat(e.target.value) || 0 })}
                       className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-black text-emerald-600 outline-none focus:ring-2 ring-emerald-100"
                     />
                   </div>
@@ -179,7 +211,7 @@ export default function AdminPremiosRuleta() {
 
                 <div className="flex flex-col gap-2">
                   <button 
-                    onClick={() => actualizar(p.id, { activo: !p.activo })}
+                    onClick={() => handleLocalUpdate(p.id, { activo: !p.activo })}
                     className={`w-full py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${p.activo ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'}`}
                   >
                     {p.activo ? '✓ Activo' : '✗ Inactivo'}
