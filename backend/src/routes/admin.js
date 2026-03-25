@@ -368,16 +368,22 @@ router.post('/regalar-tickets', async (req, res) => {
       return res.status(404).json({ error: 'No se encontraron usuarios para esta selección' });
     }
 
-    // Realizar la actualización por lotes o individualmente
-    const updates = users.map(user => {
-      const currentTickets = Number(user.tickets_ruleta) || 0;
-      return updateUser(user.id, {
-        tickets_ruleta: currentTickets + numTickets
-      });
-    });
+    // Realizar la actualización en bloques pequeños para evitar saturar Render free tier
+    const CHUNK_SIZE = 5;
+    console.log(`[Admin] Iniciando regalo de ${numTickets} tickets a ${users.length} usuarios en bloques de ${CHUNK_SIZE}`);
+    
+    for (let i = 0; i < users.length; i += CHUNK_SIZE) {
+      const chunk = users.slice(i, i + CHUNK_SIZE);
+      console.log(`[Admin] Procesando bloque ${Math.floor(i/CHUNK_SIZE) + 1}...`);
+      await Promise.all(chunk.map(user => {
+        const currentTickets = Number(user.tickets_ruleta) || 0;
+        return updateUser(user.id, {
+          tickets_ruleta: currentTickets + numTickets
+        });
+      }));
+    }
 
-    await Promise.all(updates);
-
+    console.log(`[Admin] Regalo de tickets completado exitosamente`);
     res.json({ ok: true, message: `Se han regalado ${numTickets} tickets a ${users.length} usuario(s).` });
   } catch (err) {
     console.error('[Admin] Error al regalar tickets:', err);
