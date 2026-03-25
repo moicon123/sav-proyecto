@@ -37,13 +37,14 @@ export default function Recompensas() {
       api.sorteo.config(),
       api.users.team()
     ]).then(([p, h, c, t]) => {
-      setPremios(p);
-      setHistorial(h);
+      console.log('Premios recibidos:', p); // Debug para ver los premios en consola
+      setPremios(p || []);
+      setHistorial(h || []);
       setConfig(c);
       setTeamStats(t);
       setLoading(false);
     }).catch(err => {
-      console.error(err);
+      console.error('Error cargando datos de ruleta:', err);
       setLoading(false);
     });
   }, []);
