@@ -104,12 +104,15 @@ router.post('/recargas/:id/aprobar', async (req, res) => {
   if (nivelDestino) {
     const oldLevelId = user.nivel_id;
     const updates = { nivel_id: nivelDestino.id };
-    if (nivelActual && (nivelActual.deposito > 0 || nivelActual.costo > 0)) {
-      const montoADevolver = nivelActual.deposito || nivelActual.costo;
-      updates.saldo_comisiones = (user.saldo_comisiones || 0) + montoADevolver;
+    
+    // Si ya tenía un nivel con costo/deposito, devolvemos ese saldo a comisiones
+    if (nivelActual && (Number(nivelActual.deposito) > 0 || Number(nivelActual.costo) > 0)) {
+      const montoADevolver = Number(nivelActual.deposito) || Number(nivelActual.costo);
+      updates.saldo_comisiones = (Number(user.saldo_comisiones) || 0) + montoADevolver;
     }
+    
     await updateUser(user.id, updates);
-    await updateRecarga(id, { estado: 'aprobada' });
+    await updateRecarga(id, { estado: 'aprobada', procesado_at: new Date().toISOString() });
     
     // Procesar recompensas por ascenso
     await handleLevelUpRewards(user.id, oldLevelId, nivelDestino.id);
@@ -364,35 +367,34 @@ router.get('/premios-ruleta', async (req, res) => {
 });
 
 router.post('/premios-ruleta/sync-10', async (req, res) => {
-   const { data: existing } = await supabase.from('premios_ruleta').select('*').order('orden', { ascending: true });
-   
-   const colors = [
-     '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', 
-     '#F06292', '#AED581', '#FFD54F', '#4DB6AC', '#7986CB'
-   ];
- 
-   const defaultPremios = Array.from({ length: 10 }, (_, i) => ({
-     id: uuidv4(),
-     nombre: existing?.[i]?.nombre || `Premio ${i + 1}`,
-     valor: existing?.[i]?.valor || 0,
-     probabilidad: existing?.[i]?.probabilidad || 10, // Probabilidad base de 10%
-     color: existing?.[i]?.color || colors[i],
-     activo: existing?.[i]?.activo !== undefined ? existing?.[i]?.activo : true,
-     orden: i,
-     created_at: new Date().toISOString()
-   }));
- 
-   // Limpiar y re-insertar para asegurar los 10 segmentos
-   // Usamos una transacción simulada o simplemente delete y insert
-   await supabase.from('premios_ruleta').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-   const { data, error } = await supabase.from('premios_ruleta').insert(defaultPremios).select();
- 
-   if (error) {
-     console.error('[Admin] Error en sync-10:', error);
-     return res.status(500).json({ error: error.message });
-   }
-   res.json(data);
- });
+  const { data: existing } = await trySupabase(() => supabase.from('premios_ruleta').select('*').order('orden', { ascending: true }));
+  
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', 
+    '#F06292', '#AED581', '#FFD54F', '#4DB6AC', '#7986CB'
+  ];
+
+  const defaultPremios = Array.from({ length: 10 }, (_, i) => ({
+    id: uuidv4(),
+    nombre: existing?.[i]?.nombre || `Premio ${i + 1}`,
+    valor: existing?.[i]?.valor || 0,
+    probabilidad: existing?.[i]?.probabilidad || 10, // Probabilidad base de 10%
+    color: existing?.[i]?.color || colors[i],
+    activo: existing?.[i]?.activo !== undefined ? existing?.[i]?.activo : true,
+    orden: i,
+    created_at: new Date().toISOString()
+  }));
+
+  // Limpiar y re-insertar para asegurar los 10 segmentos
+  await trySupabase(() => supabase.from('premios_ruleta').delete().neq('id', '00000000-0000-0000-0000-000000000000'));
+  const { data, error } = await trySupabase(() => supabase.from('premios_ruleta').insert(defaultPremios).select());
+
+  if (error) {
+    console.error('[Admin] Error en sync-10:', error);
+    return res.status(500).json({ error: error.message });
+  }
+  res.json(data);
+});
 
 router.post('/premios-ruleta', async (req, res) => {
   const { nombre, valor, probabilidad, imagen_url, activa, orden } = req.body;

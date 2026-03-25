@@ -18,8 +18,15 @@ export default function Raffle() {
 
   useEffect(() => {
     api.sorteo.premios().then(setPremios).catch(() => []);
-    api.sorteo.historial().then(setHistorial).catch(() => []);
     api.sorteo.oportunidades().then((r) => setOportunidades(r.oportunidades)).catch(() => setOportunidades(0));
+    
+    const fetchHistorial = () => {
+      api.sorteo.historial().then(setHistorial).catch(() => []);
+    };
+
+    fetchHistorial();
+    const interval = setInterval(fetchHistorial, 10000); // Actualizar cada 10 seg
+    return () => clearInterval(interval);
   }, []);
 
   const girar = async () => {
@@ -31,7 +38,7 @@ export default function Raffle() {
     try {
       const { premio, indice, oportunidades_restantes } = await api.sorteo.girar();
       
-      const segmentAngle = 360 / (premios.length || 8);
+      const segmentAngle = 360 / (premios.length || 10);
       const randomOffset = (Math.random() * 0.8 + 0.1) * segmentAngle;
       const extraSpins = 8 + Math.floor(Math.random() * 5);
       const finalRotation = rotation + (extraSpins * 360) + (360 - (indice * segmentAngle)) - randomOffset;
@@ -47,10 +54,11 @@ export default function Raffle() {
         // Refrescar los activos del usuario en el contexto global
         refreshUser();
         
+        // Actualizar historial localmente para feedback inmediato
         setHistorial((h) => [{ 
+          id: Math.random(),
           premio_nombre: premio.nombre, 
-          premio_valor: premio.valor, 
-          premio_color: premio.color, 
+          monto: premio.valor, 
           created_at: new Date().toISOString(),
           usuario_masked: 'Tú'
         }, ...h]);
@@ -206,27 +214,33 @@ export default function Raffle() {
                 </div>
                 <h3 className="font-black text-[#1a1f36] uppercase tracking-[0.2em] text-sm">Ganadores SAV</h3>
               </div>
-              <div className="space-y-4 relative z-10">
-                {historial.slice(0, 5).map((h, i) => (
-                  <div key={i} className="flex items-center justify-between p-5 rounded-[2rem] bg-gray-50/50 hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-gray-100 group/winner">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-[#1a1f36]/10 rounded-full blur-sm group-hover/winner:scale-125 transition-transform" />
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-700 font-black text-xs relative z-10 border-2 border-white shadow-md">
-                          {h.usuario_masked?.charAt(0)}
+              <div className="space-y-4 relative z-10 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="flex flex-col gap-4">
+                  {historial.slice(0, 15).map((h, i) => (
+                    <div 
+                      key={h.id || i} 
+                      className="flex items-center justify-between p-5 rounded-[2rem] bg-gray-50/50 hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-gray-100 group/winner animate-ladder-up"
+                      style={{ animationDelay: `${i * 100}ms` }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-[#1a1f36]/10 rounded-full blur-sm group-hover/winner:scale-125 transition-transform" />
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-700 font-black text-xs relative z-10 border-2 border-white shadow-md">
+                            {h.usuario_masked?.charAt(0) || 'U'}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-black text-[#1a1f36] uppercase tracking-tighter">{h.usuario_masked || 'Usuario'}</p>
+                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Premio Premium</p>
                         </div>
                       </div>
-                      <div>
-                        <p className="text-[11px] font-black text-[#1a1f36] uppercase tracking-tighter">{h.usuario_masked || 'Usuario'}</p>
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Premio Premium</p>
+                      <div className="text-right">
+                        <p className="font-black text-[#00C853] text-lg tracking-tighter">+{Number(h.premio_valor || h.monto || 0).toFixed(2)}</p>
+                        <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em]">BOB</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-black text-[#00C853] text-lg tracking-tighter">+{h.premio_valor?.toFixed(2)}</p>
-                      <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em]">BOB</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
                 {historial.length === 0 && (
                   <div className="text-center py-12 opacity-20 grayscale">
                     <Trophy size={50} className="mx-auto mb-4" />

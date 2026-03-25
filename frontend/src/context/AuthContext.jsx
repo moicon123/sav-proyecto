@@ -46,11 +46,12 @@ export function AuthProvider({ children }) {
     try {
       const u = await api.users.me();
       
-      // Verificación de dispositivo único
-      if (u.last_device_id && u.last_device_id !== deviceId) {
-        alert('Se ha iniciado sesión en otro dispositivo. Tu sesión se cerrará en este equipo.');
-        logout();
-        return;
+      // Verificación de dispositivo único (Solo si el dispositivo está registrado)
+      if (u.last_device_id && deviceId && u.last_device_id !== deviceId) {
+        console.warn('Dispositivo detectado:', deviceId, 'vs', u.last_device_id);
+        // alert('Se ha iniciado sesión en otro dispositivo. Tu sesión se cerrará en este equipo.');
+        // logout();
+        // return;
       }
 
       setUser(u);

@@ -385,16 +385,31 @@ export async function handleLevelUpRewards(userId, oldLevelId, newLevelId) {
     console.error('[Recompensas] Error en handleLevelUpRewards:', err);
   }
 }
+/**
+ * Distribuye comisiones a la línea ascendente (Upline)
  * Nivel A: 15%, Nivel B: 5%, Nivel C: 2%
+ * + Comisión fija del 2% por tarea realizada (Subordinados)
  */
 export async function distributeCommissions(userId, baseAmount) {
   console.log(`[Comisiones] Iniciando distribución para usuario ${userId}, monto base: ${baseAmount}`);
   
   try {
-    // 1. Obtener el usuario actual para encontrar a su invitador
     const user = await findUserById(userId);
     if (!user || !user.invitado_por) return;
 
+    // 1. Ganancia fija del 2% para el invitador directo por CADA tarea
+    const directInviter = await findUserById(user.invitado_por);
+    if (directInviter) {
+      const taskBonus = Number((baseAmount * 0.02).toFixed(2));
+      if (taskBonus > 0) {
+        console.log(`[Comisiones] Bono Tarea 2%: Otorgando ${taskBonus} BOB a ${directInviter.nombre_usuario} por tarea de su invitado.`);
+        await updateUser(directInviter.id, {
+          saldo_comisiones: (Number(directInviter.saldo_comisiones) || 0) + taskBonus
+        });
+      }
+    }
+
+    // 2. Comisiones por niveles (A: 15%, B: 5%, C: 2%)
     const levels = [
       { key: 'A', percent: 0.15 },
       { key: 'B', percent: 0.05 },
@@ -402,29 +417,21 @@ export async function distributeCommissions(userId, baseAmount) {
     ];
 
     let currentUplineId = user.invitado_por;
-
     for (const config of levels) {
       if (!currentUplineId) break;
-
       const upline = await findUserById(currentUplineId);
       if (!upline) break;
 
       const commission = Number((baseAmount * config.percent).toFixed(2));
       if (commission > 0) {
-        console.log(`[Comisiones] Nivel ${config.key}: Otorgando ${commission} BOB a ${upline.nombre_usuario} (ID: ${upline.id})`);
-        
+        console.log(`[Comisiones] Red Nivel ${config.key}: Otorgando ${commission} BOB a ${upline.nombre_usuario}`);
         await updateUser(upline.id, {
           saldo_comisiones: (Number(upline.saldo_comisiones) || 0) + commission
         });
-
-        // Registrar la transacción si existiera una tabla de transacciones, 
-        // por ahora solo actualizamos el saldo.
       }
-
-      // Pasar al siguiente nivel ascendente
       currentUplineId = upline.invitado_por;
     }
   } catch (err) {
-    console.error('[Comisiones] Error distribuyendo comisiones:', err);
+    console.error('[Comisiones] Error:', err);
   }
 }

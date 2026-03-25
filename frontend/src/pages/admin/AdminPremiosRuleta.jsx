@@ -52,6 +52,31 @@ export default function AdminPremiosRuleta() {
 
   const totalProb = premios.reduce((s, p) => s + (parseFloat(p.probabilidad) || 0), 0);
 
+  const agregar = async () => {
+    try {
+      const p = await api.admin.crearPremioRuleta({
+        nombre: 'Nuevo Premio',
+        valor: 0,
+        color: '#1a1f36',
+        probabilidad: 0,
+        orden: premios.length
+      });
+      setPremios((prev) => [...prev, p]);
+    } catch (e) {
+      alert(e.message || 'Error');
+    }
+  };
+
+  const eliminar = async (id) => {
+    if (!confirm('¿Eliminar este premio?')) return;
+    try {
+      await api.admin.eliminarPremioRuleta(id);
+      setPremios((prev) => prev.filter((p) => p.id !== id));
+    } catch (e) {
+      alert(e.message || 'Error');
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -60,6 +85,12 @@ export default function AdminPremiosRuleta() {
           <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] mt-2">Gestiona los 10 segmentos, premios y probabilidades en tiempo real</p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <button 
+            onClick={agregar}
+            className="px-6 py-4 rounded-2xl bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+          >
+            Agregar Segmento
+          </button>
           <button 
             onClick={sync10}
             disabled={loading}
@@ -146,12 +177,20 @@ export default function AdminPremiosRuleta() {
                   </div>
                 </div>
 
-                <button 
-                  onClick={() => actualizar(p.id, { activo: !p.activo })}
-                  className={`w-full py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${p.activo ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'}`}
-                >
-                  {p.activo ? '✓ Activo' : '✗ Inactivo'}
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={() => actualizar(p.id, { activo: !p.activo })}
+                    className={`w-full py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${p.activo ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'}`}
+                  >
+                    {p.activo ? '✓ Activo' : '✗ Inactivo'}
+                  </button>
+                  <button 
+                    onClick={() => eliminar(p.id)}
+                    className="w-full py-2.5 rounded-xl bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
