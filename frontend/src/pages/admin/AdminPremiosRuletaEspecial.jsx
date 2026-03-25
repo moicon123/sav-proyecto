@@ -138,11 +138,11 @@ export default function AdminPremiosRuletaEspecial() {
                 <div className="flex items-center justify-between">
                   <div className="w-1/2 pr-2">
                     <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-1">Valor BOB</label>
-                    <input type="number" step="0.01" value={p.valor} onChange={(e) => handleLocalUpdate(p.id, { valor: parseFloat(e.target.value) || 0 })} className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-black text-indigo-600 outline-none" />
+                    <input type="number" step="0.01" value={p.valor} onChange={(e) => handleLocalUpdate(p.id, { valor: e.target.value })} onBlur={(e) => handleLocalUpdate(p.id, { valor: parseFloat(e.target.value) || 0 })} className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-black text-indigo-600 outline-none" />
                   </div>
                   <div className="w-1/2 pl-2">
                     <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-1">Prob. %</label>
-                    <input type="number" step="0.1" value={p.probabilidad} onChange={(e) => handleLocalUpdate(p.id, { probabilidad: parseFloat(e.target.value) || 0 })} className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-black text-emerald-600 outline-none" />
+                    <input type="number" step="0.1" value={p.probabilidad} onChange={(e) => handleLocalUpdate(p.id, { probabilidad: e.target.value })} onBlur={(e) => handleLocalUpdate(p.id, { probabilidad: parseFloat(e.target.value) || 0 })} className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-black text-emerald-600 outline-none" />
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">

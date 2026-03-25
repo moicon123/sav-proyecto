@@ -189,7 +189,8 @@ export default function AdminPremiosRuleta() {
                       type="number" 
                       step="0.01" 
                       value={p.valor}
-                      onChange={(e) => handleLocalUpdate(p.id, { valor: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => handleLocalUpdate(p.id, { valor: e.target.value })}
+                      onBlur={(e) => handleLocalUpdate(p.id, { valor: parseFloat(e.target.value) || 0 })}
                       className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-black text-indigo-600 outline-none focus:ring-2 ring-indigo-100"
                     />
                   </div>
@@ -199,7 +200,8 @@ export default function AdminPremiosRuleta() {
                       type="number" 
                       step="0.1" 
                       value={p.probabilidad}
-                      onChange={(e) => handleLocalUpdate(p.id, { probabilidad: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => handleLocalUpdate(p.id, { probabilidad: e.target.value })}
+                      onBlur={(e) => handleLocalUpdate(p.id, { probabilidad: parseFloat(e.target.value) || 0 })}
                       className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-xs font-black text-emerald-600 outline-none focus:ring-2 ring-emerald-100"
                     />
                   </div>
