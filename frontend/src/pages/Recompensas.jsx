@@ -73,7 +73,7 @@ export default function Recompensas() {
           setUser({
             ...user,
             saldo_comisiones: res.nuevo_saldo_comisiones,
-            saldo_principal: res.nuevo_saldo_principal
+            tickets_ruleta: res.tickets_restantes
           });
           api.sorteo.historial().then(setHistorial);
         }, 5000);
@@ -201,13 +201,13 @@ export default function Recompensas() {
 
             <button
               onClick={spinWheel}
-              disabled={spinning}
+              disabled={spinning || (Number(user?.tickets_ruleta) || 0) < 1}
               className={`mt-10 group relative px-12 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.3em] transition-all duration-300 ${
-                spinning ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#1a1f36] text-white hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(26,31,54,0.3)]'
+                spinning || (Number(user?.tickets_ruleta) || 0) < 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#1a1f36] text-white hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(26,31,54,0.3)]'
               }`}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-rose-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl -z-10" />
-              {spinning ? 'Girando...' : 'Girar por 5 BOB'}
+              {spinning ? 'Girando...' : `Girar (1 Ticket)`}
             </button>
 
             {error && (
@@ -222,19 +222,22 @@ export default function Recompensas() {
           <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-black/5 border border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-                <Wallet size={28} />
+                <Trophy size={28} />
               </div>
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tu Saldo Disponible</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tus Tickets de Ruleta</p>
                 <p className="text-2xl font-black text-[#1a1f36]">
-                  {((user?.saldo_comisiones || 0) + (user?.saldo_principal || 0)).toFixed(2)}
-                  <span className="text-xs font-bold text-gray-400 ml-2 uppercase tracking-tighter">BOB</span>
+                  {user?.tickets_ruleta || 0}
+                  <span className="text-xs font-bold text-gray-400 ml-2 uppercase tracking-tighter">Tickets</span>
                 </p>
               </div>
             </div>
-            <button className="p-4 rounded-2xl bg-gray-50 text-[#1a1f36] hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
-              <ChevronRight size={20} />
-            </button>
+            <div className="text-right">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Saldo Total</p>
+              <p className="text-sm font-black text-[#1a1f36]">
+                {((user?.saldo_comisiones || 0) + (user?.saldo_principal || 0)).toFixed(2)} BOB
+              </p>
+            </div>
           </div>
 
           {/* Desafíos Especiales */}

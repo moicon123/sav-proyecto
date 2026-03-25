@@ -38,11 +38,9 @@ router.post('/girar', authenticate, async (req, res) => {
     const user = await findUserById(req.user.id);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    // Verificar si tiene saldo suficiente o intentos (puedes ajustar esta lógica)
-    // Por ahora, usaremos un costo de 10 BOB del saldo de comisiones o principal
-    const costo = 5; 
-    if ((user.saldo_comisiones || 0) < costo && (user.saldo_principal || 0) < costo) {
-      return res.status(400).json({ error: 'Saldo insuficiente para girar (Costo: 5 BOB)' });
+    // La ruleta consume 1 TICKET
+    if ((Number(user.tickets_ruleta) || 0) < 1) {
+      return res.status(400).json({ error: 'No tienes tickets para girar. Invita amigos para obtener tickets en su primer ascenso.' });
     }
 
     const premios = await getPremiosRuleta();
@@ -61,13 +59,11 @@ router.post('/girar', authenticate, async (req, res) => {
       random -= (Number(p.probabilidad) || 0);
     }
 
-    // Descontar saldo y otorgar premio
-    const updates = {};
-    if ((user.saldo_comisiones || 0) >= costo) {
-      updates.saldo_comisiones = (user.saldo_comisiones || 0) - costo + (Number(premioGanado.valor) || 0);
-    } else {
-      updates.saldo_principal = (user.saldo_principal || 0) - costo + (Number(premioGanado.valor) || 0);
-    }
+    // Consumir 1 ticket y otorgar premio
+    const updates = {
+      tickets_ruleta: (Number(user.tickets_ruleta) || 1) - 1,
+      saldo_comisiones: (Number(user.saldo_comisiones) || 0) + (Number(premioGanado.valor) || 0)
+    };
 
     await updateUser(user.id, updates);
 
@@ -85,7 +81,7 @@ router.post('/girar', authenticate, async (req, res) => {
       ok: true,
       premio: premioGanado,
       nuevo_saldo_comisiones: updates.saldo_comisiones,
-      nuevo_saldo_principal: updates.saldo_principal
+      tickets_restantes: updates.tickets_ruleta
     });
 
   } catch (err) {

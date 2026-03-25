@@ -310,7 +310,8 @@ export async function createTaskActivity(activity) {
 }
 
 /**
- * Procesa el ascenso de nivel de un usuario y otorga recompensas al invitador (Upline)
+ * Procesa el ascenso de nivel de un usuario y otorga tickets de ruleta al invitador (Upline)
+ * Basado solo en el PRIMER ascenso del subordinado.
  */
 export async function handleLevelUpRewards(userId, oldLevelId, newLevelId) {
   try {
@@ -320,34 +321,43 @@ export async function handleLevelUpRewards(userId, oldLevelId, newLevelId) {
     
     if (!user || !newLevel || !user.invitado_por) return;
 
-    // Lógica de tokens según nivel: S1=1, S2=2, S3=3, etc.
-    const levelCode = String(newLevel.codigo).toUpperCase();
-    let rewardTokens = 0;
-
-    if (levelCode === 'S1') rewardTokens = 1;
-    else if (levelCode === 'S2') rewardTokens = 2;
-    else if (levelCode === 'S3') rewardTokens = 3;
-    else if (levelCode.startsWith('S')) {
-      const num = parseInt(levelCode.substring(1));
-      if (!isNaN(num)) rewardTokens = num;
+    // Solo otorgar si es el PRIMER ascenso (nunca antes ha ascendido)
+    if (user.primer_ascenso_completado) {
+      console.log(`[Recompensas] El usuario ${user.nombre_usuario} ya realizó su primer ascenso anteriormente.`);
+      return;
     }
 
-    if (rewardTokens > 0) {
+    // Lógica de tickets según nivel: S1=1, S2=2, S3=3, etc.
+    const levelCode = String(newLevel.codigo).toUpperCase();
+    let rewardTickets = 0;
+
+    if (levelCode.startsWith('S')) {
+      const num = parseInt(levelCode.substring(1));
+      if (!isNaN(num)) rewardTickets = num;
+    }
+
+    if (rewardTickets > 0) {
       const inviter = await findUserById(user.invitado_por);
       if (inviter) {
-        console.log(`[Recompensas] Invitado ${user.nombre_usuario} subió a ${levelCode}. Otorga beneficio al invitador.`);
-        // Aquí podrías añadir una bonificación directa de saldo si lo deseas
-        // await updateUser(inviter.id, { saldo_comisiones: (inviter.saldo_comisiones || 0) + 10 });
+        console.log(`[Recompensas] Primer ascenso de ${user.nombre_usuario} a ${levelCode}. Otorgando ${rewardTickets} tickets a ${inviter.nombre_usuario}.`);
+        
+        // Marcar el primer ascenso como completado para este usuario
+        await updateUser(user.id, { primer_ascenso_completado: true });
+
+        // Sumar tickets al invitador
+        await updateUser(inviter.id, { 
+          tickets_ruleta: (Number(inviter.tickets_ruleta) || 0) + rewardTickets 
+        });
       }
     }
   } catch (err) {
     console.error('[Recompensas] Error en handleLevelUpRewards:', err);
   }
 }
+
 /**
  * Distribuye comisiones a la línea ascendente (Upline)
- * Nivel A: 15%, Nivel B: 5%, Nivel C: 2%
- * + Comisión fija del 2% por tarea realizada (Subordinados)
+ * Restricción: Solo se paga si el invitador tiene rango >= subordinado
  */
 export async function distributeCommissions(userId, baseAmount) {
   console.log(`[Comisiones] Iniciando distribución para usuario ${userId}, monto base: ${baseAmount}`);
@@ -356,38 +366,39 @@ export async function distributeCommissions(userId, baseAmount) {
     const user = await findUserById(userId);
     if (!user || !user.invitado_por) return;
 
-    // 1. Ganancia fija del 2% para el invitador directo por CADA tarea
-    const directInviter = await findUserById(user.invitado_por);
-    if (directInviter) {
-      const taskBonus = Number((baseAmount * 0.02).toFixed(2));
-      if (taskBonus > 0) {
-        console.log(`[Comisiones] Bono Tarea 2%: Otorgando ${taskBonus} BOB a ${directInviter.nombre_usuario} por tarea de su invitado.`);
-        await updateUser(directInviter.id, {
-          saldo_comisiones: (Number(directInviter.saldo_comisiones) || 0) + taskBonus
-        });
-      }
-    }
+    const levels = await getLevels();
+    const userLevel = levels.find(l => l.id === user.nivel_id);
+    const userRank = userLevel ? (userLevel.orden || 0) : 0;
 
-    // 2. Comisiones por niveles (A: 12%, B: 3%, C: 1%)
-    const levels = [
+    // Lógica de comisiones por niveles (A: 12%, B: 3%, C: 1%)
+    const commissionConfigs = [
       { key: 'A', percent: 0.12 },
       { key: 'B', percent: 0.03 },
       { key: 'C', percent: 0.01 }
     ];
 
     let currentUplineId = user.invitado_por;
-    for (const config of levels) {
+    for (const config of commissionConfigs) {
       if (!currentUplineId) break;
       const upline = await findUserById(currentUplineId);
       if (!upline) break;
 
-      const commission = Number((baseAmount * config.percent).toFixed(2));
-      if (commission > 0) {
-        console.log(`[Comisiones] Red Nivel ${config.key}: Otorgando ${commission} BOB a ${upline.nombre_usuario}`);
-        await updateUser(upline.id, {
-          saldo_comisiones: (Number(upline.saldo_comisiones) || 0) + commission
-        });
+      const uplineLevel = levels.find(l => l.id === upline.nivel_id);
+      const uplineRank = uplineLevel ? (uplineLevel.orden || 0) : 0;
+
+      // REGLA: El rango del invitador debe ser >= al del subordinado
+      if (uplineRank >= userRank) {
+        const commission = Number((baseAmount * config.percent).toFixed(2));
+        if (commission > 0) {
+          console.log(`[Comisiones] Red Nivel ${config.key}: Otorgando ${commission} BOB a ${upline.nombre_usuario} (Rango ${uplineRank} >= ${userRank})`);
+          await updateUser(upline.id, {
+            saldo_comisiones: (Number(upline.saldo_comisiones) || 0) + commission
+          });
+        }
+      } else {
+        console.log(`[Comisiones] Red Nivel ${config.key}: No se paga a ${upline.nombre_usuario} (Rango ${uplineRank} < Subordinado ${userRank})`);
       }
+      
       currentUplineId = upline.invitado_por;
     }
   } catch (err) {

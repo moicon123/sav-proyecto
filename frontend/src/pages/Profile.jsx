@@ -90,25 +90,32 @@ export default function Profile() {
         </div>
 
         {/* Balance Cards con Estilo Premium */}
-        <div className="grid grid-cols-2 gap-4 mt-10 relative z-10">
-          <div className="bg-white/10 border border-white/20 p-6 rounded-3xl shadow-[inset_0_2px_10px_rgba(255,255,255,0.1)] backdrop-blur-xl group hover:bg-white/15 transition-all">
+        <div className="grid grid-cols-3 gap-3 mt-10 relative z-10">
+          <div className="bg-white/10 border border-white/20 p-4 rounded-3xl backdrop-blur-xl group hover:bg-white/15 transition-all">
             <div className="flex items-center gap-2 mb-2 opacity-60">
-              <Wallet size={12} className="text-white" />
-              <p className="text-[9px] font-black uppercase tracking-[0.2em]">Activos totales</p>
+              <Wallet size={10} className="text-white" />
+              <p className="text-[8px] font-black uppercase tracking-[0.1em]">Activos</p>
             </div>
-            <p className="text-2xl font-black text-white tracking-tight">
-              {(user?.saldo_principal || 0).toFixed(2)} 
-              <span className="text-xs font-bold text-white/40 ml-1.5 uppercase">BOB</span>
+            <p className="text-lg font-black text-white tracking-tight">
+              {(user?.saldo_principal || 0).toFixed(1)} 
             </p>
           </div>
-          <div className="bg-white/10 border border-white/20 p-6 rounded-3xl shadow-[inset_0_2px_10px_rgba(255,255,255,0.1)] backdrop-blur-xl group hover:bg-white/15 transition-all">
+          <div className="bg-white/10 border border-white/20 p-4 rounded-3xl backdrop-blur-xl group hover:bg-white/15 transition-all">
             <div className="flex items-center gap-2 mb-2 opacity-60">
-              <TrendingUp size={12} className="text-white" />
-              <p className="text-[9px] font-black uppercase tracking-[0.2em]">Comisiones</p>
+              <TrendingUp size={10} className="text-white" />
+              <p className="text-[8px] font-black uppercase tracking-[0.1em]">Comisión</p>
             </div>
-            <p className="text-2xl font-black text-white tracking-tight">
-              {(user?.saldo_comisiones || 0).toFixed(2)} 
-              <span className="text-xs font-bold text-white/40 ml-1.5 uppercase">BOB</span>
+            <p className="text-lg font-black text-white tracking-tight">
+              {(user?.saldo_comisiones || 0).toFixed(1)} 
+            </p>
+          </div>
+          <div className="bg-indigo-500/20 border border-indigo-400/30 p-4 rounded-3xl backdrop-blur-xl group hover:bg-indigo-500/30 transition-all">
+            <div className="flex items-center gap-2 mb-2 opacity-60">
+              <Trophy size={10} className="text-indigo-300" />
+              <p className="text-[8px] font-black uppercase tracking-[0.1em] text-indigo-200">Tickets</p>
+            </div>
+            <p className="text-lg font-black text-white tracking-tight">
+              {user?.tickets_ruleta || 0}
             </p>
           </div>
         </div>
