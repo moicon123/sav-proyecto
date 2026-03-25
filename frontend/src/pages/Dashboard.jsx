@@ -5,7 +5,8 @@ import { api } from '../lib/api.js';
 import { 
   ClipboardList, TrendingUp, Bell, HandCoins, 
   Wallet, Users, Gift, UserPlus, 
-  ChevronRight, Info, ShieldCheck, DownloadCloud
+  ChevronRight, Info, ShieldCheck, DownloadCloud,
+  Sparkles, Trophy, Play
 } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const [guideText, setGuideText] = useState('BIENVENIDO A SAV. TU FUTURO FINANCIERO COMIENZA AQUÍ. ALCANZA TUS METAS.');
   const [popup, setPopup] = useState({ popup_enabled: false, popup_title: '', popup_message: '' });
   const [showPopup, setShowPopup] = useState(false);
+  const [publicConfig, setPublicConfig] = useState(null);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -58,6 +60,7 @@ export default function Dashboard() {
     api.users.stats().then(setStats).catch(() => {});
     api.publicContent()
       .then((data) => {
+        setPublicConfig(data);
         setGuideText(g => data.home_guide || g);
         setPopup(data);
         if (data.popup_enabled) setShowPopup(true);
@@ -296,28 +299,47 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Floating Gift / Sorteo (Enhanced) */}
-        <div className="fixed right-6 bottom-24 z-40 flex flex-col gap-4">
-          <Link
-            to="/sorteo-especial"
-            className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_15px_40px_rgba(245,158,11,0.4)] border-4 border-white active:scale-90 transition-all hover:scale-110 group relative"
-          >
-            <Sparkles className="text-white animate-pulse" size={24} />
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-amber-500 flex items-center justify-center">
-              <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
-            </div>
-          </Link>
-          
-          <Link
-            to="/sorteo"
-            className="w-18 h-18 rounded-full bg-gradient-to-br from-[#1a1f36] to-[#2a2f46] flex items-center justify-center shadow-[0_15px_40px_rgba(26,31,54,0.4)] border-4 border-white active:scale-90 transition-all hover:scale-110"
-          >
-            <Gift className="text-white animate-bounce" size={36} />
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full border-2 border-white flex items-center justify-center">
-              <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
-            </div>
-          </Link>
-        </div>
+        {/* Dynamic Floating Roulette Button */}
+        {publicConfig?.ruleta_boton_activo !== false && (
+          <div className="fixed right-6 bottom-24 z-50">
+            <Link
+              to={publicConfig?.ruleta_boton_ruta || '/sorteo'}
+              className="group relative flex items-center justify-center p-0.5 rounded-full transition-all duration-500 hover:scale-110 active:scale-95 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.3)]"
+            >
+              {/* Outer Glow Animation */}
+              <div 
+                className="absolute inset-0 rounded-full blur-xl opacity-40 group-hover:opacity-100 animate-pulse transition-opacity"
+                style={{ backgroundColor: publicConfig?.ruleta_boton_color || '#1a1f36' }}
+              />
+              
+              {/* Main Button Body */}
+              <div 
+                className="relative flex items-center gap-3 pl-4 pr-6 py-3.5 rounded-full border-2 border-white/20 backdrop-blur-md overflow-hidden"
+                style={{ backgroundColor: publicConfig?.ruleta_boton_color || '#1a1f36' }}
+              >
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-[1500ms]" />
+                
+                {/* Icon Container with Animation */}
+                <div className="relative w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 shadow-inner group-hover:rotate-[360deg] transition-transform duration-700">
+                  {(() => {
+                    const iconMap = { Gift, Sparkles, Trophy, Play };
+                    const IconComp = iconMap[publicConfig?.ruleta_boton_icono] || Gift;
+                    return <IconComp className="text-white animate-bounce" size={24} />;
+                  })()}
+                </div>
+
+                {/* Text */}
+                <span className="text-xs font-black text-white uppercase tracking-[0.2em] drop-shadow-md">
+                  {publicConfig?.ruleta_boton_texto || 'Girar'}
+                </span>
+
+                {/* Notification Badge */}
+                <div className="absolute top-2 right-4 w-2 h-2 bg-rose-500 rounded-full border border-white animate-ping" />
+              </div>
+            </Link>
+          </div>
+        )}
 
         {/* Noticia / Guía Estilo Marquee (Vibrant) */}
         <div className="px-4 mt-8">
