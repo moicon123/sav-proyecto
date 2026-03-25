@@ -43,10 +43,14 @@ async function migrate() {
           created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
       );
       
-      -- 4. Asegurar que premios_ruleta tenga las columnas necesarias
+      -- 4. Asegurar que premios_ruleta tenga las columnas necesarias y tipos correctos
       ALTER TABLE premios_ruleta ADD COLUMN IF NOT EXISTS color TEXT;
       ALTER TABLE premios_ruleta ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT TRUE;
       ALTER TABLE premios_ruleta ADD COLUMN IF NOT EXISTS orden INTEGER DEFAULT 0;
+      
+      -- Corregir tipo de dato de probabilidad para evitar "numeric field overflow"
+      -- Cambiamos de DECIMAL(5,4) a DECIMAL(12,2) para permitir porcentajes (0-100)
+      ALTER TABLE premios_ruleta ALTER COLUMN probabilidad TYPE DECIMAL(12,2);
     `;
 
     console.log('⏳ Ejecutando migración...');
