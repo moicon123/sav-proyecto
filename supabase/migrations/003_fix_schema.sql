@@ -3,6 +3,12 @@
 
 -- 1. Añadir columna activo a niveles si no existe
 ALTER TABLE niveles ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT TRUE;
+ALTER TABLE niveles ADD COLUMN IF NOT EXISTS costo DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE niveles ADD COLUMN IF NOT EXISTS deposito DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE niveles ADD COLUMN IF NOT EXISTS tareas_diarias INTEGER DEFAULT 0;
+ALTER TABLE niveles ADD COLUMN IF NOT EXISTS ganancia_tarea DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE niveles ADD COLUMN IF NOT EXISTS orden INTEGER DEFAULT 0;
+ALTER TABLE niveles ADD CONSTRAINT unique_nivel_codigo UNIQUE (codigo);
 
 -- 2. Añadir columnas a tareas para coincidir con seed.js y backend
 ALTER TABLE tareas ADD COLUMN IF NOT EXISTS video_url TEXT;

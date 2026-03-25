@@ -11,21 +11,26 @@ export default function VIP() {
   const navigate = useNavigate();
   const [niveles, setNiveles] = useState([]);
 
-  const commissionStructure = [
-    { level: 'S1', req: '150 BOB', a: '18', b: '4.5', c: '1.5' },
-    { level: 'S2', req: '400 BOB', a: '48', b: '12', c: '4' },
-    { level: 'S3', req: '1000 BOB', a: '120', b: '30', c: '10' },
-    { level: 'S4', req: '2500 BOB', a: '300', b: '75', c: '25' },
-    { level: 'S5', req: '6000 BOB', a: '720', b: '180', c: '60' },
-    { level: 'S6', req: '12000 BOB', a: '1440', b: '360', c: '120' },
-    { level: 'S7', req: '25000 BOB', a: '3000', b: '750', c: '250' },
-    { level: 'S8', req: '50000 BOB', a: '6000', b: '1500', c: '500' },
-    { level: 'S9', req: '100000 BOB', a: '12000', b: '3000', c: '1000' },
-  ];
-
   useEffect(() => {
     api.levels.list().then(setNiveles).catch(() => []);
   }, []);
+
+  const formatBOB = (val) => Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+  // Generar la estructura de comisiones basada en los niveles reales de la DB
+  const commissionStructure = niveles
+    .filter(n => n.codigo !== 'pasante' && n.codigo !== 'internar')
+    .sort((a, b) => (a.orden || 0) - (b.orden || 0))
+    .map(n => {
+      const inv = n.deposito || n.costo || 0;
+      return {
+        level: n.codigo,
+        req: `${formatBOB(inv)} BOB`,
+        a: formatBOB(inv * 0.12),
+        b: formatBOB(inv * 0.03),
+        c: formatBOB(inv * 0.01)
+      };
+    });
 
   const handleUpgrade = (nivel) => {
     // Redirigir a recarga con el monto y modo pre-configurados
