@@ -18,11 +18,10 @@ async function syncLevels() {
   for (const level of levels) {
     console.log(`Sincronizando ${level.nombre} (Activo: ${level.activo !== false})...`);
     
-    // Intentar actualizar o insertar (upsert) basado en el ID o Código
+    // Intentar actualizar o insertar (upsert) basado en el Código
     const { data, error } = await supabase
       .from('niveles')
       .upsert({
-        id: level.id,
         codigo: level.codigo,
         nombre: level.nombre,
         deposito: level.deposito,
