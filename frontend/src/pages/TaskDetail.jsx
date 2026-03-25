@@ -138,8 +138,9 @@ export default function TaskDetail() {
             className="w-full h-full object-cover"
             src={api.getMediaUrl(url)}
             controls
+            controlsList="nodownload noplaybackrate"
+            disablePictureInPicture
             autoPlay
-            muted
             playsInline
             preload="auto"
             onLoadStart={(e) => {
@@ -149,7 +150,11 @@ export default function TaskDetail() {
             onCanPlay={(e) => {
               const loader = e.target.parentElement.querySelector('.video-loader');
               if (loader) loader.style.display = 'none';
-              e.target.play().catch(() => {});
+              e.target.play().catch(() => {
+                console.log("Autoplay con sonido bloqueado por el navegador, intentando muted...");
+                e.target.muted = true;
+                e.target.play().catch(err => console.error("Error reproduciendo video:", err));
+              });
             }}
             onError={(e) => {
               e.target.style.display = 'none';

@@ -190,11 +190,33 @@ router.post('/:id/responder', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Ya completaste esta tarea con éxito hoy' });
     }
 
-    const respuestaLimpia = (String(respuesta || '')).toUpperCase().trim();
-    const correctaLimpia = (String(task.respuesta_correcta || '')).toUpperCase().trim();
+    // Normalización robusta: eliminar acentos, espacios y convertir a mayúsculas
+    const normalizar = (str) => {
+      return (String(str || ''))
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^A-Z0-9]/gi, "")
+        .toUpperCase()
+        .trim();
+    };
+
+    const respuestaLimpia = normalizar(respuesta);
+    // Aceptamos tanto respuesta_correcta como pregunta_real por compatibilidad con diferentes esquemas
+    const correctaReal = task.respuesta_correcta || task.pregunta_real || '';
+    const correctaLimpia = normalizar(correctaReal);
     
-    // CORRECCIÓN: Usar correctaLimpia para comparar con la respuesta del usuario
-    const esCorrectaReal = respuestaLimpia === correctaLimpia;
+    console.log(`[Tasks] Validando Tarea: ${task.id}`);
+    console.log(`[Tasks] Respuesta Usuario Original: "${respuesta}" -> Normalizada: "${respuestaLimpia}"`);
+    console.log(`[Tasks] Respuesta Correcta Original: "${correctaReal}" -> Normalizada: "${correctaLimpia}"`);
+    
+    // Comparación flexible: coincidencia exacta, o que una contenga a la otra
+    const esCorrectaReal = respuestaLimpia !== '' && correctaLimpia !== '' && (
+      respuestaLimpia === correctaLimpia || 
+      respuestaLimpia.includes(correctaLimpia) || 
+      correctaLimpia.includes(respuestaLimpia)
+    );
+    
+    console.log(`[Tasks] Resultado Validación: ${esCorrectaReal ? 'CORRECTA ✅' : 'INCORRECTA ❌'}`);
     
     const recompensa = esCorrectaReal ? task.recompensa : 0;
     
