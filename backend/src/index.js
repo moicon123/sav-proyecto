@@ -15,7 +15,7 @@ import telegramWebhookRoutes from './routes/telegram_webhook.js';
 import { getPublicContent, getBanners } from './lib/queries.js';
 import { mergePublicContent } from './data/publicContentDefaults.js';
 
-console.log('\n[SERVER] Proceso de servidor iniciado. Versión: 1.0.5 - Fix Tareas y Cache');
+console.log('\n[SERVER] Proceso de servidor iniciado. Versión: 1.0.6 - Final UUID Fix');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();

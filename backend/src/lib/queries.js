@@ -313,25 +313,40 @@ export async function createSorteoGanador(ganador) {
 
 export async function getTaskById(id) {
   console.log(`[Queries] Buscando tarea con ID: ${id}`);
+  
+  if (!id) throw new Error('ID de tarea no proporcionado');
+
   // Verificar si el ID es un UUID válido para evitar errores de sintaxis en PostgreSQL (Supabase)
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   
   if (isUUID) {
-    const { data, error, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
-    if (!fallback && !error && data) return data;
+    try {
+      const { data, error, fallback } = await trySupabase(() => supabase.from('tareas').select('*').eq('id', id).maybeSingle());
+      if (!fallback && !error && data) {
+        console.log(`[Queries] Tarea encontrada en Supabase (UUID): ${id}`);
+        return data;
+      }
+    } catch (e) {
+      console.warn(`[Queries] Error al consultar Supabase para UUID ${id}:`, e.message);
+    }
   }
 
-  console.log(`[Queries] ID no es UUID o no encontrado en DB, buscando en local store: ${id}`);
-  // Si no es UUID o no se encontró en Supabase (ej: tareas semilla del seed.js), buscar en el store local
-  const store = await getStore();
-  const task = (store.tasks || []).find(t => String(t.id) === String(id));
-  
-  if (!task) {
-    console.error(`[Queries] Tarea no encontrada con ID: ${id}`);
-    throw new Error(`No se pudo recuperar la tarea con ID ${id} de la base de datos ni del almacenamiento local`);
+  console.log(`[Queries] Buscando en almacenamiento local para ID: ${id}`);
+  // Si no es UUID o no se encontró en Supabase, buscar en el store local
+  try {
+    const store = await getStore();
+    const task = (store.tasks || []).find(t => String(t.id).toLowerCase() === String(id).toLowerCase());
+    
+    if (task) {
+      console.log(`[Queries] Tarea encontrada en store local: ${id}`);
+      return task;
+    }
+  } catch (e) {
+    console.error(`[Queries] Error al consultar store local para ${id}:`, e.message);
   }
   
-  return task;
+  console.error(`[Queries] Tarea TOTALMENTE NO ENCONTRADA: ${id}`);
+  throw new Error(`La tarea con ID ${id} no existe en el sistema.`);
 }
 
 export async function getTaskActivity(userId) {

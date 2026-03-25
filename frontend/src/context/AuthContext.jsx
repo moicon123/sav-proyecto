@@ -66,8 +66,14 @@ export function AuthProvider({ children }) {
       const u = await api.users.me();
       
       if (u && typeof u === 'object') {
-        setUser(u);
-        localStorage.setItem('user', JSON.stringify(u));
+        // Solo actualizar el estado si los datos han cambiado para evitar re-renders innecesarios
+        const currentUserStr = localStorage.getItem('user');
+        const newUserStr = JSON.stringify(u);
+        
+        if (currentUserStr !== newUserStr) {
+          setUser(u);
+          localStorage.setItem('user', newUserStr);
+        }
       }
     } catch (err) {
       if (err.status === 401 || err.status === 404) {
@@ -83,23 +89,23 @@ export function AuthProvider({ children }) {
   }, [getDeviceId, logout, user]);
 
   useEffect(() => {
-    // Carga inicial solo si no tenemos usuario o ha pasado tiempo
-    const lastUpdate = localStorage.getItem('lastUserUpdate');
-    const now = Date.now();
-    if (!user || !lastUpdate || now - parseInt(lastUpdate) > 5000) {
-      loadUser(true);
-    }
+    // Carga inicial al montar el componente
+    const init = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await loadUser(true);
+      } else {
+        setLoading(false);
+      }
+    };
+    init();
     
-    // Polling inteligente: usar setTimeout en lugar de setInterval para evitar solapamientos
-    let timeoutId;
-    const poll = async () => {
+    // Polling inteligente: cada 30s
+    const pollInterval = setInterval(async () => {
       if (localStorage.getItem('token') && document.visibilityState === 'visible') {
         await loadUser();
       }
-      timeoutId = setTimeout(poll, 30000); // 30s es suficiente para polling
-    };
-
-    timeoutId = setTimeout(poll, 30000);
+    }, 30000);
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible' && localStorage.getItem('token')) {
@@ -109,10 +115,10 @@ export function AuthProvider({ children }) {
 
     window.addEventListener('visibilitychange', handleVisibility);
     return () => {
-      clearTimeout(timeoutId);
+      clearInterval(pollInterval);
       window.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [loadUser, user]);
+  }, [loadUser]); // Solo depende de loadUser que es estable con useCallback
 
   const login = useCallback(async (telefono, password) => {
     const deviceId = getDeviceId();
