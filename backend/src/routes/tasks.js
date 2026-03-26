@@ -237,11 +237,11 @@ router.post('/:id/responder', authenticate, async (req, res) => {
       });
       
       // Registrar en estadísticas persistentes del usuario
-      const { addUserEarnings, distributeCommissions } = await import('../lib/queries.js');
+      const { addUserEarnings } = await import('../lib/queries.js');
       await addUserEarnings(user.id, Number(recompensa));
       
-      // Distribuir comisiones a la red (A, B, C)
-      await distributeCommissions(user.id, recompensa);
+      // Comisiones deshabilitadas por solicitud del usuario (v3.0.0)
+      // await distributeCommissions(user.id, recompensa);
     }
 
     await createTaskActivity({
