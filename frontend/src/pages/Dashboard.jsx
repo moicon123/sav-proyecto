@@ -12,7 +12,6 @@ import Logo from '../components/Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const gridItems = [
-  { to: '/tareas', icon: ClipboardList, label: 'Sala de Tareas', color: 'text-blue-500', bg: 'bg-blue-50' },
   { to: '/vip', icon: TrendingUp, label: 'Fondo Riqueza', color: 'text-amber-500', bg: 'bg-amber-50' },
   { to: '/noticias-conferencia', icon: Bell, label: 'Noticias', color: 'text-purple-500', bg: 'bg-purple-50' },
   { to: '/equipo', icon: Users, label: 'Mi Equipo', color: 'text-emerald-500', bg: 'bg-emerald-50' },
