@@ -7,7 +7,7 @@ import { api } from '../lib/api.js';
 import { X, Play, Check, Info } from 'lucide-react';
 
 /**
- * TaskDetail v1.6.0 - FINAL STABLE VERSION
+ * TaskDetail v1.6.1 - FINAL STABLE VERSION
  * FIX: Remueve definitivamente el overlay y fuerza la encuesta debajo del video.
  */
 
@@ -75,7 +75,7 @@ export default function TaskDetail() {
       <Header title="Detalles" />
       <div className="p-20 flex flex-col items-center bg-white min-h-screen">
         <div className="w-10 h-10 border-4 border-[#1a1f36] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Cargando v1.6.0...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Cargando v1.6.1...</p>
       </div>
     </Layout>
   );
@@ -136,7 +136,7 @@ export default function TaskDetail() {
                   <div className="w-8 h-8 rounded-xl bg-[#1a1f36] flex items-center justify-center text-white shadow-lg">
                     <Play size={14} fill="currentColor" />
                   </div>
-                  <h3 className="text-xs font-black text-[#1a1f36] uppercase tracking-tighter">Validación v1.6.0</h3>
+                  <h3 className="text-xs font-black text-[#1a1f36] uppercase tracking-tighter">Validación v1.6.1</h3>
                 </div>
                 <span className="text-[8px] font-black text-gray-300 uppercase">Estable</span>
               </div>
