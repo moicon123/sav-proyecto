@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import Header from '../components/Header.jsx';
 import { api } from '../lib/api.js';
-import { Play, TrendingUp, Info } from 'lucide-react';
+import { TrendingUp, Info, ShieldCheck } from 'lucide-react';
 
 export default function TaskRoom() {
   const [data, setData] = useState(null);
@@ -15,15 +15,6 @@ export default function TaskRoom() {
     setError(null);
     api.tasks.list()
       .then(res => {
-        // Barajar las tareas aleatoriamente (Fisher-Yates shuffle)
-        if (res && res.tareas) {
-          const shuffledTasks = [...res.tareas];
-          for (let i = shuffledTasks.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffledTasks[i], shuffledTasks[j]] = [shuffledTasks[j], shuffledTasks[i]];
-          }
-          res.tareas = shuffledTasks;
-        }
         setData(res);
       })
       .catch((err) => {
@@ -43,7 +34,7 @@ export default function TaskRoom() {
         <Header title="sala de tareas" />
         <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4 bg-white">
           <div className="w-12 h-12 border-4 border-[#1a1f36] border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-400 font-medium animate-pulse uppercase tracking-widest text-[10px]">Cargando tareas...</p>
+          <p className="text-gray-400 font-medium animate-pulse uppercase tracking-widest text-[10px]">Cargando sala...</p>
         </div>
       </Layout>
     );
@@ -86,13 +77,8 @@ export default function TaskRoom() {
   return (
     <Layout>
       <Header title="sala de tareas" />
-      {/* Pre-carga de videos para mejorar la velocidad de carga al entrar en detalles */}
-      <div className="hidden">
-        {data.tareas.map(t => (
-          <video key={t.id} src={api.getMediaUrl(t.video_url)} preload="auto" />
-        ))}
-      </div>
       <div className="p-4 space-y-4 bg-white min-h-screen">
+        {/* Resumen de Nivel */}
         <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-gray-100">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-black text-[#1a1f36] uppercase tracking-tight">{data.nivel}</h2>
@@ -133,10 +119,52 @@ export default function TaskRoom() {
           )}
         </div>
 
+        {/* Lista de Tareas Estática - DESHABILITADA */}
         <div className="space-y-3 pb-24">
-          <div className="text-center p-12 bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
-            <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Las tareas están deshabilitadas temporalmente.</p>
+          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 text-center mb-6">
+            <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="text-amber-600" size={24} />
+            </div>
+            <h3 className="text-sm font-black text-amber-900 uppercase tracking-widest mb-2">Módulo en Mantenimiento</h3>
+            <p className="text-xs text-amber-700/70 font-medium leading-relaxed">
+              El sistema de ejecución de tareas está siendo reconstruido. Por favor, espera a la próxima actualización oficial.
+            </p>
           </div>
+
+          {data.tareas && data.tareas.length > 0 ? (
+            data.tareas.map((t) => (
+              <div
+                key={t.id}
+                className="flex gap-4 p-3 bg-white rounded-[1.5rem] border border-gray-100 shadow-md opacity-60 grayscale cursor-not-allowed"
+              >
+                <div className="w-20 h-20 rounded-2xl bg-gray-50 flex-shrink-0 overflow-hidden relative border border-gray-100">
+                  <img
+                    src="/imag/logo.jpeg"
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 py-1 flex flex-col justify-center">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 text-[8px] font-black uppercase tracking-widest">
+                      {t.nivel}
+                    </span>
+                    <p className="text-gray-400 font-black text-xs">+{t.recompensa} BOB</p>
+                  </div>
+                  <p className="text-gray-400 text-[10px] font-bold uppercase tracking-tight truncate">
+                    {t.nombre}
+                  </p>
+                  <p className="text-gray-300 text-[8px] font-black uppercase tracking-widest mt-2">
+                    Deshabilitado
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center p-12 bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
+              <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">No hay tareas disponibles.</p>
+            </div>
+          )}
         </div>
       </div>
     </Layout>

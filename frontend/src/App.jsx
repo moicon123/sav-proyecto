@@ -73,11 +73,6 @@ function AppRoutes() {
       <Route path="/registro-tareas" element={<PrivateRoute><TaskRoom /></PrivateRoute>} />
       <Route path="/registro-facturacion" element={<PrivateRoute><BillingRecord /></PrivateRoute>} />
       
-      {/* Redirecciones de rutas obsoletas */}
-      <Route path="/tareas/:id" element={<Navigate to="/tareas" replace />} />
-      <Route path="/tarea-activa/:id" element={<Navigate to="/tareas" replace />} />
-      <Route path="/reproducir-tarea/:id" element={<Navigate to="/tareas" replace />} />
-      
       {/* Ruta 404 por defecto */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
