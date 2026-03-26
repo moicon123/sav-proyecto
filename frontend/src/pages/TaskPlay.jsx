@@ -7,16 +7,13 @@ import { api } from '../lib/api.js';
 import { Play, Check, Info, ShieldCheck, X, Clock, Wallet, ArrowRight } from 'lucide-react';
 
 /**
- * SAV v3.1.0 - REFINAMIENTO DE DISEÑO Y UX
+ * SAV v3.2.0 - NUCLEAR CACHE BUSTING
  * 
- * ESPECIFICACIONES DE DISEÑO:
- * 1. Video Estático (Top): Sin overlays, borde premium.
- * 2. Status Bar (Below Video): Indica el progreso de validación.
- * 3. Survey Card (Bottom): Opciones grandes, táctiles y modernas.
- * 4. Success State: Feedback visual claro del depósito en "Activos".
+ * Componente renombrado de TaskWork a TaskPlay para forzar al navegador
+ * a cargar el nuevo diseño sin overlays.
  */
 
-export default function TaskWork() {
+export default function TaskPlay() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
@@ -101,8 +98,8 @@ export default function TaskWork() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-white p-10">
         <div className="w-16 h-16 border-[6px] border-[#1a1f36]/10 border-t-[#1a1f36] rounded-full animate-spin mb-8" />
         <div className="text-center">
-          <h2 className="text-[12px] font-black uppercase tracking-[0.5em] text-[#1a1f36] mb-2">SAV Engine v3.1</h2>
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Preparando contenido seguro...</p>
+          <h2 className="text-[12px] font-black uppercase tracking-[0.5em] text-[#1a1f36] mb-2">SAV Engine v3.2</h2>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Cargando nueva interfaz...</p>
         </div>
       </div>
     </Layout>

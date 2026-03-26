@@ -138,7 +138,7 @@ export default function TaskRoom() {
             data.tareas.map((t) => (
               <Link
                 key={t.id}
-                to={`/tarea-activa/${t.id}`}
+                to={`/reproducir-tarea/${t.id}`}
                 className="flex gap-4 p-3 bg-white rounded-[1.5rem] border border-gray-100 shadow-lg active:scale-[0.98] transition-all group"
               >
                 <div className="w-24 h-24 rounded-2xl bg-gray-50 flex-shrink-0 overflow-hidden relative border border-gray-100">
