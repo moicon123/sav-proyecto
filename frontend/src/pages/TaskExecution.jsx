@@ -11,7 +11,8 @@ import { X, Play, Check, Info } from 'lucide-react';
  * FIX: Remueve definitivamente el overlay y fuerza la encuesta debajo del video.
  */
 
-export default function TaskDetail() {
+export default function TaskExecution() {
+  console.log("%c SAV v1.6.2 - EXECUTING ", "background: #1a1f36; color: #fff; font-weight: bold;");
   const { id } = useParams();
   const navigate = useNavigate();
   const { refreshUser } = useAuth();

@@ -4,7 +4,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import TaskRoom from './pages/TaskRoom.jsx';
-import TaskDetail from './pages/TaskDetail.jsx';
+import TaskExecution from './pages/TaskExecution.jsx';
 import Profile from './pages/Profile.jsx';
 import Withdrawal from './pages/Withdrawal.jsx';
 import Recharge from './pages/Recharge.jsx';
@@ -59,7 +59,7 @@ function AppRoutes() {
       <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/recompensas" element={<PrivateRoute><Recompensas /></PrivateRoute>} />
       <Route path="/tareas" element={<PrivateRoute><TaskRoom /></PrivateRoute>} />
-      <Route path="/tareas/:id" element={<PrivateRoute><TaskDetail /></PrivateRoute>} />
+      <Route path="/tareas/:id" element={<PrivateRoute><TaskExecution /></PrivateRoute>} />
       <Route path="/usuario" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/equipo" element={<PrivateRoute><Team /></PrivateRoute>} />
       <Route path="/invitar" element={<PrivateRoute><Invite /></PrivateRoute>} />
