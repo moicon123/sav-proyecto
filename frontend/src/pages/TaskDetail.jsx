@@ -17,6 +17,7 @@ import { X, Play, Check, Info } from 'lucide-react';
  */
 
 export default function TaskDetail() {
+  console.log("%c SAV v1.5.0 - CARGADO ", "background: #1a1f36; color: #fff; font-weight: bold;");
   const { id } = useParams();
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
