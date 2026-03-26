@@ -174,11 +174,7 @@ export default function TaskRoom() {
                     </p>
                   </div>
                   <div className="flex items-center justify-between mt-2">
-                    <p className="text-gray-400 text-[8px] font-black uppercase tracking-[0.2em]">Verify content</p>
-                    <div className="flex items-center gap-1 text-[#00C853]">
-                      <div className="w-1 h-1 bg-[#00C853] rounded-full animate-pulse" />
-                      <span className="text-[8px] font-black uppercase">Online</span>
-                    </div>
+                    <p className="text-gray-400 text-[8px] font-black uppercase tracking-[0.2em]">Contenido informativo</p>
                   </div>
                 </div>
               </div>
