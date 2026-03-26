@@ -134,58 +134,9 @@ export default function TaskRoom() {
         </div>
 
         <div className="space-y-3 pb-24">
-          {data.tareas.length > 0 ? (
-            data.tareas.map((t) => (
-              <div
-                key={t.id}
-                className="flex gap-4 p-3 bg-white rounded-[1.5rem] border border-gray-100 shadow-lg transition-all group opacity-80"
-              >
-                <div className="w-24 h-24 rounded-2xl bg-gray-50 flex-shrink-0 overflow-hidden relative border border-gray-100">
-                  <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
-                    <img src="/imag/logo.jpeg" alt="" className="w-12 h-12 object-contain grayscale" />
-                  </div>
-                  <img
-                    src={t.video_url || t.imagen_url || '/imag/logo.jpeg'}
-                    alt=""
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10"
-                    onError={(e) => { e.target.src = '/imag/logo.jpeg'; }}
-                  />
-                  {/* Overlay con Logo (Sin Play) */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#1a1f36]/5 group-hover:bg-[#1a1f36]/10 transition-colors z-20">
-                    <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-2xl scale-90 group-hover:scale-100 transition-transform">
-                      <Info className="text-white" size={24} />
-                    </div>
-                  </div>
-                  {/* Logo de la plataforma en la esquina del thumbnail */}
-                  <div className="absolute bottom-1 right-1 w-7 h-7 rounded-lg overflow-hidden border border-white/20 shadow-lg bg-white/80 backdrop-blur-sm z-30">
-                    <img src="/imag/logo.jpeg" alt="SAV" className="w-full h-full object-cover opacity-80" />
-                  </div>
-                </div>
-                <div className="flex-1 py-1 flex flex-col justify-between overflow-hidden">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="inline-block px-3 py-1 rounded-full bg-[#1a1f36]/5 text-[#1a1f36] text-[9px] font-black uppercase tracking-widest border border-[#1a1f36]/10">
-                        {t.nivel}
-                      </span>
-                      <p className="text-[#1a1f36] font-black text-sm tracking-tight">+{t.recompensa} BOB</p>
-                    </div>
-                    <p className="text-gray-500 text-[9px] font-medium line-clamp-2 italic leading-tight mt-1">
-                      {t.descripcion || 'No description available for this task.'}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <p className="text-gray-400 text-[8px] font-black uppercase tracking-[0.2em]">Contenido informativo</p>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            !data.mensaje && (
-              <div className="text-center p-12 bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
-                <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">No hay tareas disponibles por hoy.</p>
-              </div>
-            )
-          )}
+          <div className="text-center p-12 bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
+            <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Las tareas están deshabilitadas temporalmente.</p>
+          </div>
         </div>
       </div>
     </Layout>
