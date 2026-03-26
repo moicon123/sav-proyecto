@@ -51,10 +51,12 @@ export default function TaskDetail() {
   }, [timeLeft, timerActive]);
 
   const [videoEnded, setVideoEnded] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(false);
 
+  // Efecto para manejar la redirección automática al finalizar todo
   useEffect(() => {
     if (videoEnded && result?.correcta) {
-      const timer = setTimeout(() => navigate('/tareas'), 2000);
+      const timer = setTimeout(() => navigate('/tareas'), 3000);
       return () => clearTimeout(timer);
     }
   }, [videoEnded, result, navigate]);
@@ -63,6 +65,7 @@ export default function TaskDetail() {
     if (!selected) return;
     setSubmitting(true);
     try {
+      // Enviamos la respuesta al servidor
       const r = await api.tasks.responder(id, selected);
       setResult(r);
       if (r.correcta) {
@@ -77,8 +80,7 @@ export default function TaskDetail() {
 
   const handleVideoEnded = () => {
     setVideoEnded(true);
-    // Redirigir siempre al finalizar el video para asegurar el flujo
-    setTimeout(() => navigate('/tareas'), 2500);
+    // Si ya respondió correctamente, la redirección se maneja en el useEffect superior
   };
 
   useEffect(() => {
@@ -138,58 +140,10 @@ export default function TaskDetail() {
             ></iframe>
             <div className="absolute inset-0 z-10 bg-transparent pointer-events-none" />
             
-            {/* Overlay de Pregunta Integrado sobre el Video - Rediseñado para no tapar el centro */}
-            {!task.completada_hoy && canAnswer && !result && (
-              <div className="absolute inset-0 z-40 bg-black/20 flex items-end justify-center p-4 animate-fade-in pointer-events-none">
-                <div className="w-full max-w-sm bg-[#1a1f36]/90 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 shadow-2xl mb-4 animate-slideUp pointer-events-auto">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/20">
-                        <Play size={12} fill="currentColor" />
-                      </div>
-                      <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Verificación</h3>
-                    </div>
-                    <div className="px-2 py-0.5 rounded-full bg-[#00C853]/20 border border-[#00C853]/30 text-[#00C853] text-[8px] font-black uppercase tracking-widest">
-                      Activa
-                    </div>
-                  </div>
-                  
-                  <p className="text-xs font-bold text-white leading-relaxed mb-6 text-left">
-                    {task.pregunta || '¿A qué marca se refiere este video?'}
-                  </p>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    {opciones.map((opc, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setSelected(opc)}
-                        className={`
-                          w-full py-3 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-center border
-                          ${selected === opc 
-                            ? 'bg-white text-[#1a1f36] border-white shadow-xl scale-[1.02]' 
-                            : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'}
-                        `}
-                      >
-                        {opc}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={handleSubmit}
-                    disabled={!selected || submitting}
-                    className="w-full mt-6 py-4 rounded-xl bg-white text-[#1a1f36] font-black uppercase tracking-widest text-[10px] shadow-xl disabled:opacity-50 active:scale-95 transition-all"
-                  >
-                    {submitting ? 'Verificando...' : 'Confirmar Respuesta'}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Overlay de Temporizador sobre el Video */}
             {!task.completada_hoy && !canAnswer && (
               <div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-none">
-                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
+                <div className="bg-black/40 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-[#00C853] rounded-full animate-pulse" />
                     <span className="text-[10px] text-white/90 font-black uppercase tracking-widest">Publicidad Activa</span>
@@ -218,58 +172,10 @@ export default function TaskDetail() {
           ></iframe>
           <div className="absolute inset-0 z-10" />
           
-          {/* Overlay de Pregunta Integrado sobre el Video - Rediseñado para no tapar el centro */}
-          {!task.completada_hoy && canAnswer && !result && (
-            <div className="absolute inset-0 z-40 bg-black/20 flex items-end justify-center p-4 animate-fade-in pointer-events-none">
-              <div className="w-full max-w-sm bg-[#1a1f36]/90 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 shadow-2xl mb-4 animate-slideUp pointer-events-auto">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/20">
-                      <Play size={12} fill="currentColor" />
-                    </div>
-                    <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Verificación</h3>
-                  </div>
-                  <div className="px-2 py-0.5 rounded-full bg-[#00C853]/20 border border-[#00C853]/30 text-[#00C853] text-[8px] font-black uppercase tracking-widest">
-                    Activa
-                  </div>
-                </div>
-                
-                <p className="text-xs font-bold text-white leading-relaxed mb-6 text-left">
-                  {task.pregunta || '¿A qué marca se refiere este video?'}
-                </p>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  {opciones.map((opc, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelected(opc)}
-                      className={`
-                        w-full py-3 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-center border
-                        ${selected === opc 
-                          ? 'bg-white text-[#1a1f36] border-white shadow-xl scale-[1.02]' 
-                          : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'}
-                      `}
-                    >
-                      {opc}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleSubmit}
-                  disabled={!selected || submitting}
-                  className="w-full mt-6 py-4 rounded-xl bg-white text-[#1a1f36] font-black uppercase tracking-widest text-[10px] shadow-xl disabled:opacity-50 active:scale-95 transition-all"
-                >
-                  {submitting ? 'Verificando...' : 'Confirmar Respuesta'}
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Overlay de Temporizador sobre el Video */}
           {!task.completada_hoy && !canAnswer && (
             <div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-none">
-              <div className="bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-[#00C853] rounded-full animate-pulse" />
                   <span className="text-[10px] text-white/90 font-black uppercase tracking-widest">Publicidad Activa</span>
@@ -329,54 +235,6 @@ export default function TaskDetail() {
             className="fallback-img absolute inset-0 w-full h-full object-cover hidden"
           />
           
-          {/* Overlay de Pregunta Integrado sobre el Video - Rediseñado para no tapar el centro */}
-          {!task.completada_hoy && canAnswer && !result && (
-            <div className="absolute inset-0 z-40 bg-black/20 flex items-end justify-center p-4 animate-fade-in pointer-events-none">
-              <div className="w-full max-w-sm bg-[#1a1f36]/90 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 shadow-2xl mb-4 animate-slideUp pointer-events-auto">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/20">
-                      <Play size={12} fill="currentColor" />
-                    </div>
-                    <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Verificación</h3>
-                  </div>
-                  <div className="px-2 py-0.5 rounded-full bg-[#00C853]/20 border border-[#00C853]/30 text-[#00C853] text-[8px] font-black uppercase tracking-widest">
-                    v1.3.2
-                  </div>
-                </div>
-                
-                <p className="text-xs font-bold text-white leading-relaxed mb-6 text-left">
-                  {task.pregunta || '¿A qué marca se refiere este video?'}
-                </p>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  {opciones.map((opc, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelected(opc)}
-                      className={`
-                        w-full py-3 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-center border
-                        ${selected === opc 
-                          ? 'bg-white text-[#1a1f36] border-white shadow-xl scale-[1.02]' 
-                          : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'}
-                      `}
-                    >
-                      {opc}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleSubmit}
-                  disabled={!selected || submitting}
-                  className="w-full mt-6 py-4 rounded-xl bg-white text-[#1a1f36] font-black uppercase tracking-widest text-[10px] shadow-xl disabled:opacity-50 active:scale-95 transition-all"
-                >
-                  {submitting ? 'Verificando...' : 'Confirmar Respuesta'}
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Overlay de Temporizador sobre el Video */}
           {!task.completada_hoy && !canAnswer && (
             <div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-none">
@@ -452,6 +310,64 @@ export default function TaskDetail() {
           <span className="w-1 h-3 bg-[#1a1f36] rounded-full" />
           Requisitos de la tarea
         </p>
+
+        {/* ENCUESTA DEBAJO DEL VIDEO (NUEVO REQUERIMIENTO) */}
+        {!task.completada_hoy && canAnswer && !result && (
+          <div className="bg-white rounded-[2rem] p-8 shadow-2xl border border-gray-100 animate-slideUp mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#1a1f36]/5 flex items-center justify-center text-[#1a1f36] border border-gray-100">
+                  <Play size={20} fill="currentColor" />
+                </div>
+                <h3 className="text-sm font-black text-[#1a1f36] uppercase tracking-tighter">Responde para ganar</h3>
+              </div>
+              <div className="px-3 py-1 rounded-full bg-[#00C853]/10 border border-[#00C853]/20 text-[#00C853] text-[10px] font-black uppercase tracking-widest">
+                v1.4.0
+              </div>
+            </div>
+            
+            <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 mb-6">
+              <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">
+                Pista del contenido
+              </p>
+              <p className="text-xs font-bold text-gray-700 leading-relaxed italic">
+                "{task.descripcion || 'Verifica el contenido del video para responder.'}"
+              </p>
+            </div>
+
+            <p className="text-sm font-bold text-[#1a1f36] mb-6 leading-relaxed bg-gray-50 p-4 rounded-2xl border border-gray-100">
+              {task.pregunta || '¿A qué marca o contenido se refiere el video publicitario?'}
+            </p>
+            
+            <div className="grid grid-cols-1 gap-3 mb-8">
+              {opciones.map((opc, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelected(opc)}
+                  className={`
+                    w-full py-4 px-6 rounded-2xl text-xs font-black uppercase tracking-widest transition-all text-left flex items-center justify-between group
+                    ${selected === opc 
+                      ? 'bg-[#1a1f36] text-white shadow-xl translate-x-2' 
+                      : 'bg-gray-50 text-gray-400 hover:bg-gray-100 border border-gray-100 hover:border-[#1a1f36]/30 hover:text-gray-600'}
+                  `}
+                >
+                  <span>{opc}</span>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selected === opc ? 'border-white bg-white/20' : 'border-gray-200'}`}>
+                    {selected === opc && <div className="w-2 h-2 bg-white rounded-full animate-pulse" />}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={!selected || submitting}
+              className="w-full py-5 rounded-2xl bg-[#1a1f36] text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-[#1a1f36]/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale"
+            >
+              {submitting ? 'Verificando...' : 'Confirmar Respuesta'}
+            </button>
+          </div>
+        )}
 
         {task.completada_hoy && (
           <div className="bg-[#00C853]/5 p-8 rounded-[2rem] border border-[#00C853]/10 mb-6 text-center shadow-inner animate-fade-in">
