@@ -149,7 +149,7 @@ export default function TaskRoom() {
             <button onClick={() => setActiveTask(null)} className="p-2 -ml-2 rounded-xl bg-white/10 text-white active:scale-90 transition-transform">
               <X size={20} />
             </button>
-            <h1 className="font-black text-white text-xs uppercase tracking-[0.2em]">Ejecución v4.0</h1>
+            <h1 className="font-black text-white text-xs uppercase tracking-[0.2em]">Ejecución v4.0.1</h1>
             <div className="w-10" />
           </header>
 
