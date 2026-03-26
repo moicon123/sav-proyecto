@@ -2,7 +2,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
 });
 
-const CACHE_NAME = 'sav-cache-v2.1.2';
+const CACHE_NAME = 'sav-cache-v3.2.0';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
