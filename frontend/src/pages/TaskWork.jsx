@@ -123,7 +123,7 @@ export default function TaskWork() {
         
         <div className="max-w-xl mx-auto p-4 space-y-6">
           
-          {/* --- NIVEL 1: REPRODUCTOR DE VIDEO --- */}
+          {/* --- NIVEL 1: REPRODUCTOR DE VIDEO (SIN OVERLAYS) --- */}
           <section className="relative w-full aspect-video bg-black rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white">
             {isYouTube ? (
               <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoUrl.includes('v=') ? videoUrl.split('v=')[1].split('&')[0] : videoUrl.split('/').pop()}?autoplay=1&controls=1&rel=0`} allow="autoplay; encrypted-media" />
@@ -136,15 +136,20 @@ export default function TaskWork() {
                 <img src="/imag/logo.jpeg" className="w-20 h-20 opacity-20" alt="SAV" />
               </div>
             )}
-
-            {/* Contador de seguridad */}
-            {!task.completada_hoy && !surveyVisible && (
-              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-2">
-                <Clock size={14} className="text-[#00C853] animate-pulse" />
-                <span className="text-[10px] text-white font-black uppercase tracking-widest">Validación: {timer}s</span>
-              </div>
-            )}
           </section>
+
+          {/* --- NIVEL 1.5: ESTADO DE VALIDACIÓN (DEBAJO DEL VIDEO) --- */}
+          {!task.completada_hoy && !surveyVisible && (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 flex items-center justify-between shadow-sm animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#00C853]/10 flex items-center justify-center">
+                  <Clock size={16} className="text-[#00C853]" />
+                </div>
+                <span className="text-[10px] text-[#1a1f36] font-black uppercase tracking-widest">Validación en curso...</span>
+              </div>
+              <span className="text-sm font-black text-[#1a1f36] bg-[#1a1f36]/5 px-3 py-1 rounded-lg">{timer}s</span>
+            </div>
+          )}
 
           {/* --- NIVEL 2: INFORMACIÓN --- */}
           <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-start gap-4">
@@ -210,44 +215,34 @@ export default function TaskWork() {
 
           {/* --- NIVEL 4: ESTADOS DE ÉXITO --- */}
           {(task.completada_hoy || isCorrect) && (
-            <section className="bg-[#00C853]/5 p-10 rounded-[3rem] border-2 border-[#00C853]/10 text-center animate-fade-in">
+            <section className="bg-white p-10 rounded-[3rem] border-4 border-[#00C853]/20 text-center animate-fade-in shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-[#00C853]" />
+              
               <div className="w-20 h-20 bg-[#00C853] rounded-full mx-auto flex items-center justify-center mb-6 shadow-lg shadow-[#00C853]/20 border-4 border-white">
                 <Check className="text-white" size={40} strokeWidth={3} />
               </div>
-              <h3 className="font-black text-[#1a1f36] text-xl uppercase mb-2 tracking-tighter">¡Tarea Completada!</h3>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-8">Tu pago ha sido enviado a la billetera de activos.</p>
               
-              <div className="bg-white/50 backdrop-blur-sm py-4 px-8 rounded-3xl border border-[#00C853]/20 inline-block">
-                <span className="text-4xl font-black text-[#00C853] tracking-tighter">+{task.recompensa}</span>
+              <h3 className="font-black text-[#1a1f36] text-xl uppercase mb-2 tracking-tighter">¡Tarea Completada!</h3>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-8 italic">El pago se ha acreditado en tu billetera de activos.</p>
+              
+              <div className="bg-[#fcfcfc] py-4 px-8 rounded-3xl border border-gray-100 inline-block mb-8">
+                <span className="text-4xl font-black text-[#1a1f36] tracking-tighter">+{task.recompensa}</span>
                 <span className="text-sm font-black text-gray-400 ml-2 uppercase">BOB</span>
               </div>
               
-              {!videoFinished && (
-                <p className="mt-8 text-[9px] font-black text-[#1a1f36]/40 uppercase tracking-widest animate-pulse">
-                  Espera a que el video finalice para volver a la sala...
+              {isCorrect && videoFinished ? (
+                <button 
+                  onClick={() => navigate('/tareas')}
+                  className="w-full py-5 rounded-2xl bg-[#1a1f36] text-white font-black uppercase text-xs tracking-[0.2em] shadow-xl active:scale-95 transition-all animate-bounce"
+                >
+                  Finalizar y Volver
+                </button>
+              ) : (
+                <p className="text-[9px] font-black text-[#1a1f36]/40 uppercase tracking-widest animate-pulse">
+                  Espera a que el video finalice para salir...
                 </p>
               )}
             </section>
-          )}
-
-          {/* Modal de éxito final */}
-          {isCorrect && videoFinished && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-2xl bg-[#1a1f36]/90 animate-fade-in">
-              <div className="w-full max-w-sm bg-white rounded-[3.5rem] p-12 text-center shadow-2xl relative overflow-hidden border border-white/20">
-                <div className="absolute top-0 left-0 w-full h-3 bg-[#00C853]" />
-                <div className="w-24 h-24 bg-[#00C853]/10 rounded-full mx-auto flex items-center justify-center mb-8">
-                  <Check className="text-[#00C853]" size={48} strokeWidth={4} />
-                </div>
-                <h2 className="text-3xl font-black text-[#1a1f36] uppercase tracking-tighter mb-2">¡Todo Listo!</h2>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-10 italic">Pago verificado en Activos</p>
-                <button 
-                  onClick={() => navigate('/tareas')}
-                  className="w-full py-5 rounded-2xl bg-[#1a1f36] text-white font-black uppercase text-xs tracking-[0.2em] shadow-xl active:scale-95 transition-all"
-                >
-                  Finalizar Sesión
-                </button>
-              </div>
-            </div>
           )}
 
         </div>
