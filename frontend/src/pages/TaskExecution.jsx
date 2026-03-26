@@ -30,6 +30,11 @@ export default function TaskExecution() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
 
+  // LOG PARA DEPURAR RENDERIZADO
+  useEffect(() => {
+    console.log("[DEBUG] canAnswer:", canAnswer, "timeLeft:", timeLeft, "taskReady:", !!task);
+  }, [canAnswer, timeLeft, task]);
+
   useEffect(() => {
     api.tasks.get(id)
       .then(t => {
