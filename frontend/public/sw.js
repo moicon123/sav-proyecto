@@ -2,11 +2,18 @@ self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
 });
 
+const CACHE_NAME = 'sav-cache-v2.1.2';
+
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
+          console.log('[SW] Deleting old cache:', cacheName);
           return caches.delete(cacheName);
         })
       );

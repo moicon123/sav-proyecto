@@ -59,7 +59,7 @@ function AppRoutes() {
       <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/recompensas" element={<PrivateRoute><Recompensas /></PrivateRoute>} />
       <Route path="/tareas" element={<PrivateRoute><TaskRoom /></PrivateRoute>} />
-      <Route path="/tareas/:id" element={<PrivateRoute><TaskExecution /></PrivateRoute>} />
+      <Route path="/ejecutar-tarea/:id" element={<PrivateRoute><TaskExecution /></PrivateRoute>} />
       <Route path="/usuario" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/equipo" element={<PrivateRoute><Team /></PrivateRoute>} />
       <Route path="/invitar" element={<PrivateRoute><Invite /></PrivateRoute>} />
