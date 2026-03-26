@@ -83,6 +83,7 @@ async function request(url, options = {}, retries = 3) {
 }
 
 export const api = {
+  version: '1.6.3',
   // Helper para obtener la URL completa de medios (videos/imágenes)
   getMediaUrl: (path) => {
     if (!path) return '';
