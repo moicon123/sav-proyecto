@@ -136,10 +136,9 @@ export default function TaskRoom() {
         <div className="space-y-3 pb-24">
           {data.tareas.length > 0 ? (
             data.tareas.map((t) => (
-              <Link
+              <div
                 key={t.id}
-                to={`/reproducir-tarea/${t.id}`}
-                className="flex gap-4 p-3 bg-white rounded-[1.5rem] border border-gray-100 shadow-lg active:scale-[0.98] transition-all group"
+                className="flex gap-4 p-3 bg-white rounded-[1.5rem] border border-gray-100 shadow-lg transition-all group opacity-80"
               >
                 <div className="w-24 h-24 rounded-2xl bg-gray-50 flex-shrink-0 overflow-hidden relative border border-gray-100">
                   <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
@@ -151,10 +150,10 @@ export default function TaskRoom() {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10"
                     onError={(e) => { e.target.src = '/imag/logo.jpeg'; }}
                   />
-                  {/* Overlay con Logo y Play */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#1a1f36]/20 group-hover:bg-[#1a1f36]/40 transition-colors z-20">
+                  {/* Overlay con Logo (Sin Play) */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#1a1f36]/5 group-hover:bg-[#1a1f36]/10 transition-colors z-20">
                     <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-2xl scale-90 group-hover:scale-100 transition-transform">
-                      <Play className="text-white ml-1" size={24} fill="white" />
+                      <Info className="text-white" size={24} />
                     </div>
                   </div>
                   {/* Logo de la plataforma en la esquina del thumbnail */}
@@ -182,7 +181,7 @@ export default function TaskRoom() {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))
           ) : (
             !data.mensaje && (
